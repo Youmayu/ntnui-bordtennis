@@ -1,4 +1,5 @@
 import { pool } from "@/lib/db";
+export const dynamic = "force-dynamic";
 
 type SessionRow = {
   id: number;

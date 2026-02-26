@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { pool } from "@/lib/db";
+export const dynamic = "force-dynamic";
 
 function fmtOslo(dt: Date) {
   return new Intl.DateTimeFormat("no-NO", {
