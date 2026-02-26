@@ -1,5 +1,13 @@
 import { pool } from "@/lib/db";
 
+type SessionRow = {
+  id: number;
+  starts_at: string; // returned from pg as string
+  ends_at: string;
+  location: string;
+  capacity: number;
+};
+
 function fmtOslo(dt: Date) {
   return new Intl.DateTimeFormat("no-NO", {
     timeZone: "Europe/Oslo",
@@ -37,9 +45,11 @@ export default async function SchedulePage() {
               </tr>
             </thead>
             <tbody>
-              {res.rows.map((s) => (
+              {(res.rows as SessionRow[]).map((s) => (
                 <tr key={s.id} className="border-b last:border-0">
-                  <td className="py-3 pr-3 font-medium">{fmtOslo(new Date(s.starts_at))}</td>
+                  <td className="py-3 pr-3 font-medium">
+                    {fmtOslo(new Date(s.starts_at))}
+                  </td>
                   <td className="py-3 pr-3">{s.location}</td>
                   <td className="py-3 text-muted-foreground">{s.capacity}</td>
                 </tr>
