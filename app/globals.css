@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ... keep existing ... */
+
+  /* Accent color (NTNU-ish blue) */
+  --primary: 214 88% 45%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Softer background surfaces */
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 36.9%;
 }
 
 @theme inline {

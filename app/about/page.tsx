@@ -1,0 +1,72 @@
+type PersonCardProps = {
+  role: string;
+  name: string;
+  email?: string;
+  phone?: string;
+};
+
+function PersonCard({ role, name, email, phone }: PersonCardProps) {
+  return (
+    <div className="rounded-2xl border bg-card p-6 shadow-sm">
+      <div className="text-sm text-muted-foreground">{role}</div>
+      <div className="mt-1 text-lg font-semibold">{name}</div>
+
+      <div className="mt-4 space-y-2 text-sm">
+        {email && (
+          <div>
+            <span className="text-muted-foreground">E-post: </span>
+            <a className="font-medium text-primary hover:underline" href={`mailto:${email}`}>
+              {email}
+            </a>
+          </div>
+        )}
+        {phone && (
+          <div>
+            <span className="text-muted-foreground">Telefon: </span>
+            <a className="font-medium text-primary hover:underline" href={`tel:${phone}`}>
+              {phone}
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function AboutPage() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-semibold">Om oss</h1>
+        <p className="mt-2 max-w-2xl text-muted-foreground">
+          NTNUI Bordtennis arrangerer treninger ved Dragvoll Idrettsenter. Her finner du kontaktinfo og
+          hvem som har ansvar for drift, økonomi og planlegging.
+        </p>
+      </div>
+
+      <section className="grid gap-6 md:grid-cols-3">
+        <PersonCard
+          role="Leder / kontakt"
+          name="(Navn her)"
+          email="leder@ntnui.no"
+          phone="+47 000 00 000"
+        />
+        <PersonCard
+          role="Nestleder"
+          name="(Navn her)"
+          email="nestleder@ntnui.no"
+        />
+        <PersonCard
+          role="Kasserer"
+          name="(Navn her)"
+          email="kasserer@ntnui.no"
+        />
+      </section>
+
+      <section className="rounded-2xl border bg-card p-6 shadow-sm">
+        <h2 className="text-lg font-semibold">Sted</h2>
+        <p className="mt-2">Dragvoll Idrettsenter</p>
+      </section>
+    </div>
+  );
+}
