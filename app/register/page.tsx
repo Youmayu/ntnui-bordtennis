@@ -125,7 +125,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={disabled}
-          className="w-full rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          className="w-full rounded-xl border bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50 hover:enabled:opacity-90"
         >
           Registrer
         </button>
