@@ -168,7 +168,7 @@ export default async function AdminPage() {
         <div>
           <h2 className="text-lg font-semibold">Økter</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Rediger tidspunkt (Oslo-tid), sted og kapasitet. Du kan også legge til nye økter.
+            Rediger tidspunkt, sted og kapasitet. Du kan også legge til nye økter.
           </p>
         </div>
 
@@ -198,7 +198,7 @@ export default async function AdminPage() {
               <label className="text-xs text-muted-foreground">Sted</label>
               <input
                 name="location"
-                defaultValue="Dragvoll Idrettssenter"
+                defaultValue="Dragvoll Idrettssenter 2. etasje gymsal"
                 className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
                 required
               />
@@ -210,7 +210,7 @@ export default async function AdminPage() {
                 type="number"
                 min={1}
                 max={200}
-                defaultValue={20}
+                defaultValue={16}
                 className="w-24 rounded-lg border bg-background px-2 py-1 text-sm"
                 required
               />
@@ -291,7 +291,7 @@ export default async function AdminPage() {
                   <td className="py-3 pr-3">
                     <form id={`session-${s.id}`} action={updateSession} className="flex gap-2">
                       <input type="hidden" name="id" value={s.id} />
-                      <button className="rounded-lg bg-primary px-3 py-1 text-primary-foreground">
+                      <button className="rounded-lg border bg-primary px-3 py-1 text-primary-foreground hover:opacity-90">
                         Lagre
                       </button>
                     </form>
@@ -300,7 +300,7 @@ export default async function AdminPage() {
                   <td className="py-3">
                     <form action={deleteSession}>
                       <input type="hidden" name="id" value={s.id} />
-                      <button className="rounded-lg border px-3 py-1 hover:bg-muted">
+                      <button className="rounded-lg border px-3 py-1 hover:opacity-90">
                         Slett
                       </button>
                     </form>
