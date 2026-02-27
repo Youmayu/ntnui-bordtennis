@@ -36,6 +36,21 @@ async function main() {
 
     CREATE INDEX IF NOT EXISTS idx_registrations_session_id
       ON registrations(session_id);
+      
+    CREATE TABLE IF NOT EXISTS unregister_requests (
+      id SERIAL PRIMARY KEY,
+      session_id INT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      handled BOOLEAN NOT NULL DEFAULT FALSE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_unregister_requests_session_id
+      ON unregister_requests(session_id);
+
+    CREATE INDEX IF NOT EXISTS idx_unregister_requests_handled
+      ON unregister_requests(handled);
   `);
 
   // 2) Seed only if empty
