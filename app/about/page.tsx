@@ -54,7 +54,7 @@ export default function AboutPage() {
         <PersonCard
           role="Nestleder"
           name="He You Ma"
-          email="nestleder@ntnui.no"
+          email="Kommer snart"
         />
         <PersonCard
           role="Kasserer"
