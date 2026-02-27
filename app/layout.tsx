@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "NTNUI Bordtennis",
-  description: "Registrering og info for treninger ved Dragvoll Idrettsenter.",
+  description: "Registrering og info for treninger ved Dragvoll Idrettssenter.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <footer className="border-t">
           <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted-foreground">
-            <div>Dragvoll Idrettsenter</div>
+            <div>Dragvoll Idrettssenter</div>
             <div className="mt-1">© {new Date().getFullYear()} NTNUI Bordtennis</div>
           </div>
         </footer>

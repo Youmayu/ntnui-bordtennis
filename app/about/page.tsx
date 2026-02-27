@@ -39,7 +39,7 @@ export default function AboutPage() {
       <div>
         <h1 className="text-2xl font-semibold">Om oss</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          NTNUI Bordtennis arrangerer treninger ved Dragvoll Idrettsenter. Her finner du kontaktinfo og
+          NTNUI Bordtennis arrangerer treninger ved Dragvoll Idrettssenter. Her finner du kontaktinfo og
           hvem som har ansvar for drift, økonomi og planlegging.
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function AboutPage() {
 
       <section className="rounded-2xl border bg-card p-6 shadow-sm">
         <h2 className="text-lg font-semibold">Sted</h2>
-        <p className="mt-2">Dragvoll Idrettsenter</p>
+        <p className="mt-2">Dragvoll Idrettssenter</p>
       </section>
     </div>
   );

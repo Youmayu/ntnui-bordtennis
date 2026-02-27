@@ -53,7 +53,7 @@ export default async function HomePage() {
         <h1 className="text-3xl font-semibold tracking-tight">NTNUI Bordtennis</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
           Enkel påmelding og oversikt over treninger ved{" "}
-          <span className="font-medium text-foreground">Dragvoll Idrettsenter</span>.
+          <span className="font-medium text-foreground">Dragvoll Idrettssenter</span>.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
@@ -127,7 +127,7 @@ export default async function HomePage() {
           <h2 className="text-xl font-semibold">Info</h2>
           <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-2 text-sm">
             <div className="text-muted-foreground">Sted</div>
-            <div className="font-medium">Dragvoll Idrettsenter</div>
+            <div className="font-medium">Dragvoll Idrettssenter</div>
             <div className="pt-2 text-muted-foreground">Nivå</div>
             <div>Alle nivåer velkommen.</div>
             <div className="pt-2 text-muted-foreground">Ta med</div>

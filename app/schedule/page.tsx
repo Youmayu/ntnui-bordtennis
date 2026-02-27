@@ -67,7 +67,6 @@ export default async function SchedulePage() {
         </div>
 
         <div className="mt-4 text-sm text-muted-foreground">
-          Tips: du kan justere tider/økter i databasen etter deploy.
         </div>
       </div>
     </div>
