@@ -46,20 +46,20 @@ export default function AboutPage() {
 
       <section className="grid gap-6 md:grid-cols-3">
         <PersonCard
-          role="Leder / kontakt"
-          name="(Navn her)"
-          email="leder@ntnui.no"
-          phone="+47 000 00 000"
+          role="Leder"
+          name="Maja Bö"
+          email="Kommer senere"
+          phone="Kommer senere"
         />
         <PersonCard
           role="Nestleder"
-          name="(Navn her)"
+          name="He You Ma"
           email="nestleder@ntnui.no"
         />
         <PersonCard
           role="Kasserer"
-          name="(Navn her)"
-          email="kasserer@ntnui.no"
+          name="Karl Andre Thomassen"
+          email="Kommer snart"
         />
       </section>
 
