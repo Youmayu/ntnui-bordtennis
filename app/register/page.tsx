@@ -76,7 +76,7 @@ export default function RegisterPage() {
   return (
     <div className="max-w-xl space-y-6">
       <h1 className="text-2xl font-semibold">Påmelding</h1>
-      <p className="text-muted-foreground">Velg økt og registrer deg. CAPTCHA beskytter mot bots.</p>
+      <p className="text-muted-foreground">Velg økt og registrer deg. Last inn siden på nytt hvis CAPTCHA ikke dukker opp.</p>
 
       <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
 
