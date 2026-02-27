@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <footer className="border-t">
           <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted-foreground">
-            <div>Dragvoll Idrettssenter</div>
+            <div>NTNU Dragvoll Idrettssenter</div>
             <div className="mt-1">© {new Date().getFullYear()} NTNUI Bordtennis</div>
           </div>
         </footer>
