@@ -115,7 +115,7 @@ export default async function HomePage() {
             <div className="mt-6">
               <Link
                 href="/register"
-                className="inline-flex rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                className="inline-flex rounded-xl border bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
               >
                 Påmelding
               </Link>
@@ -127,11 +127,11 @@ export default async function HomePage() {
           <h2 className="text-xl font-semibold">Info</h2>
           <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-2 text-sm">
             <div className="text-muted-foreground">Sted</div>
-            <div className="font-medium">Dragvoll Idrettssenter</div>
+            <div className="font-medium">Dragvoll Idrettssenter 2. etasje gymsal</div>
             <div className="pt-2 text-muted-foreground">Nivå</div>
             <div>Alle nivåer velkommen.</div>
             <div className="pt-2 text-muted-foreground">Ta med</div>
-            <div>Innesko og evt. egen racket.</div>
+            <div>Innesko, treningstøy og evt. egen racket.</div>
           </div>
         </aside>
       </section>
