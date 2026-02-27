@@ -87,10 +87,10 @@ export default async function HomePage() {
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/register" className={btnPrimary}>
+          <Link href="/register" className="btn-primary">
             Meld deg på neste økt
           </Link>
-          <Link href="/schedule" className={btnSecondary}>
+          <Link href="/schedule" className="btn-secondary">
             Se timeplan
           </Link>
         </div>
