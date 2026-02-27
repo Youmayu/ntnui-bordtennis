@@ -48,18 +48,17 @@ export default function AboutPage() {
         <PersonCard
           role="Leder"
           name="Maja Bö"
-          email="Kommer senere"
-          phone="Kommer senere"
+          email="maja.bockenkamp@ntnui.no"
         />
         <PersonCard
           role="Nestleder"
           name="He You Ma"
-          email="Kommer snart"
+          email="heym@stud.ntnu.no"
         />
         <PersonCard
           role="Kasserer"
           name="Karl Andre Thomassen"
-          email="Kommer snart"
+          email="karl.thomassen@ntnui.no"
         />
       </section>
 
