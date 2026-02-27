@@ -59,7 +59,7 @@ export default async function HomePage() {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href="/register"
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"
           >
             Meld deg på neste økt
           </Link>
