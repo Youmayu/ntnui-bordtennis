@@ -55,7 +55,7 @@ export default function AboutPageContent() {
 
       <section className="grid gap-6 md:grid-cols-3">
         <PersonCard role={messages.about.roles.leader} name="Maja BÃ¶" email="maja.bockenkamp@ntnui.no" />
-        <PersonCard role={messages.about.roles.deputy} name="He You Ma" email="heym@stud.ntnu.no" />
+        <PersonCard role={messages.about.roles.deputy} name="He You Ma" email="he.ma@ntnui.no" />
         <PersonCard
           role={messages.about.roles.treasurer}
           name="Karl Andre Thomassen"
