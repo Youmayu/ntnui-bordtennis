@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Script from "next/script";
+import TurnstileWidget from "@/app/components/TurnstileWidget";
 
 type Session = {
   id: number;
@@ -17,10 +17,14 @@ export default function RegisterPage() {
 
   const [name, setName] = useState("");
   const [level, setLevel] = useState("Nybegynner");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const disabled = useMemo(() => name.trim().length < 2 || !sessionId, [name, sessionId]);
+  const disabled = useMemo(
+    () => name.trim().length < 2 || !sessionId || !turnstileToken,
+    [name, sessionId, turnstileToken]
+  );
 
   useEffect(() => {
     (async () => {
@@ -37,9 +41,9 @@ export default function RegisterPage() {
     setError(null);
 
     const fd = new FormData(e.currentTarget);
-    const turnstileToken = String(fd.get("cf-turnstile-response") ?? "");
+    const submittedToken = String(fd.get("cf-turnstile-response") ?? "");
 
-    if (!turnstileToken) {
+    if (!submittedToken) {
       setError("Fullfør CAPTCHA før du sender inn.");
       return;
     }
@@ -55,12 +59,14 @@ export default function RegisterPage() {
         sessionId,
         name,
         level,
-        turnstileToken,
+        turnstileToken: submittedToken,
         website: "",
       }),
     });
 
     const data = await res.json();
+    setTurnstileToken("");
+
     if (!res.ok) {
       setError(data?.error ?? "Noe gikk galt.");
       return;
@@ -81,11 +87,9 @@ export default function RegisterPage() {
           Reserver plass på neste økt
         </h1>
         <p className="text-[color:rgb(94,77,70)]">
-          Velg økt og registrer deg. Last inn siden på nytt hvis CAPTCHA ikke dukker opp.
+          Velg økt og registrer deg.
         </p>
       </div>
-
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
 
       <form
         onSubmit={onSubmit}
@@ -138,7 +142,11 @@ export default function RegisterPage() {
           </select>
         </div>
 
-        <div className="cf-turnstile" data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
+        <TurnstileWidget
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
+          token={turnstileToken}
+          onTokenChange={setTurnstileToken}
+        />
 
         <button
           type="submit"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Script from "next/script";
+import TurnstileWidget from "@/app/components/TurnstileWidget";
 
 type Session = {
   id: number;
@@ -17,12 +17,13 @@ export default function UnregisterRequestPage() {
 
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const disabled = useMemo(
-    () => name.trim().length < 2 || note.trim().length < 5 || !sessionId,
-    [name, note, sessionId]
+    () => name.trim().length < 2 || note.trim().length < 5 || !sessionId || !turnstileToken,
+    [name, note, sessionId, turnstileToken]
   );
 
   useEffect(() => {
@@ -40,9 +41,9 @@ export default function UnregisterRequestPage() {
     setError(null);
 
     const fd = new FormData(e.currentTarget);
-    const turnstileToken = String(fd.get("cf-turnstile-response") ?? "");
+    const submittedToken = String(fd.get("cf-turnstile-response") ?? "");
 
-    if (!turnstileToken) {
+    if (!submittedToken) {
       setError("Fullfør CAPTCHA før du sender inn.");
       return;
     }
@@ -58,12 +59,14 @@ export default function UnregisterRequestPage() {
         sessionId,
         name,
         message: note,
-        turnstileToken,
+        turnstileToken: submittedToken,
         website: "",
       }),
     });
 
     const data = await res.json();
+    setTurnstileToken("");
+
     if (!res.ok) {
       setError(data?.error ?? "Noe gikk galt.");
       return;
@@ -84,11 +87,9 @@ export default function UnregisterRequestPage() {
           Send en avmeldingsforespørsel
         </h1>
         <p className="text-[color:rgb(94,77,70)]">
-          Send en forespørsel om avmelding. En admin vil fjerne deg manuelt. Last inn siden på nytt hvis CAPTCHA ikke dukker opp.
+          Send en forespørsel om avmelding. En admin vil fjerne deg manuelt.
         </p>
       </div>
-
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
 
       <form
         onSubmit={onSubmit}
@@ -139,7 +140,11 @@ export default function UnregisterRequestPage() {
           <div className="text-xs text-muted-foreground">Minimum 5 tegn.</div>
         </div>
 
-        <div className="cf-turnstile" data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
+        <TurnstileWidget
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
+          token={turnstileToken}
+          onTokenChange={setTurnstileToken}
+        />
 
         <button
           type="submit"
