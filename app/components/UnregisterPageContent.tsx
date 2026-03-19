@@ -210,7 +210,7 @@ export default function UnregisterPageContent() {
                   hour: "2-digit",
                   minute: "2-digit",
                 }).format(new Date(session.starts_at))}
-                {" â€“ "}
+                {" - "}
                 {formatVenueLabel(session.location, locale)}
               </option>
             ))}
