@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import TurnstileWidget from "@/app/components/TurnstileWidget";
+import { getDaysInMonth } from "@/lib/birth-month-day";
 
 type Session = {
   id: number;
@@ -26,8 +27,6 @@ const MONTH_OPTIONS = [
   { value: 12, label: "Desember" },
 ];
 
-const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => index + 1);
-
 export default function RegisterPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
@@ -39,6 +38,13 @@ export default function RegisterPage() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const dayOptions = useMemo(
+    () =>
+      birthMonth
+        ? Array.from({ length: getDaysInMonth(birthMonth) }, (_, index) => index + 1)
+        : [],
+    [birthMonth]
+  );
 
   const disabled = useMemo(
     () => name.trim().length < 2 || !sessionId || !birthMonth || !birthDay || !turnstileToken,
@@ -102,6 +108,19 @@ export default function RegisterPage() {
     setLevel("Nybegynner");
     setBirthMonth(null);
     setBirthDay(null);
+  }
+
+  function handleBirthMonthChange(nextMonth: number | null) {
+    setBirthMonth(nextMonth);
+    if (!nextMonth) {
+      setBirthDay(null);
+      return;
+    }
+
+    const maxDay = getDaysInMonth(nextMonth);
+    if (birthDay && birthDay > maxDay) {
+      setBirthDay(null);
+    }
   }
 
   return (
@@ -174,7 +193,7 @@ export default function RegisterPage() {
             <label className="text-sm font-medium">Fødselsmåned</label>
             <select
               value={birthMonth ?? ""}
-              onChange={(e) => setBirthMonth(e.target.value ? Number(e.target.value) : null)}
+              onChange={(e) => handleBirthMonthChange(e.target.value ? Number(e.target.value) : null)}
               className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
             >
               <option value="">Velg måned</option>
@@ -191,10 +210,11 @@ export default function RegisterPage() {
             <select
               value={birthDay ?? ""}
               onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
-              className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+              disabled={!birthMonth}
+              className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none disabled:opacity-60"
             >
               <option value="">Velg dag</option>
-              {DAY_OPTIONS.map((day) => (
+              {dayOptions.map((day) => (
                 <option key={day} value={day}>
                   {day}
                 </option>

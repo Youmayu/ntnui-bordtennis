@@ -1,3 +1,7 @@
+export function getDaysInMonth(month: number) {
+  return new Date(Date.UTC(2024, month, 0)).getUTCDate();
+}
+
 export function isValidBirthMonthDay(month: number, day: number) {
   if (!Number.isInteger(month) || !Number.isInteger(day)) {
     return false;
@@ -6,6 +10,6 @@ export function isValidBirthMonthDay(month: number, day: number) {
     return false;
   }
 
-  const daysInMonth = new Date(Date.UTC(2024, month, 0)).getUTCDate();
+  const daysInMonth = getDaysInMonth(month);
   return day >= 1 && day <= daysInMonth;
 }
