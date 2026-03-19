@@ -123,10 +123,10 @@ export default function HomePageContent({
               </div>
 
               <div className="app-stat-card min-w-[180px] px-5 py-4 text-sm">
-                <div className="font-semibold text-[color:var(--success-ink)]">
+                <div className="font-semibold text-white">
                   {messages.home.spotsLeft(spotsLeft)}
                 </div>
-                <div className="mt-1 text-[color:var(--success-soft-text)]">
+                <div className="mt-1 text-white/80">
                   {messages.home.registeredCount(registeredNames.length, session.capacity)}
                 </div>
               </div>

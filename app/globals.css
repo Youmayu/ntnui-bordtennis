@@ -30,17 +30,17 @@
   --accent-soft: rgba(219, 99, 58, 0.14);
   --accent-border: rgba(219, 99, 58, 0.24);
   --accent-glow: rgba(219, 99, 58, 0.18);
-  --success: #17986b;
-  --success-strong: #0f8258;
-  --success-ink: #f2fff9;
-  --success-soft: rgba(23, 152, 107, 0.14);
-  --success-border: rgba(23, 152, 107, 0.24);
-  --success-soft-text: #2f7b62;
-  --danger: #d74b5a;
-  --danger-strong: #bb2e3f;
-  --danger-ink: #fff6f7;
-  --danger-soft: rgba(215, 75, 90, 0.13);
-  --danger-border: rgba(215, 75, 90, 0.24);
+  --success: #137554;
+  --success-strong: #0c5f44;
+  --success-ink: #0f5d43;
+  --success-soft: rgba(19, 117, 84, 0.14);
+  --success-border: rgba(19, 117, 84, 0.24);
+  --success-soft-text: #205f49;
+  --danger: #b74152;
+  --danger-strong: #952c3b;
+  --danger-ink: #7a1f2f;
+  --danger-soft: rgba(183, 65, 82, 0.13);
+  --danger-border: rgba(183, 65, 82, 0.24);
   --map: #2f7adf;
   --map-strong: #235fb3;
   --map-ink: #f4f9ff;
@@ -89,17 +89,17 @@
   --accent-soft: rgba(255, 131, 88, 0.16);
   --accent-border: rgba(255, 131, 88, 0.3);
   --accent-glow: rgba(255, 131, 88, 0.24);
-  --success: #3fd29d;
-  --success-strong: #23b985;
-  --success-ink: #d9fff2;
-  --success-soft: rgba(63, 210, 157, 0.16);
-  --success-border: rgba(63, 210, 157, 0.28);
-  --success-soft-text: #bff1df;
-  --danger: #ff6f7e;
-  --danger-strong: #f55264;
+  --success: #2aaa79;
+  --success-strong: #1f885f;
+  --success-ink: #d8ffef;
+  --success-soft: rgba(42, 170, 121, 0.16);
+  --success-border: rgba(42, 170, 121, 0.28);
+  --success-soft-text: #bdf0dd;
+  --danger: #db5b6b;
+  --danger-strong: #b93d4d;
   --danger-ink: #fff1f3;
-  --danger-soft: rgba(255, 111, 126, 0.16);
-  --danger-border: rgba(255, 111, 126, 0.28);
+  --danger-soft: rgba(219, 91, 107, 0.16);
+  --danger-border: rgba(219, 91, 107, 0.28);
   --map: #62a7ff;
   --map-strong: #3e8ef5;
   --map-ink: #eff6ff;
@@ -374,9 +374,11 @@ a {
 
 .app-stat-card {
   border-radius: 1.4rem;
-  border: 1px solid var(--success-border);
-  background: linear-gradient(145deg, var(--success-soft), rgba(255, 255, 255, 0.12));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(155deg, var(--success-strong), var(--success));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 14px 28px rgba(12, 95, 68, 0.22);
 }
 
 .app-chip {
