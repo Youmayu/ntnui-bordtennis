@@ -56,7 +56,6 @@ export default function RegisterPage() {
         name,
         level,
         turnstileToken,
-        // honeypot
         website: "",
       }),
     });
@@ -70,27 +69,46 @@ export default function RegisterPage() {
     setMessage("Du er registrert.");
     setName("");
     setLevel("Nybegynner");
-    // note: Turnstile token is single-use; user will solve again for another submit
   }
 
   return (
-    <div className="max-w-xl space-y-6">
-      <h1 className="text-2xl font-semibold">Påmelding</h1>
-      <p className="text-muted-foreground">Velg økt og registrer deg. Last inn siden på nytt hvis CAPTCHA ikke dukker opp.</p>
+    <div className="max-w-2xl space-y-6">
+      <div className="space-y-3">
+        <span className="inline-flex rounded-full border border-[color:rgba(163,50,31,0.16)] bg-[rgba(163,50,31,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[color:rgb(139,45,29)]">
+          Påmelding
+        </span>
+        <h1 className="text-3xl font-semibold tracking-tight text-[color:rgb(37,26,20)]">
+          Reserver plass på neste økt
+        </h1>
+        <p className="text-[color:rgb(94,77,70)]">
+          Velg økt og registrer deg. Last inn siden på nytt hvis CAPTCHA ikke dukker opp.
+        </p>
+      </div>
 
       <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
 
-      <form onSubmit={onSubmit} className="rounded-2xl border bg-card p-6 shadow-sm space-y-4">
+      <form
+        onSubmit={onSubmit}
+        className="space-y-5 rounded-[1.75rem] border border-white/70 bg-white/90 p-6 shadow-[0_18px_50px_rgba(86,39,26,0.10)]"
+      >
         <div className="space-y-2">
           <label className="text-sm font-medium">Økt</label>
           <select
             value={sessionId ?? ""}
             onChange={(e) => setSessionId(Number(e.target.value))}
-            className="w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2"
+            className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
           >
             {sessions.map((s) => (
               <option key={s.id} value={s.id}>
-                {new Date(s.starts_at).toLocaleString("no-NO", { timeZone: "Europe/Oslo", weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })} — {s.location}
+                {new Date(s.starts_at).toLocaleString("no-NO", {
+                  timeZone: "Europe/Oslo",
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}{" "}
+                – {s.location}
               </option>
             ))}
           </select>
@@ -102,7 +120,7 @@ export default function RegisterPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Skriv navnet ditt"
-            className="w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2"
+            className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
           />
           <div className="text-xs text-muted-foreground">Minimum 2 tegn.</div>
         </div>
@@ -112,7 +130,7 @@ export default function RegisterPage() {
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2"
+            className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
           >
             <option>Nybegynner</option>
             <option>Viderekommen</option>
@@ -125,13 +143,21 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={disabled}
-          className="w-full rounded-xl border bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50 hover:enabled:opacity-90"
+          className="w-full rounded-full bg-[color:rgb(163,50,31)] px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(163,50,31,0.24)] disabled:opacity-50 hover:enabled:-translate-y-0.5 hover:enabled:bg-[color:rgb(145,43,25)]"
         >
           Registrer
         </button>
 
-        {error && <div className="rounded-xl border bg-muted px-3 py-2 text-sm">{error}</div>}
-        {message && <div className="rounded-xl border bg-muted px-3 py-2 text-sm">{message}</div>}
+        {error && (
+          <div className="rounded-2xl border border-[color:rgba(163,50,31,0.16)] bg-[rgba(163,50,31,0.08)] px-4 py-3 text-sm text-[color:rgb(101,45,34)]">
+            {error}
+          </div>
+        )}
+        {message && (
+          <div className="rounded-2xl border border-[color:rgba(19,60,67,0.14)] bg-[rgba(19,60,67,0.08)] px-4 py-3 text-sm text-[color:rgb(24,60,56)]">
+            {message}
+          </div>
+        )}
       </form>
     </div>
   );

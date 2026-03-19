@@ -5,7 +5,7 @@ export async function GET() {
   const res = await pool.query(
     `SELECT id, starts_at, ends_at, location, capacity
      FROM sessions
-     WHERE starts_at > NOW()
+     WHERE ends_at > NOW()
      ORDER BY starts_at ASC
      LIMIT 12`
   );

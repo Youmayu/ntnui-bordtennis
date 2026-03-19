@@ -1,7 +1,5 @@
-/* eslint-disable no-console */
-const { Pool } = require("pg");
-
 async function main() {
+  const { Pool } = await import("pg");
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     throw new Error("DATABASE_URL is not set");
