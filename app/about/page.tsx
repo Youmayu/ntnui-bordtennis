@@ -1,6 +1,7 @@
 "use client";
 
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
+import VenueLink from "@/app/components/VenueLink";
 
 type PersonCardProps = {
   role: string;
@@ -40,7 +41,7 @@ function PersonCard({ role, name, email, phone }: PersonCardProps) {
 }
 
 export default function AboutPage() {
-  const { messages } = useSitePreferences();
+  const { locale, messages } = useSitePreferences();
 
   return (
     <div className="space-y-8">
@@ -66,7 +67,15 @@ export default function AboutPage() {
         <h2 className="text-lg font-semibold text-[color:var(--text-strong)]">
           {messages.about.locationTitle}
         </h2>
-        <p className="mt-2 text-[color:var(--text-muted)]">{messages.about.locationValue}</p>
+        <div className="mt-2">
+          <VenueLink
+            locale={locale}
+            className="text-[color:var(--accent)] hover:underline"
+            textClassName="font-medium text-[color:var(--accent)]"
+            showMazeMapBadge
+            badgeClassName="text-[color:var(--text-soft)]"
+          />
+        </div>
       </section>
     </div>
   );

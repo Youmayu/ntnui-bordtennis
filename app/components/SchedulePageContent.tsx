@@ -2,6 +2,7 @@
 
 import { getIntlLocale } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
+import VenueLink from "@/app/components/VenueLink";
 
 type Session = {
   id: number;
@@ -65,7 +66,16 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                         {isActive ? messages.schedule.active : messages.schedule.upcoming}
                       </span>
                     </td>
-                    <td className="py-3 pr-3">{session.location}</td>
+                    <td className="py-3 pr-3">
+                      <VenueLink
+                        locale={locale}
+                        location={session.location}
+                        className="text-[color:var(--accent)] hover:underline"
+                        textClassName="font-medium"
+                        showMazeMapBadge
+                        badgeClassName="text-[color:var(--text-soft)]"
+                      />
+                    </td>
                     <td className="py-3 text-[color:var(--text-soft)]">{session.capacity}</td>
                   </tr>
                 );

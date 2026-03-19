@@ -15,7 +15,7 @@ import {
 
 export const metadata: Metadata = {
   title: "NTNUI Bordtennis",
-  description: "Registrering og info for treninger ved Dragvoll Idrettssenter.",
+  description: "Registrering og info for treninger ved Dragvoll Idrettssenter B217.",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

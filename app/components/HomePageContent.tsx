@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { getIntlLocale } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
+import VenueLink from "@/app/components/VenueLink";
 
 type Session = {
   id: number;
@@ -108,7 +109,14 @@ export default function HomePageContent({
                   <span className="text-[color:var(--text-soft)]">
                     {messages.home.locationLabel}:{" "}
                   </span>
-                  <span className="font-medium">{session.location}</span>
+                  <VenueLink
+                    locale={locale}
+                    location={session.location}
+                    className="font-medium text-[color:var(--accent)] hover:underline"
+                    textClassName="font-medium"
+                    showMazeMapBadge
+                    badgeClassName="text-[color:var(--text-soft)]"
+                  />
                 </div>
               </div>
 
@@ -149,7 +157,13 @@ export default function HomePageContent({
           </h2>
           <div className="app-surface space-y-3 p-6 text-sm">
             <div className="text-[color:var(--text-soft)]">{messages.home.locationLabel}</div>
-            <div className="font-medium">Dragvoll Idrettssenter 2. etasje gymsal</div>
+            <VenueLink
+              locale={locale}
+              className="font-medium text-[color:var(--accent)] hover:underline"
+              textClassName="font-medium"
+              showMazeMapBadge
+              badgeClassName="text-[color:var(--text-soft)]"
+            />
             <div className="pt-2 text-[color:var(--text-soft)]">{messages.home.levelLabel}</div>
             <div>{messages.home.levelBody}</div>
             <div className="pt-2 text-[color:var(--text-soft)]">{messages.home.bringLabel}</div>

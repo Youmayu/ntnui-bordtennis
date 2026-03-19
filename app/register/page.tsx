@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import TurnstileWidget from "@/app/components/TurnstileWidget";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
+import VenueLink from "@/app/components/VenueLink";
 import {
   LEVEL_OPTIONS,
+  formatVenueLabel,
   getIntlLocale,
   type Locale,
 } from "@/lib/site-content";
@@ -33,6 +35,7 @@ export default function RegisterPage() {
   const { locale, messages } = useSitePreferences();
   const intlLocale = getIntlLocale(locale);
   const monthOptions = useMemo(() => getMonthOptions(locale), [locale]);
+  const selectedSession = sessions.find((session) => session.id === sessionId) ?? null;
 
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
@@ -158,10 +161,20 @@ export default function RegisterPage() {
                   minute: "2-digit",
                 }).format(new Date(session.starts_at))}
                 {" – "}
-                {session.location}
+                {formatVenueLabel(session.location, locale)}
               </option>
             ))}
           </select>
+          {selectedSession && (
+            <VenueLink
+              locale={locale}
+              location={selectedSession.location}
+              className="text-xs text-[color:var(--accent)] hover:underline"
+              textClassName="font-medium"
+              showMazeMapBadge
+              badgeClassName="text-[color:var(--text-soft)]"
+            />
+          )}
         </div>
 
         <div className="space-y-2">

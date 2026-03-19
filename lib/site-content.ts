@@ -26,6 +26,36 @@ const LEVEL_KEY_BY_VALUE: Record<string, LevelKey> = {
   Erfaren: "experienced",
 };
 
+export const MAZEMAP_URL =
+  "https://use.mazemap.com/?utm_medium=qr-code-mobile#v=1&config=ntnu&campusid=18&zlevel=2&center=10.475060,63.406574&zoom=17.8&sharepoitype=identifier&sharepoi=850-B217";
+
+const VENUE_LABELS: Record<Locale, string> = {
+  no: "Dragvoll Idrettssenter B217",
+  en: "Dragvoll Sports Centre B217",
+  zh: "Dragvoll 体育中心 B217",
+  fr: "Centre sportif Dragvoll B217",
+  es: "Centro deportivo Dragvoll B217",
+};
+
+export const DEFAULT_SESSION_LOCATION = VENUE_LABELS.no;
+
+const DEFAULT_LOCATION_ALIASES = new Set(
+  [
+    ...Object.values(VENUE_LABELS),
+    "Dragvoll Idrettssenter",
+    "Dragvoll Idrettssenter 2. etasje gymsal",
+    "Dragvoll Sports Centre",
+    "NTNU Dragvoll Idrettssenter",
+    "NTNU Dragvoll Sports Centre",
+    "Dragvoll 体育中心",
+    "NTNU Dragvoll 体育中心",
+    "Centre sportif Dragvoll",
+    "Centre sportif NTNU Dragvoll",
+    "Centro deportivo Dragvoll",
+    "Centro deportivo NTNU Dragvoll",
+  ].map((value) => value.trim().toLowerCase())
+);
+
 type Messages = {
   shell: {
     brand: string;
@@ -155,7 +185,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
         unregister: "Avmelding",
         about: "Om oss",
       },
-      footerLocation: "NTNU Dragvoll Idrettssenter",
+      footerLocation: "Dragvoll Idrettssenter B217",
       footerCopyright: (year) => `© ${year} NTNUI Bordtennis`,
     },
     announcements: {
@@ -165,7 +195,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     home: {
       emptyTitle: "NTNUI Bordtennis",
       emptyBody: "Ingen kommende økter lagt inn enda.",
-      heroTag: "Dragvoll Idrettssenter",
+      heroTag: "Dragvoll Idrettssenter B217",
       heroTitle: "Påmelding til bordtennistrening",
       heroBody: "Se neste økt og meld deg på.",
       ctaRegister: "Påmelding",
@@ -243,7 +273,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Om oss",
       title: "Kontakt og praktisk info",
-      body: "NTNUI Bordtennis arrangerer treninger ved Dragvoll Idrettssenter. Her finner du kontaktinfo og hvem som har ansvar for drift, økonomi og planlegging.",
+      body: "NTNUI Bordtennis arrangerer treninger ved Dragvoll Idrettssenter B217. Her finner du kontaktinfo og hvem som har ansvar for drift, økonomi og planlegging.",
       roles: {
         leader: "Leder",
         deputy: "Nestleder",
@@ -252,7 +282,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       email: "E-post",
       phone: "Telefon",
       locationTitle: "Sted",
-      locationValue: "Dragvoll Idrettssenter",
+      locationValue: "Dragvoll Idrettssenter B217",
     },
     levels: {
       beginner: "Nybegynner",
@@ -273,7 +303,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
         unregister: "Unregister",
         about: "About",
       },
-      footerLocation: "NTNU Dragvoll Sports Centre",
+      footerLocation: "Dragvoll Sports Centre B217",
       footerCopyright: (year) => `© ${year} NTNUI Table Tennis`,
     },
     announcements: {
@@ -283,7 +313,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     home: {
       emptyTitle: "NTNUI Table Tennis",
       emptyBody: "No upcoming sessions have been added yet.",
-      heroTag: "Dragvoll Sports Centre",
+      heroTag: "Dragvoll Sports Centre B217",
       heroTitle: "Table tennis practice registration",
       heroBody: "See the next session and sign up.",
       ctaRegister: "Register",
@@ -361,7 +391,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "About",
       title: "Contact and practical info",
-      body: "NTNUI Table Tennis runs practice sessions at the Dragvoll Sports Centre. Here you can find contact details and who is responsible for operations, finances, and planning.",
+      body: "NTNUI Table Tennis runs practice sessions at Dragvoll Sports Centre B217. Here you can find contact details and who is responsible for operations, finances, and planning.",
       roles: {
         leader: "Chair",
         deputy: "Vice chair",
@@ -370,7 +400,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       email: "Email",
       phone: "Phone",
       locationTitle: "Location",
-      locationValue: "Dragvoll Sports Centre",
+      locationValue: "Dragvoll Sports Centre B217",
     },
     levels: {
       beginner: "Beginner",
@@ -391,7 +421,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
         unregister: "取消报名",
         about: "关于我们",
       },
-      footerLocation: "NTNU Dragvoll 体育中心",
+      footerLocation: "Dragvoll 体育中心 B217",
       footerCopyright: (year) => `© ${year} NTNUI 乒乓球`,
     },
     announcements: {
@@ -401,7 +431,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     home: {
       emptyTitle: "NTNUI 乒乓球",
       emptyBody: "目前还没有即将开始的训练。",
-      heroTag: "Dragvoll 体育中心",
+      heroTag: "Dragvoll 体育中心 B217",
       heroTitle: "乒乓球训练报名",
       heroBody: "查看下一场训练并报名。",
       ctaRegister: "报名",
@@ -479,7 +509,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "关于我们",
       title: "联系方式和实用信息",
-      body: "NTNUI 乒乓球在 Dragvoll 体育中心组织训练。这里可以找到联系方式以及负责运营、财务和规划的人员。",
+      body: "NTNUI 乒乓球在 Dragvoll 体育中心 B217 组织训练。这里可以找到联系方式以及负责运营、财务和规划的人员。",
       roles: {
         leader: "负责人",
         deputy: "副负责人",
@@ -488,7 +518,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       email: "电子邮箱",
       phone: "电话",
       locationTitle: "地点",
-      locationValue: "Dragvoll 体育中心",
+      locationValue: "Dragvoll 体育中心 B217",
     },
     levels: {
       beginner: "初学者",
@@ -509,7 +539,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
         unregister: "Désinscription",
         about: "À propos",
       },
-      footerLocation: "Centre sportif NTNU Dragvoll",
+      footerLocation: "Centre sportif Dragvoll B217",
       footerCopyright: (year) => `© ${year} NTNUI Tennis de table`,
     },
     announcements: {
@@ -519,7 +549,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     home: {
       emptyTitle: "NTNUI Tennis de table",
       emptyBody: "Aucune séance à venir n’a encore été ajoutée.",
-      heroTag: "Centre sportif Dragvoll",
+      heroTag: "Centre sportif Dragvoll B217",
       heroTitle: "Inscription à l’entraînement de tennis de table",
       heroBody: "Consultez la prochaine séance et inscrivez-vous.",
       ctaRegister: "Inscription",
@@ -597,7 +627,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "À propos",
       title: "Contact et informations pratiques",
-      body: "NTNUI Tennis de table organise des entraînements au centre sportif de Dragvoll. Vous trouverez ici les coordonnées ainsi que les responsables du fonctionnement, des finances et de la planification.",
+      body: "NTNUI Tennis de table organise des entraînements au centre sportif Dragvoll B217. Vous trouverez ici les coordonnées ainsi que les responsables du fonctionnement, des finances et de la planification.",
       roles: {
         leader: "Présidente",
         deputy: "Vice-présidente",
@@ -606,7 +636,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       email: "E-mail",
       phone: "Téléphone",
       locationTitle: "Lieu",
-      locationValue: "Centre sportif Dragvoll",
+      locationValue: "Centre sportif Dragvoll B217",
     },
     levels: {
       beginner: "Débutant",
@@ -627,7 +657,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
         unregister: "Baja",
         about: "Sobre nosotros",
       },
-      footerLocation: "Centro deportivo NTNU Dragvoll",
+      footerLocation: "Centro deportivo Dragvoll B217",
       footerCopyright: (year) => `© ${year} NTNUI Tenis de mesa`,
     },
     announcements: {
@@ -637,7 +667,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     home: {
       emptyTitle: "NTNUI Tenis de mesa",
       emptyBody: "Todavía no se han añadido entrenamientos próximos.",
-      heroTag: "Centro deportivo Dragvoll",
+      heroTag: "Centro deportivo Dragvoll B217",
       heroTitle: "Inscripción al entrenamiento de tenis de mesa",
       heroBody: "Consulta el próximo entrenamiento y apúntate.",
       ctaRegister: "Inscripción",
@@ -715,7 +745,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Sobre nosotros",
       title: "Contacto e información práctica",
-      body: "NTNUI Tenis de mesa organiza entrenamientos en el centro deportivo de Dragvoll. Aquí puedes encontrar la información de contacto y quién se encarga de las operaciones, las finanzas y la planificación.",
+      body: "NTNUI Tenis de mesa organiza entrenamientos en el centro deportivo Dragvoll B217. Aquí puedes encontrar la información de contacto y quién se encarga de las operaciones, las finanzas y la planificación.",
       roles: {
         leader: "Presidenta",
         deputy: "Vicepresidenta",
@@ -724,7 +754,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       email: "Correo",
       phone: "Teléfono",
       locationTitle: "Lugar",
-      locationValue: "Centro deportivo Dragvoll",
+      locationValue: "Centro deportivo Dragvoll B217",
     },
     levels: {
       beginner: "Principiante",
@@ -751,6 +781,26 @@ export function getIntlLocale(locale: Locale) {
 
 export function getMessages(locale: Locale) {
   return SITE_MESSAGES[locale];
+}
+
+export function getVenueLabel(locale: Locale) {
+  return VENUE_LABELS[locale];
+}
+
+export function isDefaultVenueLocation(location: string | null | undefined) {
+  if (!location) {
+    return false;
+  }
+
+  return DEFAULT_LOCATION_ALIASES.has(location.trim().toLowerCase());
+}
+
+export function formatVenueLabel(location: string | null | undefined, locale: Locale) {
+  if (!location) {
+    return getVenueLabel(locale);
+  }
+
+  return isDefaultVenueLocation(location) ? getVenueLabel(locale) : location;
 }
 
 export function getLevelKey(levelValue: string): LevelKey {

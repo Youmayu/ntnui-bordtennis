@@ -1,4 +1,5 @@
 import { pool } from "@/lib/db";
+import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 import AdminClient from "./AdminClient";
 
 type SessionRow = {
@@ -346,7 +347,7 @@ export default async function AdminPage() {
               <label className="text-xs text-muted-foreground">Sted</label>
               <input
                 name="location"
-                defaultValue="Dragvoll Idrettssenter 2. etasje gymsal"
+                defaultValue={DEFAULT_SESSION_LOCATION}
                 className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
                 required
               />
