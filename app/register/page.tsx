@@ -2,6 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import TurnstileWidget from "@/app/components/TurnstileWidget";
+import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
+import {
+  LEVEL_OPTIONS,
+  getIntlLocale,
+  type Locale,
+} from "@/lib/site-content";
 import { getDaysInMonth } from "@/lib/birth-month-day";
 
 type Session = {
@@ -12,25 +18,24 @@ type Session = {
   capacity: number;
 };
 
-const MONTH_OPTIONS = [
-  { value: 1, label: "Januar" },
-  { value: 2, label: "Februar" },
-  { value: 3, label: "Mars" },
-  { value: 4, label: "April" },
-  { value: 5, label: "Mai" },
-  { value: 6, label: "Juni" },
-  { value: 7, label: "Juli" },
-  { value: 8, label: "August" },
-  { value: 9, label: "September" },
-  { value: 10, label: "Oktober" },
-  { value: 11, label: "November" },
-  { value: 12, label: "Desember" },
-];
+function getMonthOptions(locale: Locale) {
+  const intlLocale = getIntlLocale(locale);
+
+  return Array.from({ length: 12 }, (_, index) => ({
+    value: index + 1,
+    label: new Intl.DateTimeFormat(intlLocale, { month: "long" }).format(
+      new Date(Date.UTC(2024, index, 1))
+    ),
+  }));
+}
 
 export default function RegisterPage() {
+  const { locale, messages } = useSitePreferences();
+  const intlLocale = getIntlLocale(locale);
+  const monthOptions = useMemo(() => getMonthOptions(locale), [locale]);
+
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
-
   const [name, setName] = useState("");
   const [level, setLevel] = useState("Nybegynner");
   const [birthMonth, setBirthMonth] = useState<number | null>(null);
@@ -38,6 +43,7 @@ export default function RegisterPage() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   const dayOptions = useMemo(
     () =>
       birthMonth
@@ -69,15 +75,15 @@ export default function RegisterPage() {
     const submittedToken = String(fd.get("cf-turnstile-response") ?? "");
 
     if (!submittedToken) {
-      setError("Fullfør CAPTCHA før du sender inn.");
+      setError(messages.register.errors.captcha);
       return;
     }
     if (!sessionId) {
-      setError("Velg en økt.");
+      setError(messages.register.errors.session);
       return;
     }
     if (!birthMonth || !birthDay) {
-      setError("Velg fødselsmåned og fødselsdag.");
+      setError(messages.register.errors.birthDate);
       return;
     }
 
@@ -99,11 +105,11 @@ export default function RegisterPage() {
     setTurnstileToken("");
 
     if (!res.ok) {
-      setError(data?.error ?? "Noe gikk galt.");
+      setError(data?.error ?? messages.register.errors.generic);
       return;
     }
 
-    setMessage("Du er registrert.");
+    setMessage(messages.register.success);
     setName("");
     setLevel("Nybegynner");
     setBirthMonth(null);
@@ -126,78 +132,74 @@ export default function RegisterPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="space-y-3">
-        <span className="inline-flex rounded-full border border-[color:rgba(163,50,31,0.16)] bg-[rgba(163,50,31,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[color:rgb(139,45,29)]">
-          Påmelding
-        </span>
-        <h1 className="text-3xl font-semibold tracking-tight text-[color:rgb(37,26,20)]">
-          Påmelding til trening
+        <span className="app-badge app-badge-accent">{messages.register.badge}</span>
+        <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
+          {messages.register.title}
         </h1>
-        <p className="text-[color:rgb(94,77,70)]">
-          Velg økt, skriv navn og oppgi fødselsmåned og fødselsdag for eventuell avmelding senere.
-        </p>
+        <p className="text-[color:var(--text-muted)]">{messages.register.body}</p>
       </div>
 
-      <form
-        onSubmit={onSubmit}
-        className="space-y-5 rounded-[1.75rem] border border-white/70 bg-white/90 p-6 shadow-[0_18px_50px_rgba(86,39,26,0.10)]"
-      >
+      <form onSubmit={onSubmit} className="app-surface space-y-5 p-6">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Økt</label>
+          <label className="text-sm font-medium">{messages.register.sessionLabel}</label>
           <select
             value={sessionId ?? ""}
             onChange={(e) => setSessionId(Number(e.target.value))}
-            className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+            className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
           >
-            {sessions.map((s) => (
-              <option key={s.id} value={s.id}>
-                {new Date(s.starts_at).toLocaleString("no-NO", {
+            {sessions.map((session) => (
+              <option key={session.id} value={session.id}>
+                {new Intl.DateTimeFormat(intlLocale, {
                   timeZone: "Europe/Oslo",
                   weekday: "short",
                   day: "2-digit",
                   month: "short",
                   hour: "2-digit",
                   minute: "2-digit",
-                })}{" "}
-                – {s.location}
+                }).format(new Date(session.starts_at))}
+                {" – "}
+                {session.location}
               </option>
             ))}
           </select>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Navn</label>
+          <label className="text-sm font-medium">{messages.register.nameLabel}</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Skriv navnet ditt"
-            className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+            placeholder={messages.register.namePlaceholder}
+            className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
           />
-          <div className="text-xs text-muted-foreground">Minimum 2 tegn.</div>
+          <div className="text-xs text-[color:var(--text-soft)]">{messages.register.nameHelp}</div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Nivå</label>
+          <label className="text-sm font-medium">{messages.register.levelLabel}</label>
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+            className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
           >
-            <option>Nybegynner</option>
-            <option>Viderekommen</option>
-            <option>Erfaren</option>
+            {LEVEL_OPTIONS.map((option) => (
+              <option key={option.key} value={option.value}>
+                {messages.levels[option.key]}
+              </option>
+            ))}
           </select>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Fødselsmåned</label>
+            <label className="text-sm font-medium">{messages.register.birthMonthLabel}</label>
             <select
               value={birthMonth ?? ""}
               onChange={(e) => handleBirthMonthChange(e.target.value ? Number(e.target.value) : null)}
-              className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+              className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
             >
-              <option value="">Velg måned</option>
-              {MONTH_OPTIONS.map((month) => (
+              <option value="">{messages.register.chooseMonth}</option>
+              {monthOptions.map((month) => (
                 <option key={month.value} value={month.value}>
                   {month.label}
                 </option>
@@ -206,14 +208,14 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Fødselsdag</label>
+            <label className="text-sm font-medium">{messages.register.birthDayLabel}</label>
             <select
               value={birthDay ?? ""}
               onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
               disabled={!birthMonth}
-              className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none disabled:opacity-60"
+              className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none disabled:opacity-60"
             >
-              <option value="">Velg dag</option>
+              <option value="">{messages.register.chooseDay}</option>
               {dayOptions.map((day) => (
                 <option key={day} value={day}>
                   {day}
@@ -229,24 +231,12 @@ export default function RegisterPage() {
           onTokenChange={setTurnstileToken}
         />
 
-        <button
-          type="submit"
-          disabled={disabled}
-          className="w-full rounded-full bg-[color:rgb(163,50,31)] px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(163,50,31,0.24)] disabled:opacity-50 hover:enabled:-translate-y-0.5 hover:enabled:bg-[color:rgb(145,43,25)]"
-        >
-          Registrer
+        <button type="submit" disabled={disabled} className="app-button-primary w-full justify-center">
+          {messages.register.submit}
         </button>
 
-        {error && (
-          <div className="rounded-2xl border border-[color:rgba(163,50,31,0.16)] bg-[rgba(163,50,31,0.08)] px-4 py-3 text-sm text-[color:rgb(101,45,34)]">
-            {error}
-          </div>
-        )}
-        {message && (
-          <div className="rounded-2xl border border-[color:rgba(19,60,67,0.14)] bg-[rgba(19,60,67,0.08)] px-4 py-3 text-sm text-[color:rgb(24,60,56)]">
-            {message}
-          </div>
-        )}
+        {error && <div className="app-alert-error">{error}</div>}
+        {message && <div className="app-alert-success">{message}</div>}
       </form>
     </div>
   );

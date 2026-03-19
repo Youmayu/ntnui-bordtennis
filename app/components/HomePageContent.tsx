@@ -1,0 +1,162 @@
+"use client";
+
+import Link from "next/link";
+import { getIntlLocale } from "@/lib/site-content";
+import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
+
+type Session = {
+  id: number;
+  starts_at: string;
+  ends_at: string;
+  location: string;
+  capacity: number;
+  current_time: string;
+};
+
+export default function HomePageContent({
+  session,
+  registeredNames,
+}: {
+  session: Session | null;
+  registeredNames: string[];
+}) {
+  const { locale, messages } = useSitePreferences();
+  const intlLocale = getIntlLocale(locale);
+
+  if (!session) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
+          {messages.home.emptyTitle}
+        </h1>
+        <p className="text-[color:var(--text-muted)]">{messages.home.emptyBody}</p>
+        <Link className="app-button-primary inline-flex" href="/schedule">
+          {messages.home.ctaSchedule}
+        </Link>
+      </div>
+    );
+  }
+
+  const now = new Date(session.current_time).getTime();
+  const isActive =
+    new Date(session.starts_at).getTime() <= now &&
+    new Date(session.ends_at).getTime() > now;
+  const spotsLeft = Math.max(0, session.capacity - registeredNames.length);
+
+  const dateFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const timeFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return (
+    <div className="space-y-10">
+      <section className="app-hero overflow-hidden rounded-[2rem] p-8 sm:p-10">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="app-badge app-badge-neutral">{messages.home.heroTag}</span>
+        </div>
+
+        <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
+          {messages.home.heroTitle}
+        </h1>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--text-muted)]">
+          {messages.home.heroBody}
+        </p>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/register" className="app-button-primary inline-flex items-center">
+            {messages.home.ctaRegister}
+          </Link>
+          <Link href="/schedule" className="app-button-secondary inline-flex items-center">
+            {messages.home.ctaSchedule}
+          </Link>
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-3 lg:col-span-2">
+          <h2 className="text-xl font-semibold text-[color:var(--text-strong)]">
+            {isActive ? messages.home.currentTitle : messages.home.nextTitle}
+          </h2>
+
+          <div className="app-surface p-6 sm:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="text-sm text-[color:var(--text-soft)]">
+                  {dateFormatter.format(new Date(session.starts_at))}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <span className={isActive ? "app-badge app-badge-accent" : "app-badge app-badge-neutral"}>
+                    {isActive ? messages.home.currentStatus : messages.home.nextStatus}
+                  </span>
+                </div>
+                <div className="mt-4 text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
+                  {timeFormatter.format(new Date(session.starts_at))}
+                  {" – "}
+                  {timeFormatter.format(new Date(session.ends_at))}
+                </div>
+                <div className="mt-3 text-sm">
+                  <span className="text-[color:var(--text-soft)]">
+                    {messages.home.locationLabel}:{" "}
+                  </span>
+                  <span className="font-medium">{session.location}</span>
+                </div>
+              </div>
+
+              <div className="app-stat-card min-w-[180px] px-5 py-4 text-sm">
+                <div className="font-semibold text-[color:var(--success-ink)]">
+                  {messages.home.spotsLeft(spotsLeft)}
+                </div>
+                <div className="mt-1 text-[color:var(--success-soft-text)]">
+                  {messages.home.registeredCount(registeredNames.length, session.capacity)}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              {registeredNames.slice(0, 20).map((name) => (
+                <span key={name} className="app-chip">
+                  {name}
+                </span>
+              ))}
+              {registeredNames.length === 0 && (
+                <span className="text-sm text-[color:var(--text-soft)]">
+                  {messages.home.nobodyRegistered}
+                </span>
+              )}
+            </div>
+
+            <div className="mt-8">
+              <Link href="/register" className="app-button-success inline-flex">
+                {messages.home.ctaRegister}
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <aside className="space-y-3">
+          <h2 className="text-xl font-semibold text-[color:var(--text-strong)]">
+            {messages.home.infoTitle}
+          </h2>
+          <div className="app-surface space-y-3 p-6 text-sm">
+            <div className="text-[color:var(--text-soft)]">{messages.home.locationLabel}</div>
+            <div className="font-medium">Dragvoll Idrettssenter 2. etasje gymsal</div>
+            <div className="pt-2 text-[color:var(--text-soft)]">{messages.home.levelLabel}</div>
+            <div>{messages.home.levelBody}</div>
+            <div className="pt-2 text-[color:var(--text-soft)]">{messages.home.bringLabel}</div>
+            <div>{messages.home.bringBody}</div>
+          </div>
+        </aside>
+      </section>
+    </div>
+  );
+}
