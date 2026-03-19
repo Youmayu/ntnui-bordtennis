@@ -17,6 +17,15 @@ type RegRow = {
   created_at: string;
 };
 
+type AnnouncementRow = {
+  id: number;
+  title: string;
+  body: string;
+  expires_at: string | null;
+  created_at: string;
+  is_active: boolean;
+};
+
 function fmtOslo(dt: Date) {
   return new Intl.DateTimeFormat("no-NO", {
     timeZone: "Europe/Oslo",
@@ -28,7 +37,6 @@ function fmtOslo(dt: Date) {
   }).format(dt);
 }
 
-// For <input type="datetime-local"> we need "YYYY-MM-DDTHH:MM"
 function toDatetimeLocalOslo(value: string) {
   const d = new Date(value);
   const parts = new Intl.DateTimeFormat("sv-SE", {
@@ -45,11 +53,7 @@ function toDatetimeLocalOslo(value: string) {
   return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
 
-// If user enters Oslo local time (YYYY-MM-DDTHH:MM), store as timestamptz.
 function osloLocalToTimestamptzString(dtLocal: string) {
-  // We store with explicit +01:00 (winter) / +02:00 (summer) automatically is tricky without a tz lib.
-  // Pragmatic approach: send as ISO "YYYY-MM-DDTHH:MM" and let Postgres interpret as local timestamp
-  // by appending " Europe/Oslo" in SQL.
   return dtLocal;
 }
 
@@ -70,10 +74,20 @@ export default async function AdminPage() {
      LIMIT 300`
   );
 
+  const announcementsRes = await pool
+    .query(
+      `SELECT id, title, body, expires_at, created_at,
+              (expires_at IS NULL OR expires_at > NOW()) AS is_active
+       FROM announcements
+       ORDER BY created_at DESC
+       LIMIT 30`
+    )
+    .catch(() => ({ rows: [] }));
+
   const sessions = sessionsRes.rows as SessionRow[];
   const regs = regsRes.rows as RegRow[];
+  const announcements = announcementsRes.rows as AnnouncementRow[];
 
-  // ----- Registration actions -----
   async function deleteRegistration(formData: FormData) {
     "use server";
     const id = Number(formData.get("id"));
@@ -94,20 +108,47 @@ export default async function AdminPage() {
     );
   }
 
-  // ----- Session actions -----
+  async function addAnnouncement(formData: FormData) {
+    "use server";
+    const title = String(formData.get("title") ?? "").trim();
+    const body = String(formData.get("body") ?? "").trim();
+    const expiresAtLocal = String(formData.get("expires_at") ?? "").trim();
+
+    if (title.length < 3 || body.length < 3) return;
+
+    await pool.query(
+      `INSERT INTO announcements (title, body, expires_at)
+       VALUES (
+         $1,
+         $2,
+         CASE
+           WHEN $3 = '' THEN NULL
+           ELSE ($3::timestamp AT TIME ZONE 'Europe/Oslo')
+         END
+       )`,
+      [title, body, osloLocalToTimestamptzString(expiresAtLocal)]
+    );
+  }
+
+  async function deleteAnnouncement(formData: FormData) {
+    "use server";
+    const id = Number(formData.get("id"));
+    if (!Number.isFinite(id)) return;
+    await pool.query(`DELETE FROM announcements WHERE id = $1`, [id]);
+  }
+
   async function updateSession(formData: FormData) {
     "use server";
     const id = Number(formData.get("id"));
-    const starts_at_local = String(formData.get("starts_at") ?? "");
-    const ends_at_local = String(formData.get("ends_at") ?? "");
+    const startsAtLocal = String(formData.get("starts_at") ?? "");
+    const endsAtLocal = String(formData.get("ends_at") ?? "");
     const location = String(formData.get("location") ?? "").trim();
     const capacity = Number(formData.get("capacity"));
 
     if (!Number.isFinite(id)) return;
-    if (!starts_at_local || !ends_at_local || !location) return;
+    if (!startsAtLocal || !endsAtLocal || !location) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
 
-    // Interpret the datetime-local string as Europe/Oslo time in Postgres:
     await pool.query(
       `UPDATE sessions
        SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
@@ -117,8 +158,8 @@ export default async function AdminPage() {
        WHERE id = $1`,
       [
         id,
-        osloLocalToTimestamptzString(starts_at_local),
-        osloLocalToTimestamptzString(ends_at_local),
+        osloLocalToTimestamptzString(startsAtLocal),
+        osloLocalToTimestamptzString(endsAtLocal),
         location,
         capacity,
       ]
@@ -127,12 +168,12 @@ export default async function AdminPage() {
 
   async function addSession(formData: FormData) {
     "use server";
-    const starts_at_local = String(formData.get("starts_at") ?? "");
-    const ends_at_local = String(formData.get("ends_at") ?? "");
+    const startsAtLocal = String(formData.get("starts_at") ?? "");
+    const endsAtLocal = String(formData.get("ends_at") ?? "");
     const location = String(formData.get("location") ?? "").trim();
     const capacity = Number(formData.get("capacity") ?? 20);
 
-    if (!starts_at_local || !ends_at_local || !location) return;
+    if (!startsAtLocal || !endsAtLocal || !location) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
 
     await pool.query(
@@ -144,8 +185,8 @@ export default async function AdminPage() {
          $4
        )`,
       [
-        osloLocalToTimestamptzString(starts_at_local),
-        osloLocalToTimestamptzString(ends_at_local),
+        osloLocalToTimestamptzString(startsAtLocal),
+        osloLocalToTimestamptzString(endsAtLocal),
         location,
         capacity,
       ]
@@ -163,8 +204,116 @@ export default async function AdminPage() {
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">Admin</h1>
 
-      {/* ---- Sessions ---- */}
-      <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
+      <section className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm">
+        <div>
+          <h2 className="text-lg font-semibold">Beskjeder</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Vis viktige meldinger tydelig på hele nettstedet. De vises automatisk på alle sider.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-background p-4">
+          <div className="mb-3 text-sm font-medium">Legg til ny beskjed</div>
+          <form action={addAnnouncement} className="grid gap-3">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">Tittel</label>
+                <input
+                  name="title"
+                  className="rounded-lg border bg-background px-3 py-2 text-sm"
+                  placeholder="F.eks. Trening 24. april er kansellert"
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">Vis til (valgfritt)</label>
+                <input
+                  name="expires_at"
+                  type="datetime-local"
+                  className="rounded-lg border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Melding</label>
+              <textarea
+                name="body"
+                className="min-h-[96px] rounded-lg border bg-background px-3 py-2 text-sm"
+                placeholder="F.eks. Hallen er stengt grunnet arrangement."
+                required
+              />
+            </div>
+
+            <div>
+              <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
+                Publiser beskjed
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-left text-muted-foreground">
+              <tr className="border-b">
+                <th className="py-2 pr-3">Status</th>
+                <th className="py-2 pr-3">Tittel</th>
+                <th className="py-2 pr-3">Melding</th>
+                <th className="py-2 pr-3">Vis til</th>
+                <th className="py-2 pr-3">Opprettet</th>
+                <th className="py-2">Slett</th>
+              </tr>
+            </thead>
+            <tbody>
+              {announcements.map((announcement) => (
+                <tr key={announcement.id} className="align-top border-b last:border-0">
+                  <td className="py-3 pr-3">
+                    {announcement.is_active ? (
+                      <span className="rounded-full border border-[color:rgba(19,60,67,0.14)] bg-[rgba(19,60,67,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:rgb(24,60,56)]">
+                        Aktiv
+                      </span>
+                    ) : (
+                      <span className="rounded-full border border-[color:rgba(113,91,83,0.16)] bg-[rgba(113,91,83,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:rgb(113,91,83)]">
+                        Utløpt
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 pr-3 font-medium">{announcement.title}</td>
+                  <td className="py-3 pr-3 whitespace-pre-line text-muted-foreground">
+                    {announcement.body}
+                  </td>
+                  <td className="py-3 pr-3 whitespace-nowrap text-muted-foreground">
+                    {announcement.expires_at ? fmtOslo(new Date(announcement.expires_at)) : "Manuelt"}
+                  </td>
+                  <td className="py-3 pr-3 whitespace-nowrap text-muted-foreground">
+                    {fmtOslo(new Date(announcement.created_at))}
+                  </td>
+                  <td className="py-3">
+                    <form action={deleteAnnouncement}>
+                      <input type="hidden" name="id" value={announcement.id} />
+                      <button className="rounded-lg border px-3 py-1 hover:opacity-90">
+                        Slett
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+
+              {announcements.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-6 text-muted-foreground">
+                    Ingen beskjeder enda.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm">
         <div>
           <h2 className="text-lg font-semibold">Økter</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -172,9 +321,8 @@ export default async function AdminPage() {
           </p>
         </div>
 
-        {/* Add new session */}
         <div className="rounded-2xl border bg-background p-4">
-          <div className="text-sm font-medium mb-3">Legg til ny økt</div>
+          <div className="mb-3 text-sm font-medium">Legg til ny økt</div>
           <form action={addSession} className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Start (Oslo)</label>
@@ -222,7 +370,6 @@ export default async function AdminPage() {
           </form>
         </div>
 
-        {/* Existing sessions editable */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-muted-foreground">
@@ -237,29 +384,33 @@ export default async function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {sessions.map((s) => (
-                <tr key={s.id} className="border-b last:border-0 align-top">
-                  <td className="py-3 pr-3">{s.id}</td>
+              {sessions.map((session) => (
+                <tr key={session.id} className="align-top border-b last:border-0">
+                  <td className="py-3 pr-3">{session.id}</td>
 
                   <td className="py-3 pr-3">
-                    <div className="text-xs text-muted-foreground mb-1">{fmtOslo(new Date(s.starts_at))}</div>
+                    <div className="mb-1 text-xs text-muted-foreground">
+                      {fmtOslo(new Date(session.starts_at))}
+                    </div>
                     <input
-                      form={`session-${s.id}`}
+                      form={`session-${session.id}`}
                       name="starts_at"
                       type="datetime-local"
-                      defaultValue={toDatetimeLocalOslo(s.starts_at)}
+                      defaultValue={toDatetimeLocalOslo(session.starts_at)}
                       className="rounded-lg border bg-background px-2 py-1 text-sm"
                       required
                     />
                   </td>
 
                   <td className="py-3 pr-3">
-                    <div className="text-xs text-muted-foreground mb-1">{fmtOslo(new Date(s.ends_at))}</div>
+                    <div className="mb-1 text-xs text-muted-foreground">
+                      {fmtOslo(new Date(session.ends_at))}
+                    </div>
                     <input
-                      form={`session-${s.id}`}
+                      form={`session-${session.id}`}
                       name="ends_at"
                       type="datetime-local"
-                      defaultValue={toDatetimeLocalOslo(s.ends_at)}
+                      defaultValue={toDatetimeLocalOslo(session.ends_at)}
                       className="rounded-lg border bg-background px-2 py-1 text-sm"
                       required
                     />
@@ -267,9 +418,9 @@ export default async function AdminPage() {
 
                   <td className="py-3 pr-3">
                     <input
-                      form={`session-${s.id}`}
+                      form={`session-${session.id}`}
                       name="location"
-                      defaultValue={s.location}
+                      defaultValue={session.location}
                       className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
                       required
                     />
@@ -277,20 +428,20 @@ export default async function AdminPage() {
 
                   <td className="py-3 pr-3">
                     <input
-                      form={`session-${s.id}`}
+                      form={`session-${session.id}`}
                       name="capacity"
                       type="number"
                       min={1}
                       max={200}
-                      defaultValue={s.capacity}
+                      defaultValue={session.capacity}
                       className="w-24 rounded-lg border bg-background px-2 py-1 text-sm"
                       required
                     />
                   </td>
 
                   <td className="py-3 pr-3">
-                    <form id={`session-${s.id}`} action={updateSession} className="flex gap-2">
-                      <input type="hidden" name="id" value={s.id} />
+                    <form id={`session-${session.id}`} action={updateSession} className="flex gap-2">
+                      <input type="hidden" name="id" value={session.id} />
                       <button className="rounded-lg border bg-primary px-3 py-1 text-primary-foreground hover:opacity-90">
                         Lagre
                       </button>
@@ -299,7 +450,7 @@ export default async function AdminPage() {
 
                   <td className="py-3">
                     <form action={deleteSession}>
-                      <input type="hidden" name="id" value={s.id} />
+                      <input type="hidden" name="id" value={session.id} />
                       <button className="rounded-lg border px-3 py-1 hover:opacity-90">
                         Slett
                       </button>
@@ -320,11 +471,10 @@ export default async function AdminPage() {
         </div>
       </section>
 
-      {/* ---- Registrations ---- */}
       <section className="rounded-2xl border bg-card p-6 shadow-sm">
         <h2 className="text-lg font-semibold">Påmeldinger</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Endre navn/nivå eller slett påmelding. (Session ID viser hvilken økt de tilhører.)
+          Endre navn eller nivå, eller slett en påmelding. Session ID viser hvilken økt de tilhører.
         </p>
 
         <AdminClient

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import AnnouncementBar from "@/app/components/AnnouncementBar";
 
 export const metadata: Metadata = {
   title: "NTNUI Bordtennis",
@@ -47,6 +48,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
           </div>
         </header>
+
+        <AnnouncementBar />
 
         <main className="mx-auto max-w-6xl px-4 py-10 sm:py-12">{children}</main>
 

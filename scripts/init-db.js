@@ -42,6 +42,17 @@ async function main() {
 
     CREATE INDEX IF NOT EXISTS idx_registrations_session_id
       ON registrations(session_id);
+
+    CREATE TABLE IF NOT EXISTS announcements (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      expires_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_announcements_created_at
+      ON announcements(created_at DESC);
       
     CREATE TABLE IF NOT EXISTS unregister_requests (
       id SERIAL PRIMARY KEY,
