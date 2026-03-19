@@ -29,8 +29,16 @@ async function main() {
       session_id INT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       level TEXT NOT NULL,
+      birth_month INT,
+      birth_day INT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    ALTER TABLE registrations
+      ADD COLUMN IF NOT EXISTS birth_month INT;
+
+    ALTER TABLE registrations
+      ADD COLUMN IF NOT EXISTS birth_day INT;
 
     CREATE INDEX IF NOT EXISTS idx_registrations_session_id
       ON registrations(session_id);

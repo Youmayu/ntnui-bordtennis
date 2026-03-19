@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
+import { isValidBirthMonthDay } from "@/lib/birth-month-day";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { sessionId, name, level, turnstileToken, website } = body ?? {};
+    const { sessionId, name, level, birthMonth, birthDay, turnstileToken, website } = body ?? {};
 
     if (!sessionId || typeof sessionId !== "number") {
       return NextResponse.json({ error: "Ugyldig økt." }, { status: 400 });
@@ -14,6 +15,9 @@ export async function POST(req: Request) {
     }
     if (!level || typeof level !== "string") {
       return NextResponse.json({ error: "Ugyldig nivå." }, { status: 400 });
+    }
+    if (!isValidBirthMonthDay(Number(birthMonth), Number(birthDay))) {
+      return NextResponse.json({ error: "Ugyldig måned eller dag." }, { status: 400 });
     }
 
     // Honeypot
@@ -64,9 +68,9 @@ export async function POST(req: Request) {
     }
 
     await pool.query(
-      `INSERT INTO registrations (session_id, name, level)
-       VALUES ($1, $2, $3)`,
-      [sessionId, name.trim(), level.trim()]
+      `INSERT INTO registrations (session_id, name, level, birth_month, birth_day)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [sessionId, name.trim(), level.trim(), Number(birthMonth), Number(birthDay)]
     );
 
     return NextResponse.json({ ok: true }, { status: 200 });

@@ -34,6 +34,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Link>
               <Link
                 className="rounded-full px-4 py-2 font-medium text-[color:rgb(74,58,52)] transition hover:bg-white/70 hover:text-[color:rgb(37,26,20)]"
+                href="/unregister"
+              >
+                Avmelding
+              </Link>
+              <Link
+                className="rounded-full px-4 py-2 font-medium text-[color:rgb(74,58,52)] transition hover:bg-white/70 hover:text-[color:rgb(37,26,20)]"
                 href="/about"
               >
                 Om oss

@@ -11,19 +11,61 @@ type Session = {
   capacity: number;
 };
 
-export default function UnregisterRequestPage() {
+type Registration = {
+  id: number;
+  name: string;
+  level: string;
+  created_at: string;
+};
+
+const MONTH_OPTIONS = [
+  { value: 1, label: "Januar" },
+  { value: 2, label: "Februar" },
+  { value: 3, label: "Mars" },
+  { value: 4, label: "April" },
+  { value: 5, label: "Mai" },
+  { value: 6, label: "Juni" },
+  { value: 7, label: "Juli" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "Oktober" },
+  { value: 11, label: "November" },
+  { value: 12, label: "Desember" },
+];
+
+const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => index + 1);
+
+function formatRegistrationLabel(registration: Registration) {
+  const time = new Intl.DateTimeFormat("no-NO", {
+    timeZone: "Europe/Oslo",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(registration.created_at));
+
+  return `${registration.name} – ${registration.level}, meldt på ${time}`;
+}
+
+export default function UnregisterPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [registrationId, setRegistrationId] = useState<number | null>(null);
 
-  const [name, setName] = useState("");
-  const [note, setNote] = useState("");
+  const [birthMonth, setBirthMonth] = useState<number | null>(null);
+  const [birthDay, setBirthDay] = useState<number | null>(null);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const disabled = useMemo(
-    () => name.trim().length < 2 || note.trim().length < 5 || !sessionId || !turnstileToken,
-    [name, note, sessionId, turnstileToken]
+    () =>
+      !sessionId ||
+      !registrationId ||
+      !birthMonth ||
+      !birthDay ||
+      !turnstileToken ||
+      registrations.length === 0,
+    [birthDay, birthMonth, registrationId, registrations.length, sessionId, turnstileToken]
   );
 
   useEffect(() => {
@@ -34,6 +76,31 @@ export default function UnregisterRequestPage() {
       if ((data.sessions ?? []).length > 0) setSessionId(data.sessions[0].id);
     })();
   }, []);
+
+  useEffect(() => {
+    if (!sessionId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      const res = await fetch(`/api/registrations?sessionId=${sessionId}`);
+      const data = await res.json();
+      const nextRegistrations = (data.registrations ?? []) as Registration[];
+
+      if (cancelled) {
+        return;
+      }
+
+      setRegistrations(nextRegistrations);
+      setRegistrationId(nextRegistrations[0]?.id ?? null);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,18 +114,22 @@ export default function UnregisterRequestPage() {
       setError("Fullfør CAPTCHA før du sender inn.");
       return;
     }
-    if (!sessionId) {
-      setError("Velg en økt.");
+    if (!registrationId) {
+      setError("Velg påmeldingen din.");
+      return;
+    }
+    if (!birthMonth || !birthDay) {
+      setError("Velg fødselsmåned og fødselsdag.");
       return;
     }
 
-    const res = await fetch("/api/unregister-request", {
+    const res = await fetch("/api/unregister", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        sessionId,
-        name,
-        message: note,
+        registrationId,
+        birthMonth,
+        birthDay,
         turnstileToken: submittedToken,
         website: "",
       }),
@@ -72,9 +143,22 @@ export default function UnregisterRequestPage() {
       return;
     }
 
-    setMessage("Forespørsel sendt. En admin vil fjerne deg manuelt.");
-    setName("");
-    setNote("");
+    const nextRegistrations = registrations.filter((registration) => registration.id !== registrationId);
+    setRegistrations(nextRegistrations);
+    setRegistrationId(nextRegistrations[0]?.id ?? null);
+    setBirthMonth(null);
+    setBirthDay(null);
+    setMessage("Du er meldt av.");
+  }
+
+  function handleSessionChange(nextSessionId: number | null) {
+    setSessionId(nextSessionId);
+    setRegistrations([]);
+    setRegistrationId(null);
+    setBirthMonth(null);
+    setBirthDay(null);
+    setMessage(null);
+    setError(null);
   }
 
   return (
@@ -84,10 +168,10 @@ export default function UnregisterRequestPage() {
           Avmelding
         </span>
         <h1 className="text-3xl font-semibold tracking-tight text-[color:rgb(37,26,20)]">
-          Send en avmeldingsforespørsel
+          Meld deg av trening
         </h1>
         <p className="text-[color:rgb(94,77,70)]">
-          Send en forespørsel om avmelding. En admin vil fjerne deg manuelt.
+          Velg økt, velg påmeldingen din og oppgi fødselsmåned og fødselsdag.
         </p>
       </div>
 
@@ -99,7 +183,7 @@ export default function UnregisterRequestPage() {
           <label className="text-sm font-medium">Økt</label>
           <select
             value={sessionId ?? ""}
-            onChange={(e) => setSessionId(Number(e.target.value))}
+            onChange={(e) => handleSessionChange(e.target.value ? Number(e.target.value) : null)}
             className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
           >
             {sessions.map((s) => (
@@ -119,25 +203,57 @@ export default function UnregisterRequestPage() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Navn</label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Skriv navnet ditt"
-            className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
-          />
-          <div className="text-xs text-muted-foreground">Minimum 2 tegn.</div>
+          <label className="text-sm font-medium">Hvem er du?</label>
+          <select
+            value={registrationId ?? ""}
+            onChange={(e) => setRegistrationId(e.target.value ? Number(e.target.value) : null)}
+            disabled={registrations.length === 0}
+            className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none disabled:opacity-60"
+          >
+            {registrations.length === 0 ? (
+              <option value="">Ingen påmeldinger for denne økten</option>
+            ) : (
+              registrations.map((registration) => (
+                <option key={registration.id} value={registration.id}>
+                  {formatRegistrationLabel(registration)}
+                </option>
+              ))
+            )}
+          </select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Melding til admin</label>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="F.eks: Jeg er påmeldt som 'Ola Nordmann' men kan ikke komme likevel."
-            className="min-h-[120px] w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
-          />
-          <div className="text-xs text-muted-foreground">Minimum 5 tegn.</div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Fødselsmåned</label>
+            <select
+              value={birthMonth ?? ""}
+              onChange={(e) => setBirthMonth(e.target.value ? Number(e.target.value) : null)}
+              className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+            >
+              <option value="">Velg måned</option>
+              {MONTH_OPTIONS.map((month) => (
+                <option key={month.value} value={month.value}>
+                  {month.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Fødselsdag</label>
+            <select
+              value={birthDay ?? ""}
+              onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
+              className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+            >
+              <option value="">Velg dag</option>
+              {DAY_OPTIONS.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <TurnstileWidget
@@ -151,7 +267,7 @@ export default function UnregisterRequestPage() {
           disabled={disabled}
           className="w-full rounded-full bg-[color:rgb(24,60,56)] px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(24,60,56,0.22)] disabled:opacity-50 hover:enabled:-translate-y-0.5 hover:enabled:bg-[color:rgb(19,52,49)]"
         >
-          Send forespørsel
+          Meld meg av
         </button>
 
         {error && (

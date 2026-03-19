@@ -11,19 +11,38 @@ type Session = {
   capacity: number;
 };
 
+const MONTH_OPTIONS = [
+  { value: 1, label: "Januar" },
+  { value: 2, label: "Februar" },
+  { value: 3, label: "Mars" },
+  { value: 4, label: "April" },
+  { value: 5, label: "Mai" },
+  { value: 6, label: "Juni" },
+  { value: 7, label: "Juli" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "Oktober" },
+  { value: 11, label: "November" },
+  { value: 12, label: "Desember" },
+];
+
+const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => index + 1);
+
 export default function RegisterPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
 
   const [name, setName] = useState("");
   const [level, setLevel] = useState("Nybegynner");
+  const [birthMonth, setBirthMonth] = useState<number | null>(null);
+  const [birthDay, setBirthDay] = useState<number | null>(null);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const disabled = useMemo(
-    () => name.trim().length < 2 || !sessionId || !turnstileToken,
-    [name, sessionId, turnstileToken]
+    () => name.trim().length < 2 || !sessionId || !birthMonth || !birthDay || !turnstileToken,
+    [birthDay, birthMonth, name, sessionId, turnstileToken]
   );
 
   useEffect(() => {
@@ -51,6 +70,10 @@ export default function RegisterPage() {
       setError("Velg en økt.");
       return;
     }
+    if (!birthMonth || !birthDay) {
+      setError("Velg fødselsmåned og fødselsdag.");
+      return;
+    }
 
     const res = await fetch("/api/register", {
       method: "POST",
@@ -59,6 +82,8 @@ export default function RegisterPage() {
         sessionId,
         name,
         level,
+        birthMonth,
+        birthDay,
         turnstileToken: submittedToken,
         website: "",
       }),
@@ -75,6 +100,8 @@ export default function RegisterPage() {
     setMessage("Du er registrert.");
     setName("");
     setLevel("Nybegynner");
+    setBirthMonth(null);
+    setBirthDay(null);
   }
 
   return (
@@ -84,10 +111,10 @@ export default function RegisterPage() {
           Påmelding
         </span>
         <h1 className="text-3xl font-semibold tracking-tight text-[color:rgb(37,26,20)]">
-          Reserver plass på neste økt
+          Påmelding til trening
         </h1>
         <p className="text-[color:rgb(94,77,70)]">
-          Velg økt og registrer deg.
+          Velg økt, skriv navn og oppgi fødselsmåned og fødselsdag for eventuell avmelding senere.
         </p>
       </div>
 
@@ -140,6 +167,40 @@ export default function RegisterPage() {
             <option>Viderekommen</option>
             <option>Erfaren</option>
           </select>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Fødselsmåned</label>
+            <select
+              value={birthMonth ?? ""}
+              onChange={(e) => setBirthMonth(e.target.value ? Number(e.target.value) : null)}
+              className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+            >
+              <option value="">Velg måned</option>
+              {MONTH_OPTIONS.map((month) => (
+                <option key={month.value} value={month.value}>
+                  {month.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Fødselsdag</label>
+            <select
+              value={birthDay ?? ""}
+              onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
+              className="w-full rounded-2xl border bg-[rgba(251,245,239,0.72)] px-4 py-3 text-sm outline-none"
+            >
+              <option value="">Velg dag</option>
+              {DAY_OPTIONS.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <TurnstileWidget
