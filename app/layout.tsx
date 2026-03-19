@@ -48,7 +48,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-sm text-[color:rgb(113,91,83)] sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="font-medium text-[color:rgb(74,58,52)]">NTNU Dragvoll Idrettssenter</div>
-              <div className="mt-1">Trening, påmelding og praktisk info samlet på ett sted.</div>
             </div>
             <div>© {new Date().getFullYear()} NTNUI Bordtennis</div>
           </div>

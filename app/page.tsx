@@ -69,19 +69,16 @@ export default async function HomePage() {
     <div className="space-y-10">
       <section className="overflow-hidden rounded-[2rem] border border-white/60 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(252,240,235,0.92)_45%,rgba(255,230,220,0.9))] p-8 shadow-[0_30px_90px_rgba(86,39,26,0.12)] sm:p-10">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="rounded-full border border-[color:rgba(163,50,31,0.18)] bg-[rgba(163,50,31,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[color:rgb(139,45,29)]">
-            Trening og påmelding
-          </span>
           <span className="rounded-full border border-[color:rgba(19,60,67,0.12)] bg-white/70 px-3 py-1 text-xs font-medium text-[color:rgb(63,78,76)]">
             Dragvoll Idrettssenter
           </span>
         </div>
 
         <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-[color:rgb(37,26,20)] sm:text-5xl">
-          Bordtennisøkter med rask oversikt, tydelig kapasitet og enkel påmelding.
+          Påmelding til bordtennistrening
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-[color:rgb(94,77,70)]">
-          Følg neste økt, se hvem som allerede er påmeldt og meld deg på uten å måtte lete i flere kanaler.
+          Se neste økt og meld deg på.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
@@ -89,7 +86,7 @@ export default async function HomePage() {
             href="/register"
             className="inline-flex items-center rounded-full bg-[color:rgb(163,50,31)] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(163,50,31,0.28)] transition hover:-translate-y-0.5 hover:bg-[color:rgb(145,43,25)]"
           >
-            Meld deg på neste økt
+            Påmelding
           </Link>
           <Link
             href="/schedule"
@@ -168,9 +165,6 @@ export default async function HomePage() {
             <div>Alle nivåer er velkommen, fra nybegynner til erfaren.</div>
             <div className="pt-2 text-[color:rgb(113,91,83)]">Ta med</div>
             <div>Innesko, treningstøy og gjerne egen racket hvis du har.</div>
-            <div className="rounded-[1.25rem] border border-[color:rgba(163,50,31,0.12)] bg-[rgba(163,50,31,0.06)] px-4 py-3 text-[color:rgb(94,77,70)]">
-              Påmeldingslisten blir stående gjennom hele økten og forsvinner først når økten er avsluttet.
-            </div>
           </div>
         </aside>
       </section>
