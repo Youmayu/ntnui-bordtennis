@@ -772,7 +772,7 @@ export function parseLocale(value: string | null | undefined): Locale {
 }
 
 export function parseTheme(value: string | null | undefined): Theme {
-  return value === "dark" ? "dark" : "light";
+  return value === "light" ? "light" : "dark";
 }
 
 export function getIntlLocale(locale: Locale) {
