@@ -1,4 +1,5 @@
 import { pool } from "@/lib/db";
+import { createPageMetadata } from "@/lib/seo";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 import AdminClient from "./AdminClient";
 
@@ -59,6 +60,17 @@ function osloLocalToTimestamptzString(dtLocal: string) {
 }
 
 export const dynamic = "force-dynamic";
+export const metadata = {
+  ...createPageMetadata({
+    title: "Admin",
+    description: "Administrasjonsside for NTNUI Bordtennis.",
+    path: "/admin",
+  }),
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminPage() {
   const sessionsRes = await pool.query(

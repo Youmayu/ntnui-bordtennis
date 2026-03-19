@@ -1,7 +1,15 @@
 import { pool } from "@/lib/db";
 import SchedulePageContent from "@/app/components/SchedulePageContent";
+import { createPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = createPageMetadata({
+  title: "Timeplan / Schedule",
+  description:
+    "Se aktive og kommende bordtennisøkter for NTNUI Bordtennis og NTNUI Table Tennis ved Dragvoll Idrettssenter B217.",
+  path: "/schedule",
+  keywords: ["NTNUI bordtennis timeplan", "NTNUI table tennis schedule"],
+});
 
 type SessionRow = {
   id: number;

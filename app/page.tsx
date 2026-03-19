@@ -1,7 +1,14 @@
 import { pool } from "@/lib/db";
 import HomePageContent from "@/app/components/HomePageContent";
+import { createPageMetadata, getHomeStructuredData, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = createPageMetadata({
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  path: "/",
+  keywords: ["NTNUI trening", "bordtennis påmelding", "table tennis registration"],
+});
 
 type SessionRow = {
   id: number;
@@ -13,6 +20,7 @@ type SessionRow = {
 };
 
 export default async function HomePage() {
+  const structuredData = getHomeStructuredData();
   const nextSessionRes = await pool.query(
     `SELECT id, starts_at, ends_at, location, capacity, NOW() AS current_time
      FROM sessions
@@ -24,7 +32,15 @@ export default async function HomePage() {
   const session = (nextSessionRes.rows[0] as SessionRow | undefined) ?? null;
 
   if (!session) {
-    return <HomePageContent session={null} registeredNames={[]} />;
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+        <HomePageContent session={null} registeredNames={[]} />
+      </>
+    );
   }
 
   const regsRes = await pool.query(
@@ -36,9 +52,15 @@ export default async function HomePage() {
   );
 
   return (
-    <HomePageContent
-      session={session}
-      registeredNames={(regsRes.rows as { name: string }[]).map((row) => row.name)}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <HomePageContent
+        session={session}
+        registeredNames={(regsRes.rows as { name: string }[]).map((row) => row.name)}
+      />
+    </>
   );
 }

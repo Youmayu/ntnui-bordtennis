@@ -5,6 +5,7 @@ import AnnouncementBar from "@/app/components/AnnouncementBar";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import SitePreferencesProvider from "@/app/components/SitePreferencesProvider";
+import { getRootMetadata } from "@/lib/seo";
 import {
   LANGUAGE_COOKIE,
   LOCALE_INFO,
@@ -13,10 +14,7 @@ import {
   parseTheme,
 } from "@/lib/site-content";
 
-export const metadata: Metadata = {
-  title: "NTNUI Bordtennis",
-  description: "Registrering og info for treninger ved Dragvoll Idrettssenter B217.",
-};
+export const metadata: Metadata = getRootMetadata();
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
