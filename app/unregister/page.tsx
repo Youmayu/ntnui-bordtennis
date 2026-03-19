@@ -42,7 +42,6 @@ export default function UnregisterPage() {
   const { locale, messages } = useSitePreferences();
   const intlLocale = getIntlLocale(locale);
   const monthOptions = useMemo(() => getMonthOptions(locale), [locale]);
-  const selectedSession = sessions.find((session) => session.id === sessionId) ?? null;
 
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
@@ -53,6 +52,7 @@ export default function UnregisterPage() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const selectedSession = sessions.find((session) => session.id === sessionId) ?? null;
 
   const dayOptions = useMemo(
     () =>
