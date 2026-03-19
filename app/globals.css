@@ -547,14 +547,38 @@ a {
 }
 
 @media (max-width: 640px) {
+  .app-header {
+    position: static;
+  }
+
+  .app-brand {
+    max-width: calc(100vw - 10.5rem);
+    font-size: 0.98rem;
+    line-height: 1.2;
+  }
+
   .app-header nav {
-    width: 100%;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+  }
+
+  .app-header nav::-webkit-scrollbar {
+    display: none;
   }
 
   .app-control-select {
-    min-width: 0;
+    min-width: 6.5rem;
+  }
+
+  .app-nav-link,
+  .app-control-select,
+  .app-theme-toggle {
+    min-height: 2.25rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.84rem;
+  }
+
+  .app-theme-toggle {
+    padding-inline: 0.8rem;
   }
 
   .app-button-primary,
