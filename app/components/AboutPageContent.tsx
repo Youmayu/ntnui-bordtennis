@@ -54,7 +54,7 @@ export default function AboutPageContent() {
       </div>
 
       <section className="grid gap-6 md:grid-cols-3">
-        <PersonCard role={messages.about.roles.leader} name="Maja BÃ¶" email="maja.bockenkamp@ntnui.no" />
+        <PersonCard role={messages.about.roles.leader} name="Maja B\u00F6" email="maja.bockenkamp@ntnui.no" />
         <PersonCard role={messages.about.roles.deputy} name="He You Ma" email="he.ma@ntnui.no" />
         <PersonCard
           role={messages.about.roles.treasurer}

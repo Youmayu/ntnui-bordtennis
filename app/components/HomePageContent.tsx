@@ -132,16 +132,20 @@ export default function HomePageContent({
               </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-2">
-              {registeredNames.slice(0, 20).map((name) => (
-                <span key={name} className="app-chip">
-                  {name}
-                </span>
-              ))}
-              {registeredNames.length === 0 && (
+            <div className="mt-6 border-t border-[color:var(--border-muted)] pt-6">
+              {registeredNames.length === 0 ? (
                 <span className="text-sm text-[color:var(--text-soft)]">
                   {messages.home.nobodyRegistered}
                 </span>
+              ) : (
+                <div className="app-roster-grid">
+                  {registeredNames.slice(0, 20).map((name, index) => (
+                    <div key={`${name}-${index}`} className="app-roster-row">
+                      <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="app-roster-name">{name}</span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
