@@ -146,7 +146,7 @@ type Messages = {
     chooseDay: string;
     submit: string;
     success: string;
-    registrationLabel: (name: string, level: string, time: string) => string;
+    registrationLabel: (name: string) => string;
     errors: {
       captcha: string;
       registration: string;
@@ -262,7 +262,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Velg dag",
       submit: "Meld meg av",
       success: "Du er meldt av.",
-      registrationLabel: (name, level, time) => `${name} – ${level}, meldt på ${time}`,
+      registrationLabel: (name) => name,
       errors: {
         captcha: "Fullfør CAPTCHA før du sender inn.",
         registration: "Velg påmeldingen din.",
@@ -380,7 +380,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Choose day",
       submit: "Unregister me",
       success: "You have been unregistered.",
-      registrationLabel: (name, level, time) => `${name} – ${level}, registered at ${time}`,
+      registrationLabel: (name) => name,
       errors: {
         captcha: "Complete the CAPTCHA before submitting.",
         registration: "Choose your registration.",
@@ -498,7 +498,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "选择日期",
       submit: "取消我的报名",
       success: "你已取消报名。",
-      registrationLabel: (name, level, time) => `${name} – ${level}，报名时间 ${time}`,
+      registrationLabel: (name) => name,
       errors: {
         captcha: "提交前请先完成 CAPTCHA。",
         registration: "请选择你的报名记录。",
@@ -616,7 +616,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Choisir un jour",
       submit: "Me désinscrire",
       success: "Vous êtes désinscrit.",
-      registrationLabel: (name, level, time) => `${name} – ${level}, inscrit à ${time}`,
+      registrationLabel: (name) => name,
       errors: {
         captcha: "Complétez le CAPTCHA avant d’envoyer.",
         registration: "Choisissez votre inscription.",
@@ -734,7 +734,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Elige día",
       submit: "Darme de baja",
       success: "Te has dado de baja.",
-      registrationLabel: (name, level, time) => `${name} – ${level}, inscrito a las ${time}`,
+      registrationLabel: (name) => name,
       errors: {
         captcha: "Completa el CAPTCHA antes de enviar.",
         registration: "Elige tu inscripción.",

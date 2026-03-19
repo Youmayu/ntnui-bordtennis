@@ -8,7 +8,6 @@ import { getDaysInMonth } from "@/lib/birth-month-day";
 import {
   formatVenueLabel,
   getIntlLocale,
-  getLevelKey,
   type Locale,
 } from "@/lib/site-content";
 
@@ -180,17 +179,7 @@ export default function UnregisterPageContent() {
   }
 
   function formatRegistrationLabel(registration: Registration) {
-    const time = new Intl.DateTimeFormat(intlLocale, {
-      timeZone: "Europe/Oslo",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(registration.created_at));
-
-    return messages.unregister.registrationLabel(
-      registration.name,
-      messages.levels[getLevelKey(registration.level)],
-      time
-    );
+    return messages.unregister.registrationLabel(registration.name);
   }
 
   return (
