@@ -15,7 +15,6 @@ export default function SiteFooter() {
             className="font-medium text-[color:var(--accent)] hover:underline"
             textClassName="font-medium text-[color:var(--accent)]"
             showMazeMapBadge
-            badgeClassName="text-[color:var(--text-soft)]"
           />
         </div>
         <div>{messages.shell.footerCopyright(new Date().getFullYear())}</div>

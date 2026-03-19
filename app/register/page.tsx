@@ -135,7 +135,7 @@ export default function RegisterPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="space-y-3">
-        <span className="app-badge app-badge-accent">{messages.register.badge}</span>
+        <span className="app-badge app-badge-success">{messages.register.badge}</span>
         <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
           {messages.register.title}
         </h1>
@@ -172,7 +172,6 @@ export default function RegisterPage() {
               className="text-xs text-[color:var(--accent)] hover:underline"
               textClassName="font-medium"
               showMazeMapBadge
-              badgeClassName="text-[color:var(--text-soft)]"
             />
           )}
         </div>
@@ -244,7 +243,7 @@ export default function RegisterPage() {
           onTokenChange={setTurnstileToken}
         />
 
-        <button type="submit" disabled={disabled} className="app-button-primary w-full justify-center">
+        <button type="submit" disabled={disabled} className="app-button-success w-full justify-center">
           {messages.register.submit}
         </button>
 

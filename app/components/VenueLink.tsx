@@ -39,11 +39,11 @@ export default function VenueLink({
       href={MAZEMAP_URL}
       target="_blank"
       rel="noreferrer"
-      className={joinClasses("inline-flex items-center gap-2", className)}
+      className={joinClasses("app-venue-link", className)}
     >
       <span className={textClassName}>{label}</span>
       {showMazeMapBadge && (
-        <span className={joinClasses("text-[0.65rem] font-semibold uppercase tracking-[0.18em]", badgeClassName)}>
+        <span className={joinClasses("app-map-button", badgeClassName)}>
           MazeMap
         </span>
       )}

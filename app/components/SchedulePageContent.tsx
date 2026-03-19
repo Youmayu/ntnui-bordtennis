@@ -73,7 +73,6 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                         className="text-[color:var(--accent)] hover:underline"
                         textClassName="font-medium"
                         showMazeMapBadge
-                        badgeClassName="text-[color:var(--text-soft)]"
                       />
                     </td>
                     <td className="py-3 text-[color:var(--text-soft)]">{session.capacity}</td>

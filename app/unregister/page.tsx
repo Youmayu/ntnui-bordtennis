@@ -196,7 +196,7 @@ export default function UnregisterPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="space-y-3">
-        <span className="app-badge app-badge-success">{messages.unregister.badge}</span>
+        <span className="app-badge app-badge-danger">{messages.unregister.badge}</span>
         <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
           {messages.unregister.title}
         </h1>
@@ -233,7 +233,6 @@ export default function UnregisterPage() {
               className="text-xs text-[color:var(--accent)] hover:underline"
               textClassName="font-medium"
               showMazeMapBadge
-              badgeClassName="text-[color:var(--text-soft)]"
             />
           )}
         </div>
@@ -299,7 +298,7 @@ export default function UnregisterPage() {
           onTokenChange={setTurnstileToken}
         />
 
-        <button type="submit" disabled={disabled} className="app-button-success w-full justify-center">
+        <button type="submit" disabled={disabled} className="app-button-danger w-full justify-center">
           {messages.unregister.submit}
         </button>
 

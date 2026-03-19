@@ -73,7 +73,6 @@ export default function AboutPage() {
             className="text-[color:var(--accent)] hover:underline"
             textClassName="font-medium text-[color:var(--accent)]"
             showMazeMapBadge
-            badgeClassName="text-[color:var(--text-soft)]"
           />
         </div>
       </section>

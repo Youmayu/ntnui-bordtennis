@@ -5,11 +5,15 @@ import { usePathname } from "next/navigation";
 import { LOCALE_INFO, type Locale } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 
-function navItemClass(active: boolean, primary = false) {
+function navItemClass(active: boolean, variant: "default" | "register" | "unregister" = "default") {
   const classes = ["app-nav-link"];
 
-  if (primary) {
-    classes.push("app-nav-link-primary");
+  if (variant === "register") {
+    classes.push("app-nav-link-success");
+  }
+
+  if (variant === "unregister") {
+    classes.push("app-nav-link-danger");
   }
 
   if (active) {
@@ -35,10 +39,10 @@ export default function SiteHeader() {
             <Link className={navItemClass(pathname === "/schedule")} href="/schedule">
               {messages.shell.nav.schedule}
             </Link>
-            <Link className={navItemClass(pathname === "/register", true)} href="/register">
+            <Link className={navItemClass(pathname === "/register", "register")} href="/register">
               {messages.shell.nav.register}
             </Link>
-            <Link className={navItemClass(pathname === "/unregister")} href="/unregister">
+            <Link className={navItemClass(pathname === "/unregister", "unregister")} href="/unregister">
               {messages.shell.nav.unregister}
             </Link>
             <Link className={navItemClass(pathname === "/about")} href="/about">
