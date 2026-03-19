@@ -17,15 +17,29 @@ type SessionRow = {
   ends_at: string;
   location: string;
   capacity: number;
+  registered_count: number;
   current_time: string;
 };
 
 export default async function SchedulePage() {
   const res = await pool.query(
-    `SELECT id, starts_at, ends_at, location, capacity, NOW() AS current_time
-     FROM sessions
-     WHERE ends_at > NOW()
-     ORDER BY starts_at ASC
+    `SELECT
+       s.id,
+       s.starts_at,
+       s.ends_at,
+       s.location,
+       s.capacity,
+       COALESCE(reg_counts.registered_count, 0) AS registered_count,
+       NOW() AS current_time
+     FROM sessions s
+     LEFT JOIN (
+       SELECT session_id, COUNT(*)::int AS registered_count
+       FROM registrations
+       GROUP BY session_id
+     ) reg_counts
+       ON reg_counts.session_id = s.id
+     WHERE s.ends_at > NOW()
+     ORDER BY s.starts_at ASC
      LIMIT 12`
   );
 

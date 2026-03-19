@@ -10,6 +10,7 @@ type Session = {
   ends_at: string;
   location: string;
   capacity: number;
+  registered_count: number;
   current_time: string;
 };
 
@@ -75,7 +76,17 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                         showMazeMapBadge
                       />
                     </td>
-                    <td className="py-3 text-[color:var(--text-soft)]">{session.capacity}</td>
+                    <td className="py-3 text-[color:var(--text-soft)]">
+                      <span
+                        className={
+                          session.registered_count >= session.capacity
+                            ? "app-badge app-badge-danger"
+                            : "app-badge app-badge-success"
+                        }
+                      >
+                        {session.registered_count}/{session.capacity}
+                      </span>
+                    </td>
                   </tr>
                 );
               })}
