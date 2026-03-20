@@ -76,12 +76,12 @@ async function main() {
     await pool.query(`
       INSERT INTO sessions (starts_at, ends_at, location, capacity)
       VALUES
-        (NOW() + INTERVAL '1 day' + INTERVAL '18 hours', NOW() + INTERVAL '1 day' + INTERVAL '20 hours', 'Dragvoll Idrettsenter', 20),
-        (NOW() + INTERVAL '3 day' + INTERVAL '18 hours', NOW() + INTERVAL '3 day' + INTERVAL '20 hours', 'Dragvoll Idrettsenter', 20),
-        (NOW() + INTERVAL '5 day' + INTERVAL '16 hours', NOW() + INTERVAL '5 day' + INTERVAL '18 hours', 'Dragvoll Idrettsenter', 20),
-        (NOW() + INTERVAL '8 day' + INTERVAL '18 hours', NOW() + INTERVAL '8 day' + INTERVAL '20 hours', 'Dragvoll Idrettsenter', 20),
-        (NOW() + INTERVAL '10 day' + INTERVAL '18 hours', NOW() + INTERVAL '10 day' + INTERVAL '20 hours', 'Dragvoll Idrettsenter', 20),
-        (NOW() + INTERVAL '12 day' + INTERVAL '16 hours', NOW() + INTERVAL '12 day' + INTERVAL '18 hours', 'Dragvoll Idrettsenter', 20);
+        (NOW() + INTERVAL '1 day' + INTERVAL '18 hours', NOW() + INTERVAL '1 day' + INTERVAL '20 hours', 'Dragvoll Idrettssenter B217', 20),
+        (NOW() + INTERVAL '3 day' + INTERVAL '18 hours', NOW() + INTERVAL '3 day' + INTERVAL '20 hours', 'Dragvoll Idrettssenter B217', 20),
+        (NOW() + INTERVAL '5 day' + INTERVAL '16 hours', NOW() + INTERVAL '5 day' + INTERVAL '18 hours', 'Dragvoll Idrettssenter B217', 20),
+        (NOW() + INTERVAL '8 day' + INTERVAL '18 hours', NOW() + INTERVAL '8 day' + INTERVAL '20 hours', 'Dragvoll Idrettssenter B217', 20),
+        (NOW() + INTERVAL '10 day' + INTERVAL '18 hours', NOW() + INTERVAL '10 day' + INTERVAL '20 hours', 'Dragvoll Idrettssenter B217', 20),
+        (NOW() + INTERVAL '12 day' + INTERVAL '16 hours', NOW() + INTERVAL '12 day' + INTERVAL '18 hours', 'Dragvoll Idrettssenter B217', 20);
     `);
     console.log("Seeded sessions.");
   } else {

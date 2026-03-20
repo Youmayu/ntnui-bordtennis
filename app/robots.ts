@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAbsoluteUrl, getSiteUrl } from "@/lib/seo";
+import { getAbsoluteUrl, getSiteOrigin } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
       disallow: ["/admin"],
     },
     sitemap: getAbsoluteUrl("/sitemap.xml"),
-    host: getSiteUrl(),
+    host: getSiteOrigin(),
   };
 }

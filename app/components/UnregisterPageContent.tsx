@@ -22,8 +22,6 @@ type Session = {
 type Registration = {
   id: number;
   name: string;
-  level: string;
-  created_at: string;
 };
 
 function getMonthOptions(locale: Locale) {

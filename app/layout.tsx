@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "./globals.css";
 import AnnouncementBar from "@/app/components/AnnouncementBar";
 import SiteFooter from "@/app/components/SiteFooter";

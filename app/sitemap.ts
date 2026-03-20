@@ -19,6 +19,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: entry.changeFrequency,
       priority: entry.priority,
+      alternates: {
+        languages: Object.fromEntries(
+          locales.map((entryLocale) => [
+            entryLocale,
+            getAbsoluteUrl(localizePathname(entry.path, entryLocale)),
+          ])
+        ),
+      },
     }))
   );
 }

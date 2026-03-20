@@ -27,9 +27,12 @@ export default function AdminClient({
     id: number
   ) {
     setBusyId(id);
-    await action(fd);
-    router.refresh();
-    setBusyId(null);
+    try {
+      await action(fd);
+      router.refresh();
+    } finally {
+      setBusyId(null);
+    }
   }
 
   return (

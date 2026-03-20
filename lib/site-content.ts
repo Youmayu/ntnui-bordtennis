@@ -45,6 +45,7 @@ export const DEFAULT_SESSION_LOCATION = VENUE_LABELS.no;
 const DEFAULT_LOCATION_ALIASES = new Set(
   [
     ...Object.values(VENUE_LABELS),
+    "Dragvoll Idrettsenter",
     "Dragvoll Idrettssenter",
     "Dragvoll Idrettssenter 2. etasje gymsal",
     "Dragvoll Sports Centre",

@@ -48,7 +48,7 @@ export default function SiteHeader() {
     <header className="app-header z-50 md:sticky md:top-0 md:backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 sm:justify-between sm:gap-4 sm:py-4">
         <Link
-          href={isAdminPath ? "/" : toLocalizedHref("/")}
+          href={toLocalizedHref("/")}
           className="app-brand shrink-0 text-base font-semibold tracking-tight sm:text-lg"
         >
           {messages.shell.brand}

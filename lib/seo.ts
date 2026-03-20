@@ -61,8 +61,19 @@ export function getSiteUrlObject() {
   return new URL(getSiteUrl());
 }
 
+export function getSiteOrigin() {
+  return getSiteUrlObject().origin;
+}
+
 export function getAbsoluteUrl(path = "/") {
   return new URL(path, getSiteUrlObject()).toString();
+}
+
+export function serializeJsonLd(data: unknown) {
+  return JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 }
 
 function buildSocialTitle(title: string) {
@@ -170,37 +181,6 @@ export function getRootMetadata(): Metadata {
     verification: process.env.GOOGLE_SITE_VERIFICATION
       ? { google: process.env.GOOGLE_SITE_VERIFICATION }
       : undefined,
-  };
-}
-
-export function getHomeStructuredData() {
-  const siteUrl = getSiteUrl();
-
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": `${siteUrl}#organization`,
-        name: SITE_NAME_NO,
-        alternateName: SITE_NAME_EN,
-        url: siteUrl,
-        description: SITE_DESCRIPTION,
-        knowsAbout: ["Bordtennis", "Table tennis"],
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${siteUrl}#website`,
-        url: siteUrl,
-        name: SITE_NAME_NO,
-        alternateName: SITE_NAME_EN,
-        description: SITE_DESCRIPTION,
-        inLanguage: ["no", "en", "de", "zh", "fr", "es"],
-        publisher: {
-          "@id": `${siteUrl}#organization`,
-        },
-      },
-    ],
   };
 }
 

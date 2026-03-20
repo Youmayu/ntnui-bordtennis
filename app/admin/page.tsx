@@ -55,10 +55,6 @@ function toDatetimeLocalOslo(value: string) {
   return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
 
-function osloLocalToTimestamptzString(dtLocal: string) {
-  return dtLocal;
-}
-
 export const dynamic = "force-dynamic";
 export const metadata = {
   ...createPageMetadata({
@@ -139,7 +135,7 @@ export default async function AdminPage() {
            ELSE ($3::timestamp AT TIME ZONE 'Europe/Oslo')
          END
        )`,
-      [title, body, osloLocalToTimestamptzString(expiresAtLocal)]
+      [title, body, expiresAtLocal]
     );
   }
 
@@ -161,6 +157,7 @@ export default async function AdminPage() {
     if (!Number.isFinite(id)) return;
     if (!startsAtLocal || !endsAtLocal || !location) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
+    if (startsAtLocal >= endsAtLocal) return;
 
     await pool.query(
       `UPDATE sessions
@@ -168,11 +165,11 @@ export default async function AdminPage() {
            ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
            location  = $4,
            capacity  = $5
-       WHERE id = $1`,
+      WHERE id = $1`,
       [
         id,
-        osloLocalToTimestamptzString(startsAtLocal),
-        osloLocalToTimestamptzString(endsAtLocal),
+        startsAtLocal,
+        endsAtLocal,
         location,
         capacity,
       ]
@@ -188,6 +185,7 @@ export default async function AdminPage() {
 
     if (!startsAtLocal || !endsAtLocal || !location) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
+    if (startsAtLocal >= endsAtLocal) return;
 
     await pool.query(
       `INSERT INTO sessions (starts_at, ends_at, location, capacity)
@@ -198,8 +196,8 @@ export default async function AdminPage() {
          $4
        )`,
       [
-        osloLocalToTimestamptzString(startsAtLocal),
-        osloLocalToTimestamptzString(endsAtLocal),
+        startsAtLocal,
+        endsAtLocal,
         location,
         capacity,
       ]

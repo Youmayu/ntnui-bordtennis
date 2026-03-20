@@ -8,7 +8,11 @@ import {
   isLocale,
   type Locale,
 } from "@/lib/site-content";
-import { createPageMetadata, getLocalizedHomeStructuredData } from "@/lib/seo";
+import {
+  createPageMetadata,
+  getLocalizedHomeStructuredData,
+  serializeJsonLd,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -74,7 +78,7 @@ export default async function LocalizedHomePage({
       <>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
         />
         <HomePageContent session={null} registeredNames={[]} />
       </>
@@ -93,7 +97,7 @@ export default async function LocalizedHomePage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
       />
       <HomePageContent
         session={session}

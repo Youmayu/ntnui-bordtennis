@@ -34,7 +34,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Server misconfig (TURNSTILE_SECRET_KEY)." }, { status: 500 });
     }
 
-    // Required server-side verification :contentReference[oaicite:3]{index=3}
     const formData = new FormData();
     formData.append("secret", secret);
     formData.append("response", turnstileToken);

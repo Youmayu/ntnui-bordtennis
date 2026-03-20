@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   }
 
   const res = await pool.query(
-    `SELECT r.id, r.name, r.level, r.created_at
+    `SELECT r.id, r.name
      FROM registrations r
      INNER JOIN sessions s ON s.id = r.session_id
      WHERE r.session_id = $1
