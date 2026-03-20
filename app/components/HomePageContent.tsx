@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { getIntlLocale } from "@/lib/site-content";
+import { getIntlLocale, localizePathname } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 
@@ -23,6 +23,9 @@ export default function HomePageContent({
 }) {
   const { locale, messages } = useSitePreferences();
   const intlLocale = getIntlLocale(locale);
+  const scheduleHref = localizePathname("/schedule", locale);
+  const registerHref = localizePathname("/register", locale);
+  const unregisterHref = localizePathname("/unregister", locale);
 
   if (!session) {
     return (
@@ -31,7 +34,7 @@ export default function HomePageContent({
           {messages.home.emptyTitle}
         </h1>
         <p className="text-[color:var(--text-muted)]">{messages.home.emptyBody}</p>
-        <Link className="app-button-secondary inline-flex" href="/schedule">
+        <Link className="app-button-secondary inline-flex" href={scheduleHref}>
           {messages.home.ctaSchedule}
         </Link>
       </div>
@@ -74,13 +77,13 @@ export default function HomePageContent({
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/register" className="app-button-success inline-flex items-center">
+          <Link href={registerHref} className="app-button-success inline-flex items-center">
             {messages.home.ctaRegister}
           </Link>
-          <Link href="/unregister" className="app-button-danger inline-flex items-center">
+          <Link href={unregisterHref} className="app-button-danger inline-flex items-center">
             {messages.shell.nav.unregister}
           </Link>
-          <Link href="/schedule" className="app-button-secondary inline-flex items-center">
+          <Link href={scheduleHref} className="app-button-secondary inline-flex items-center">
             {messages.home.ctaSchedule}
           </Link>
         </div>
@@ -105,7 +108,7 @@ export default function HomePageContent({
                 </div>
                 <div className="mt-4 text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
                   {timeFormatter.format(new Date(session.starts_at))}
-                  {" – "}
+                  {" - "}
                   {timeFormatter.format(new Date(session.ends_at))}
                 </div>
                 <div className="mt-3 text-sm">
@@ -150,10 +153,10 @@ export default function HomePageContent({
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/register" className="app-button-success inline-flex">
+              <Link href={registerHref} className="app-button-success inline-flex">
                 {messages.home.ctaRegister}
               </Link>
-              <Link href="/unregister" className="app-button-danger inline-flex">
+              <Link href={unregisterHref} className="app-button-danger inline-flex">
                 {messages.shell.nav.unregister}
               </Link>
             </div>

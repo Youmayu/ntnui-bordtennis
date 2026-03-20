@@ -1,10 +1,18 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { DEFAULT_LOCALE, getLocaleFromPathname } from "@/lib/site-content";
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const locale = getLocaleFromPathname(pathname) ?? DEFAULT_LOCALE;
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-site-locale", locale);
 
-  if (!pathname.startsWith("/admin")) return NextResponse.next();
+  if (!pathname.startsWith("/admin")) {
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+  }
 
   const user = process.env.ADMIN_USER;
   const pass = process.env.ADMIN_PASS;
@@ -31,9 +39,11 @@ export function proxy(req: NextRequest) {
     });
   }
 
-  return NextResponse.next();
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import "./globals.css";
 import AnnouncementBar from "@/app/components/AnnouncementBar";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -18,7 +19,10 @@ export const metadata: Metadata = getRootMetadata();
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  const locale = parseLocale(cookieStore.get(LANGUAGE_COOKIE)?.value);
+  const requestHeaders = await headers();
+  const locale = parseLocale(
+    requestHeaders.get("x-site-locale") ?? cookieStore.get(LANGUAGE_COOKIE)?.value
+  );
   const theme = parseTheme(cookieStore.get(THEME_COOKIE)?.value);
 
   return (

@@ -1,4 +1,10 @@
 import type { Metadata } from "next";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_INFO,
+  localizePathname,
+  type Locale,
+} from "@/lib/site-content";
 
 const SITE_NAME_NO = "NTNUI Bordtennis";
 const SITE_NAME_EN = "NTNUI Table Tennis";
@@ -19,6 +25,15 @@ const BASE_KEYWORDS = [
   "bordtennis trening",
   "table tennis practice",
 ];
+
+const OPEN_GRAPH_LOCALE_BY_LOCALE: Record<Locale, string> = {
+  no: "no_NO",
+  en: "en_US",
+  de: "de_DE",
+  zh: "zh_CN",
+  fr: "fr_FR",
+  es: "es_ES",
+};
 
 function normalizeSiteUrl(value: string | undefined) {
   if (!value) {
@@ -51,7 +66,7 @@ export function getAbsoluteUrl(path = "/") {
 }
 
 function buildSocialTitle(title: string) {
-  return title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_NAME_NO}`;
+  return title === SITE_TITLE || title.includes("NTNUI") ? title : `${title} | ${SITE_NAME_NO}`;
 }
 
 export function createPageMetadata({
@@ -59,14 +74,25 @@ export function createPageMetadata({
   description,
   path,
   keywords = [],
+  locale,
 }: {
   title: string;
   description: string;
   path: string;
   keywords?: string[];
+  locale?: Locale;
 }): Metadata {
-  const canonical = getAbsoluteUrl(path);
+  const canonicalPath = locale ? localizePathname(path, locale) : path;
+  const canonical = getAbsoluteUrl(canonicalPath);
   const socialTitle = buildSocialTitle(title);
+  const alternateLanguages = locale
+    ? Object.fromEntries(
+        (Object.keys(LOCALE_INFO) as Locale[]).map((entryLocale) => [
+          entryLocale,
+          getAbsoluteUrl(localizePathname(path, entryLocale)),
+        ])
+      )
+    : undefined;
 
   return {
     title,
@@ -74,6 +100,12 @@ export function createPageMetadata({
     keywords: [...BASE_KEYWORDS, ...keywords],
     alternates: {
       canonical,
+      languages: alternateLanguages
+        ? {
+            ...alternateLanguages,
+            "x-default": getAbsoluteUrl(localizePathname(path, DEFAULT_LOCALE)),
+          }
+        : undefined,
     },
     openGraph: {
       type: "website",
@@ -81,8 +113,10 @@ export function createPageMetadata({
       title: socialTitle,
       description,
       siteName: SITE_TITLE,
-      locale: "no_NO",
-      alternateLocale: ["en_US", "de_DE", "zh_CN", "fr_FR", "es_ES"],
+      locale: locale ? OPEN_GRAPH_LOCALE_BY_LOCALE[locale] : OPEN_GRAPH_LOCALE_BY_LOCALE.no,
+      alternateLocale: (Object.entries(OPEN_GRAPH_LOCALE_BY_LOCALE) as [Locale, string][])
+        .filter(([entryLocale]) => entryLocale !== (locale ?? DEFAULT_LOCALE))
+        .map(([, value]) => value),
     },
     twitter: {
       card: "summary",
@@ -96,23 +130,19 @@ export function getRootMetadata(): Metadata {
   return {
     metadataBase: getSiteUrlObject(),
     applicationName: SITE_TITLE,
-    title: {
-      default: SITE_TITLE,
-      template: "%s | NTNUI Bordtennis",
-    },
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     keywords: BASE_KEYWORDS,
-    alternates: {
-      canonical: "/",
-    },
     openGraph: {
       type: "website",
-      url: getAbsoluteUrl("/"),
+      url: getAbsoluteUrl(localizePathname("/", DEFAULT_LOCALE)),
       title: SITE_TITLE,
       description: SITE_DESCRIPTION,
       siteName: SITE_TITLE,
-      locale: "no_NO",
-      alternateLocale: ["en_US", "de_DE", "zh_CN", "fr_FR", "es_ES"],
+      locale: OPEN_GRAPH_LOCALE_BY_LOCALE.no,
+      alternateLocale: (Object.values(OPEN_GRAPH_LOCALE_BY_LOCALE)).filter(
+        (value) => value !== OPEN_GRAPH_LOCALE_BY_LOCALE.no
+      ),
     },
     twitter: {
       card: "summary",
@@ -166,6 +196,38 @@ export function getHomeStructuredData() {
         alternateName: SITE_NAME_EN,
         description: SITE_DESCRIPTION,
         inLanguage: ["no", "en", "de", "zh", "fr", "es"],
+        publisher: {
+          "@id": `${siteUrl}#organization`,
+        },
+      },
+    ],
+  };
+}
+
+export function getLocalizedHomeStructuredData(locale: Locale) {
+  const siteUrl = getSiteUrl();
+  const homeUrl = getAbsoluteUrl(localizePathname("/", locale));
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${siteUrl}#organization`,
+        name: SITE_NAME_NO,
+        alternateName: SITE_NAME_EN,
+        url: siteUrl,
+        description: SITE_DESCRIPTION,
+        knowsAbout: ["Bordtennis", "Table tennis"],
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${homeUrl}#website`,
+        url: homeUrl,
+        name: SITE_NAME_NO,
+        alternateName: SITE_NAME_EN,
+        description: SITE_DESCRIPTION,
+        inLanguage: LOCALE_INFO[locale].htmlLang,
         publisher: {
           "@id": `${siteUrl}#organization`,
         },

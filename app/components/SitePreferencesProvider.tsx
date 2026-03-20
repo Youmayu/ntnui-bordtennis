@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useContext,
@@ -12,6 +13,7 @@ import {
   LANGUAGE_COOKIE,
   LOCALE_INFO,
   THEME_COOKIE,
+  getLocaleFromPathname,
   getMessages,
   type Locale,
   type Theme,
@@ -40,8 +42,19 @@ export default function SitePreferencesProvider({
   initialLocale: Locale;
   initialTheme: Theme;
 }) {
-  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  const pathname = usePathname();
+  const localeFromPath = getLocaleFromPathname(pathname);
+  const [localePreference, setLocalePreference] = useState<Locale>(initialLocale);
   const [theme, setThemeState] = useState<Theme>(initialTheme);
+  const locale = localeFromPath ?? localePreference;
+
+  useEffect(() => {
+    if (!localeFromPath) {
+      return;
+    }
+
+    persistCookie(LANGUAGE_COOKIE, localeFromPath);
+  }, [localeFromPath]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -55,7 +68,7 @@ export default function SitePreferencesProvider({
       theme,
       messages: getMessages(locale),
       setLocale: (nextLocale) => {
-        setLocaleState(nextLocale);
+        setLocalePreference(nextLocale);
         persistCookie(LANGUAGE_COOKIE, nextLocale);
       },
       setTheme: (nextTheme) => {

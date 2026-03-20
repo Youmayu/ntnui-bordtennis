@@ -1,8 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LOCALE_INFO, type Locale } from "@/lib/site-content";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  LOCALE_INFO,
+  localizePathname,
+  stripLocaleFromPathname,
+  type Locale,
+} from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 
 function navItemClass(active: boolean, variant: "default" | "register" | "unregister" = "default") {
@@ -25,12 +30,27 @@ function navItemClass(active: boolean, variant: "default" | "register" | "unregi
 
 export default function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { locale, messages, theme, setLocale, setTheme } = useSitePreferences();
+  const isAdminPath = pathname.startsWith("/admin");
+  const currentPublicPath = stripLocaleFromPathname(pathname);
+
+  function toLocalizedHref(path: string) {
+    return localizePathname(path, locale);
+  }
+
+  function isActive(path: string) {
+    return currentPublicPath === path;
+  }
 
   return (
     <header className="app-header z-50 md:sticky md:top-0 md:backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 sm:justify-between sm:gap-4 sm:py-4">
-        <Link href="/" className="app-brand shrink-0 text-base font-semibold tracking-tight sm:text-lg">
+        <Link
+          href={isAdminPath ? "/" : toLocalizedHref("/")}
+          className="app-brand shrink-0 text-base font-semibold tracking-tight sm:text-lg"
+        >
           {messages.shell.brand}
         </Link>
 
@@ -41,7 +61,16 @@ export default function SiteHeader() {
               className="app-control-select"
               aria-label={messages.shell.languageLabel}
               value={locale}
-              onChange={(event) => setLocale(event.target.value as Locale)}
+              onChange={(event) => {
+                const nextLocale = event.target.value as Locale;
+                setLocale(nextLocale);
+
+                if (!isAdminPath) {
+                  const query = searchParams.toString();
+                  const nextPath = localizePathname(currentPublicPath, nextLocale);
+                  router.replace(query ? `${nextPath}?${query}` : nextPath);
+                }
+              }}
             >
               {Object.entries(LOCALE_INFO).map(([key, info]) => (
                 <option key={key} value={key}>
@@ -64,16 +93,22 @@ export default function SiteHeader() {
         </div>
 
         <nav className="order-3 flex w-full items-center gap-2 overflow-x-auto pb-1 text-sm sm:order-none sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0">
-          <Link className={navItemClass(pathname === "/schedule")} href="/schedule">
+          <Link className={navItemClass(isActive("/schedule"))} href={toLocalizedHref("/schedule")}>
             {messages.shell.nav.schedule}
           </Link>
-          <Link className={navItemClass(pathname === "/register", "register")} href="/register">
+          <Link
+            className={navItemClass(isActive("/register"), "register")}
+            href={toLocalizedHref("/register")}
+          >
             {messages.shell.nav.register}
           </Link>
-          <Link className={navItemClass(pathname === "/unregister", "unregister")} href="/unregister">
+          <Link
+            className={navItemClass(isActive("/unregister"), "unregister")}
+            href={toLocalizedHref("/unregister")}
+          >
             {messages.shell.nav.unregister}
           </Link>
-          <Link className={navItemClass(pathname === "/about")} href="/about">
+          <Link className={navItemClass(isActive("/about"))} href={toLocalizedHref("/about")}>
             {messages.shell.nav.about}
           </Link>
         </nav>

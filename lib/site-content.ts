@@ -9,6 +9,7 @@ export const LOCALE_INFO = {
 
 export type Locale = keyof typeof LOCALE_INFO;
 export type Theme = "light" | "dark";
+export const DEFAULT_LOCALE: Locale = "no";
 
 export const LANGUAGE_COOKIE = "ntnui_locale";
 export const THEME_COOKIE = "ntnui_theme";
@@ -890,7 +891,7 @@ export function parseLocale(value: string | null | undefined): Locale {
   if (value && value in LOCALE_INFO) {
     return value as Locale;
   }
-  return "no";
+  return DEFAULT_LOCALE;
 }
 
 export function parseTheme(value: string | null | undefined): Theme {
@@ -927,4 +928,32 @@ export function formatVenueLabel(location: string | null | undefined, locale: Lo
 
 export function getLevelKey(levelValue: string): LevelKey {
   return LEVEL_KEY_BY_VALUE[levelValue] ?? "beginner";
+}
+
+export function isLocale(value: string | null | undefined): value is Locale {
+  return Boolean(value && value in LOCALE_INFO);
+}
+
+export function getLocaleFromPathname(pathname: string): Locale | null {
+  const normalized = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  const segment = normalized.split("/")[1];
+
+  return isLocale(segment) ? segment : null;
+}
+
+export function stripLocaleFromPathname(pathname: string) {
+  const normalized = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  const locale = getLocaleFromPathname(normalized);
+
+  if (!locale) {
+    return normalized === "" ? "/" : normalized;
+  }
+
+  const stripped = normalized.slice(locale.length + 1);
+  return stripped ? stripped : "/";
+}
+
+export function localizePathname(pathname: string, locale: Locale) {
+  const stripped = stripLocaleFromPathname(pathname);
+  return stripped === "/" ? `/${locale}` : `/${locale}${stripped}`;
 }
