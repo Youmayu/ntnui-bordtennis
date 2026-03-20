@@ -29,6 +29,8 @@ const BASE_KEYWORDS = [
 const OPEN_GRAPH_LOCALE_BY_LOCALE: Record<Locale, string> = {
   no: "no_NO",
   en: "en_US",
+  da: "da_DK",
+  sv: "sv_SE",
   de: "de_DE",
   zh: "zh_CN",
   fr: "fr_FR",
