@@ -82,7 +82,7 @@ export function createPageMetadata({
       description,
       siteName: SITE_TITLE,
       locale: "no_NO",
-      alternateLocale: ["en_US", "zh_CN", "fr_FR", "es_ES"],
+      alternateLocale: ["en_US", "de_DE", "zh_CN", "fr_FR", "es_ES"],
     },
     twitter: {
       card: "summary",
@@ -112,7 +112,7 @@ export function getRootMetadata(): Metadata {
       description: SITE_DESCRIPTION,
       siteName: SITE_TITLE,
       locale: "no_NO",
-      alternateLocale: ["en_US", "zh_CN", "fr_FR", "es_ES"],
+      alternateLocale: ["en_US", "de_DE", "zh_CN", "fr_FR", "es_ES"],
     },
     twitter: {
       card: "summary",
@@ -165,7 +165,7 @@ export function getHomeStructuredData() {
         name: SITE_NAME_NO,
         alternateName: SITE_NAME_EN,
         description: SITE_DESCRIPTION,
-        inLanguage: ["no", "en", "zh", "fr", "es"],
+        inLanguage: ["no", "en", "de", "zh", "fr", "es"],
         publisher: {
           "@id": `${siteUrl}#organization`,
         },
