@@ -18,6 +18,8 @@ type Session = {
   ends_at: string;
   location: string;
   capacity: number;
+  confirmed_count: number;
+  waitlist_count: number;
 };
 
 function getMonthOptions(locale: Locale) {
@@ -29,6 +31,25 @@ function getMonthOptions(locale: Locale) {
       new Date(Date.UTC(2024, index, 1))
     ),
   }));
+}
+
+async function fetchSessions() {
+  const res = await fetch("/api/sessions");
+  const data = await res.json();
+  return (data.sessions ?? []) as Session[];
+}
+
+function getPreferredSessionId(
+  sessions: Session[],
+  preferredSessionId?: number | null
+) {
+  if (sessions.length === 0) {
+    return null;
+  }
+
+  return preferredSessionId && sessions.some((session) => session.id === preferredSessionId)
+    ? preferredSessionId
+    : sessions[0].id;
 }
 
 export default function RegisterPageContent() {
@@ -46,6 +67,9 @@ export default function RegisterPageContent() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const selectedSession = sessions.find((session) => session.id === sessionId) ?? null;
+  const selectedSessionIsFull = selectedSession
+    ? selectedSession.confirmed_count >= selectedSession.capacity
+    : false;
 
   const dayOptions = useMemo(
     () =>
@@ -60,13 +84,29 @@ export default function RegisterPageContent() {
     [birthDay, birthMonth, name, sessionId, turnstileToken]
   );
 
+  async function loadSessions(preferredSessionId?: number | null) {
+    const nextSessions = await fetchSessions();
+    setSessions(nextSessions);
+    setSessionId(getPreferredSessionId(nextSessions, preferredSessionId));
+  }
+
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
-      const res = await fetch("/api/sessions");
-      const data = await res.json();
-      setSessions(data.sessions ?? []);
-      if ((data.sessions ?? []).length > 0) setSessionId(data.sessions[0].id);
+      const nextSessions = await fetchSessions();
+
+      if (cancelled) {
+        return;
+      }
+
+      setSessions(nextSessions);
+      setSessionId(getPreferredSessionId(nextSessions));
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -112,11 +152,16 @@ export default function RegisterPageContent() {
       return;
     }
 
-    setMessage(messages.register.success);
+    setMessage(
+      data?.registrationStatus === "waitlist"
+        ? messages.register.successWaitlist
+        : messages.register.success
+    );
     setName("");
     setLevel("Nybegynner");
     setBirthMonth(null);
     setBirthDay(null);
+    await loadSessions(sessionId);
   }
 
   function handleBirthMonthChange(nextMonth: number | null) {
@@ -166,13 +211,23 @@ export default function RegisterPageContent() {
             ))}
           </select>
           {selectedSession && (
-            <VenueLink
-              locale={locale}
-              location={selectedSession.location}
-              className="text-xs text-[color:var(--accent)] hover:underline"
-              textClassName="font-medium"
-              showMazeMapBadge
-            />
+            <div className="space-y-2">
+              <VenueLink
+                locale={locale}
+                location={selectedSession.location}
+                className="text-xs text-[color:var(--accent)] hover:underline"
+                textClassName="font-medium"
+                showMazeMapBadge
+              />
+              {selectedSessionIsFull && (
+                <div className="text-xs font-medium text-[color:var(--danger-ink)]">
+                  {messages.register.fullNotice}
+                  {selectedSession.waitlist_count > 0
+                    ? ` ${messages.register.waitlistCount(selectedSession.waitlist_count)}`
+                    : ""}
+                </div>
+              )}
+            </div>
           )}
         </div>
 

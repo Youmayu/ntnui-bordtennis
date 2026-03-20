@@ -31,6 +31,7 @@ async function main() {
       level TEXT NOT NULL,
       birth_month INT,
       birth_day INT,
+      status TEXT NOT NULL DEFAULT 'confirmed',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
@@ -40,8 +41,24 @@ async function main() {
     ALTER TABLE registrations
       ADD COLUMN IF NOT EXISTS birth_day INT;
 
+    ALTER TABLE registrations
+      ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'confirmed';
+
+    UPDATE registrations
+      SET status = 'confirmed'
+      WHERE status IS NULL;
+
+    ALTER TABLE registrations
+      ALTER COLUMN status SET DEFAULT 'confirmed';
+
+    ALTER TABLE registrations
+      ALTER COLUMN status SET NOT NULL;
+
     CREATE INDEX IF NOT EXISTS idx_registrations_session_id
       ON registrations(session_id);
+
+    CREATE INDEX IF NOT EXISTS idx_registrations_session_status_created_at
+      ON registrations(session_id, status, created_at);
 
     CREATE TABLE IF NOT EXISTS announcements (
       id SERIAL PRIMARY KEY,

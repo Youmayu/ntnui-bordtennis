@@ -4,6 +4,7 @@ import { pool } from "@/lib/db";
 import SchedulePageContent from "@/app/components/SchedulePageContent";
 import { getMessages, getVenueLabel, isLocale, type Locale } from "@/lib/site-content";
 import { createPageMetadata } from "@/lib/seo";
+import { REGISTRATION_STATUS } from "@/lib/registrations";
 
 export const dynamic = "force-dynamic";
 
@@ -67,12 +68,14 @@ export default async function LocalizedSchedulePage({
      LEFT JOIN (
        SELECT session_id, COUNT(*)::int AS registered_count
        FROM registrations
+       WHERE status = $1
        GROUP BY session_id
      ) reg_counts
        ON reg_counts.session_id = s.id
      WHERE s.ends_at > NOW()
      ORDER BY s.starts_at ASC
-     LIMIT 12`
+     LIMIT 12`,
+    [REGISTRATION_STATUS.CONFIRMED]
   );
 
   return <SchedulePageContent sessions={res.rows as SessionRow[]} />;

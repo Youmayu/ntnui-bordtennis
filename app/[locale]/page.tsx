@@ -13,6 +13,7 @@ import {
   getLocalizedHomeStructuredData,
   serializeJsonLd,
 } from "@/lib/seo";
+import { REGISTRATION_STATUS } from "@/lib/registrations";
 
 export const dynamic = "force-dynamic";
 
@@ -89,8 +90,9 @@ export default async function LocalizedHomePage({
     `SELECT name
      FROM registrations
      WHERE session_id = $1
+       AND status = $2
      ORDER BY created_at ASC`,
-    [session.id]
+    [session.id, REGISTRATION_STATUS.CONFIRMED]
   );
 
   return (

@@ -1,8 +1,16 @@
+import type { PoolClient } from "pg";
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { isValidBirthMonthDay } from "@/lib/birth-month-day";
+import {
+  fillConfirmedSlotsFromWaitlist,
+  getConfirmedRegistrationCount,
+  REGISTRATION_STATUS,
+} from "@/lib/registrations";
 
 export async function POST(req: Request) {
+  let client: PoolClient | null = null;
+
   try {
     const body = await req.json();
     const { sessionId, name, level, birthMonth, birthDay, turnstileToken, website } = body ?? {};
@@ -20,7 +28,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Ugyldig måned eller dag." }, { status: 400 });
     }
 
-    // Honeypot
     if (website && String(website).trim() !== "") {
       return NextResponse.json({ error: "Avvist." }, { status: 400 });
     }
@@ -31,7 +38,10 @@ export async function POST(req: Request) {
 
     const secret = process.env.TURNSTILE_SECRET_KEY;
     if (!secret) {
-      return NextResponse.json({ error: "Server misconfig (TURNSTILE_SECRET_KEY)." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Server misconfig (TURNSTILE_SECRET_KEY)." },
+        { status: 500 }
+      );
     }
 
     const formData = new FormData();
@@ -42,38 +52,51 @@ export async function POST(req: Request) {
       method: "POST",
       body: formData,
     });
-    const verify = await verifyRes.json();
+    const verify = (await verifyRes.json()) as { success?: boolean };
 
     if (!verify.success) {
       return NextResponse.json({ error: "CAPTCHA feilet. Prøv igjen." }, { status: 400 });
     }
 
-    // Capacity check (optional but useful)
-    const capRes = await pool.query(
-      `SELECT capacity,
-              (SELECT COUNT(*)::int FROM registrations WHERE session_id = $1) AS count
-       FROM sessions
-       WHERE id = $1`,
-      [sessionId]
-    );
+    client = await pool.connect();
+    await client.query("BEGIN");
 
-    if (capRes.rowCount === 0) {
+    const fillResult = await fillConfirmedSlotsFromWaitlist(client, sessionId);
+
+    if (!fillResult.sessionExists || !fillResult.sessionOpen) {
+      await client.query("ROLLBACK");
       return NextResponse.json({ error: "Økten finnes ikke." }, { status: 404 });
     }
 
-    const { capacity, count } = capRes.rows[0];
-    if (count >= capacity) {
-      return NextResponse.json({ error: "Økten er full." }, { status: 409 });
-    }
+    const confirmedCount = await getConfirmedRegistrationCount(client, sessionId);
+    const registrationStatus =
+      confirmedCount < fillResult.capacity
+        ? REGISTRATION_STATUS.CONFIRMED
+        : REGISTRATION_STATUS.WAITLIST;
 
-    await pool.query(
-      `INSERT INTO registrations (session_id, name, level, birth_month, birth_day)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [sessionId, name.trim(), level.trim(), Number(birthMonth), Number(birthDay)]
+    await client.query(
+      `INSERT INTO registrations (session_id, name, level, birth_month, birth_day, status)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        sessionId,
+        name.trim(),
+        level.trim(),
+        Number(birthMonth),
+        Number(birthDay),
+        registrationStatus,
+      ]
     );
 
-    return NextResponse.json({ ok: true }, { status: 200 });
+    await client.query("COMMIT");
+
+    return NextResponse.json({ ok: true, registrationStatus }, { status: 200 });
   } catch {
+    if (client) {
+      await client.query("ROLLBACK").catch(() => {});
+    }
+
     return NextResponse.json({ error: "Ugyldig forespørsel." }, { status: 400 });
+  } finally {
+    client?.release();
   }
 }

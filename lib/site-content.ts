@@ -140,6 +140,9 @@ type Messages = {
     chooseDay: string;
     submit: string;
     success: string;
+    successWaitlist: string;
+    fullNotice: string;
+    waitlistCount: (count: number) => string;
     errors: {
       captcha: string;
       session: string;
@@ -256,6 +259,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Velg dag",
       submit: "Registrer",
       success: "Du er registrert.",
+      successWaitlist: "Økten er full, så du er satt på venteliste.",
+      fullNotice: "Økten er full. Nye påmeldinger går til ventelisten.",
+      waitlistCount: (count) => `${count} på venteliste`,
       errors: {
         captcha: "Fullfør CAPTCHA før du sender inn.",
         session: "Velg en økt.",
@@ -374,6 +380,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Choose day",
       submit: "Register",
       success: "You are registered.",
+      successWaitlist: "This session is full, so you have been added to the waitlist.",
+      fullNotice: "This session is full. New registrations go to the waitlist.",
+      waitlistCount: (count) => `${count} on the waitlist`,
       errors: {
         captcha: "Complete the CAPTCHA before submitting.",
         session: "Choose a session.",
@@ -492,6 +501,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Vælg dag",
       submit: "Tilmeld",
       success: "Du er tilmeldt.",
+      successWaitlist: "Denne træning er fuld, så du er sat på venteliste.",
+      fullNotice: "Denne træning er fuld. Nye tilmeldinger går på ventelisten.",
+      waitlistCount: (count) => `${count} på venteliste`,
       errors: {
         captcha: "Fuldfør CAPTCHA før du sender.",
         session: "Vælg en træning.",
@@ -610,6 +622,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Välj dag",
       submit: "Anmäl",
       success: "Du är anmäld.",
+      successWaitlist: "Det här passet är fullt, så du har satts på väntelistan.",
+      fullNotice: "Det här passet är fullt. Nya anmälningar hamnar på väntelistan.",
+      waitlistCount: (count) => `${count} på väntelistan`,
       errors: {
         captcha: "Slutför CAPTCHA innan du skickar.",
         session: "Välj ett pass.",
@@ -728,6 +743,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "选择日期",
       submit: "提交报名",
       success: "报名成功。",
+      successWaitlist: "该训练已满，你已被加入候补名单。",
+      fullNotice: "该训练已满。新的报名会进入候补名单。",
+      waitlistCount: (count) => `候补名单中有 ${count} 人`,
       errors: {
         captcha: "提交前请先完成 CAPTCHA。",
         session: "请选择训练。",
@@ -844,10 +862,13 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       birthDayLabel: "Jour de naissance",
       chooseMonth: "Choisir un mois",
       chooseDay: "Choisir un jour",
-      submit: "S’inscrire",
+      submit: "S'inscrire",
       success: "Vous êtes inscrit.",
+      successWaitlist: "Cette séance est complète, vous avez été ajouté à la liste d'attente.",
+      fullNotice: "Cette séance est complète. Les nouvelles inscriptions vont sur la liste d'attente.",
+      waitlistCount: (count) => `${count} sur liste d'attente`,
       errors: {
-        captcha: "Complétez le CAPTCHA avant d’envoyer.",
+        captcha: "Complétez le CAPTCHA avant d'envoyer.",
         session: "Choisissez une séance.",
         birthDate: "Choisissez votre mois et jour de naissance.",
         generic: "Une erreur s’est produite.",
@@ -964,6 +985,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Elige día",
       submit: "Inscribirse",
       success: "Te has inscrito.",
+      successWaitlist: "El entrenamiento está completo, así que has sido añadido a la lista de espera.",
+      fullNotice: "Este entrenamiento está completo. Las nuevas inscripciones pasan a la lista de espera.",
+      waitlistCount: (count) => `${count} en lista de espera`,
       errors: {
         captcha: "Completa el CAPTCHA antes de enviar.",
         session: "Elige un entrenamiento.",
@@ -1082,6 +1106,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       chooseDay: "Tag wählen",
       submit: "Anmelden",
       success: "Du bist angemeldet.",
+      successWaitlist: "Diese Einheit ist voll, du wurdest auf die Warteliste gesetzt.",
+      fullNotice: "Diese Einheit ist voll. Neue Anmeldungen kommen auf die Warteliste.",
+      waitlistCount: (count) => `${count} auf der Warteliste`,
       errors: {
         captcha: "Bitte schließe das CAPTCHA vor dem Senden ab.",
         session: "Bitte wähle eine Einheit.",

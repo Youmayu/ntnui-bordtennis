@@ -13,6 +13,7 @@ export default function AdminClient({
     session_id: number;
     name: string;
     level: string;
+    status: string;
     created_at: string;
   }[];
   updateAction: (fd: FormData) => Promise<void>;
@@ -44,6 +45,7 @@ export default function AdminClient({
             <th className="py-2 pr-3">Session</th>
             <th className="py-2 pr-3">Navn</th>
             <th className="py-2 pr-3">Nivå</th>
+            <th className="py-2 pr-3">Status</th>
             <th className="py-2 pr-3">Lagre</th>
             <th className="py-2">Slett</th>
           </tr>
@@ -78,6 +80,10 @@ export default function AdminClient({
                   <option>Viderekommen</option>
                   <option>Erfaren</option>
                 </select>
+              </td>
+
+              <td className="py-3 pr-3">
+                {r.status === "waitlist" ? "Venteliste" : "Bekreftet"}
               </td>
 
               <td className="py-3 pr-3">
@@ -121,7 +127,7 @@ export default function AdminClient({
 
           {registrations.length === 0 && (
             <tr>
-              <td colSpan={6} className="py-6 text-muted-foreground">
+              <td colSpan={7} className="py-6 text-muted-foreground">
                 Ingen påmeldinger enda.
               </td>
             </tr>

@@ -1,6 +1,11 @@
 import { pool } from "@/lib/db";
 import { createPageMetadata } from "@/lib/seo";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
+import {
+  fillConfirmedSlotsFromWaitlist,
+  REGISTRATION_STATUS,
+  type RegistrationStatus,
+} from "@/lib/registrations";
 import AdminClient from "./AdminClient";
 
 type SessionRow = {
@@ -16,6 +21,7 @@ type RegRow = {
   session_id: number;
   name: string;
   level: string;
+  status: RegistrationStatus;
   created_at: string;
 };
 
@@ -77,7 +83,7 @@ export default async function AdminPage() {
   );
 
   const regsRes = await pool.query(
-    `SELECT id, session_id, name, level, created_at
+    `SELECT id, session_id, name, level, status, created_at
      FROM registrations
      ORDER BY created_at DESC
      LIMIT 300`
@@ -101,7 +107,43 @@ export default async function AdminPage() {
     "use server";
     const id = Number(formData.get("id"));
     if (!Number.isFinite(id)) return;
-    await pool.query(`DELETE FROM registrations WHERE id = $1`, [id]);
+
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const regRes = await client.query(
+        `SELECT session_id, status
+         FROM registrations
+         WHERE id = $1
+         FOR UPDATE`,
+        [id]
+      );
+
+      if (regRes.rowCount === 0) {
+        await client.query("ROLLBACK");
+        return;
+      }
+
+      const registration = regRes.rows[0] as {
+        session_id: number;
+        status: RegistrationStatus;
+      };
+
+      await client.query(`DELETE FROM registrations WHERE id = $1`, [id]);
+
+      if (registration.status === REGISTRATION_STATUS.CONFIRMED) {
+        await fillConfirmedSlotsFromWaitlist(client, registration.session_id);
+      }
+
+      await client.query("COMMIT");
+    } catch {
+      await client.query("ROLLBACK").catch(() => {});
+      throw new Error("Could not delete registration.");
+    } finally {
+      client.release();
+    }
   }
 
   async function updateRegistration(formData: FormData) {
@@ -159,21 +201,35 @@ export default async function AdminPage() {
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
     if (startsAtLocal >= endsAtLocal) return;
 
-    await pool.query(
-      `UPDATE sessions
-       SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
-           ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
-           location  = $4,
-           capacity  = $5
-      WHERE id = $1`,
-      [
-        id,
-        startsAtLocal,
-        endsAtLocal,
-        location,
-        capacity,
-      ]
-    );
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      await client.query(
+        `UPDATE sessions
+         SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
+             ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
+             location  = $4,
+             capacity  = $5
+        WHERE id = $1`,
+        [
+          id,
+          startsAtLocal,
+          endsAtLocal,
+          location,
+          capacity,
+        ]
+      );
+
+      await fillConfirmedSlotsFromWaitlist(client, id);
+      await client.query("COMMIT");
+    } catch {
+      await client.query("ROLLBACK").catch(() => {});
+      throw new Error("Could not update session.");
+    } finally {
+      client.release();
+    }
   }
 
   async function addSession(formData: FormData) {

@@ -1,6 +1,12 @@
+import type { PoolClient } from "pg";
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { isValidBirthMonthDay } from "@/lib/birth-month-day";
+import {
+  fillConfirmedSlotsFromWaitlist,
+  REGISTRATION_STATUS,
+  type RegistrationStatus,
+} from "@/lib/registrations";
 
 async function verifyTurnstile(token: string) {
   const secret = process.env.TURNSTILE_SECRET_KEY;
@@ -26,6 +32,8 @@ async function verifyTurnstile(token: string) {
 }
 
 export async function POST(req: Request) {
+  let client: PoolClient | null = null;
+
   try {
     const body = await req.json();
 
@@ -52,40 +60,64 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: captcha.error }, { status: 400 });
     }
 
-    const res = await pool.query(
-      `SELECT r.id, r.birth_month, r.birth_day
+    client = await pool.connect();
+    await client.query("BEGIN");
+
+    const res = await client.query(
+      `SELECT r.id, r.session_id, r.status, r.birth_month, r.birth_day
        FROM registrations r
        INNER JOIN sessions s ON s.id = r.session_id
        WHERE r.id = $1
-         AND s.ends_at > NOW()`,
+         AND s.ends_at > NOW()
+       FOR UPDATE OF r, s`,
       [registrationId]
     );
 
     if (res.rowCount === 0) {
+      await client.query("ROLLBACK");
       return NextResponse.json({ error: "Påmeldingen finnes ikke." }, { status: 404 });
     }
 
     const registration = res.rows[0] as {
       id: number;
+      session_id: number;
+      status: RegistrationStatus;
       birth_month: number | null;
       birth_day: number | null;
     };
 
     if (!registration.birth_month || !registration.birth_day) {
+      await client.query("ROLLBACK");
       return NextResponse.json(
-        { error: "Denne påmeldingen ble laget før automatisk avmelding ble tatt i bruk. Kontakt admin." },
+        {
+          error:
+            "Denne påmeldingen ble laget før automatisk avmelding ble tatt i bruk. Kontakt admin.",
+        },
         { status: 409 }
       );
     }
 
     if (registration.birth_month !== birthMonth || registration.birth_day !== birthDay) {
+      await client.query("ROLLBACK");
       return NextResponse.json({ error: "Måned og dag stemmer ikke." }, { status: 403 });
     }
 
-    await pool.query(`DELETE FROM registrations WHERE id = $1`, [registrationId]);
+    await client.query(`DELETE FROM registrations WHERE id = $1`, [registrationId]);
+
+    if (registration.status === REGISTRATION_STATUS.CONFIRMED) {
+      await fillConfirmedSlotsFromWaitlist(client, registration.session_id);
+    }
+
+    await client.query("COMMIT");
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch {
+    if (client) {
+      await client.query("ROLLBACK").catch(() => {});
+    }
+
     return NextResponse.json({ error: "Noe gikk galt." }, { status: 500 });
+  } finally {
+    client?.release();
   }
 }
