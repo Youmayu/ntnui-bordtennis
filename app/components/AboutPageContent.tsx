@@ -2,6 +2,7 @@
 
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
+import { normalizeVenueText } from "@/lib/site-content";
 
 type PersonCardProps = {
   role: string;
@@ -50,7 +51,9 @@ export default function AboutPageContent() {
         <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
           {messages.about.title}
         </h1>
-        <p className="max-w-2xl text-[color:var(--text-muted)]">{messages.about.body}</p>
+        <p className="max-w-2xl text-[color:var(--text-muted)]">
+          {normalizeVenueText(messages.about.body)}
+        </p>
       </div>
 
       <section className="grid gap-6 md:grid-cols-3">

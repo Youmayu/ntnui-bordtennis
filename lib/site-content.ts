@@ -33,42 +33,61 @@ const LEVEL_KEY_BY_VALUE: Record<string, LevelKey> = {
 export const MAZEMAP_URL =
   "https://use.mazemap.com/?utm_medium=qr-code-mobile#v=1&config=ntnu&campusid=18&zlevel=2&center=10.475060,63.406574&zoom=17.8&sharepoitype=identifier&sharepoi=850-B217";
 
+export const VENUE_LABEL = "Dragvoll Idrettssenter B217";
+
 const VENUE_LABELS: Record<Locale, string> = {
-  no: "Dragvoll Idrettssenter B217",
-  en: "Dragvoll Sports Centre B217",
-  da: "Dragvoll Idrætscenter B217",
-  sv: "Dragvoll idrottscenter B217",
-  de: "Sportzentrum Dragvoll B217",
-  zh: "Dragvoll 体育中心 B217",
-  fr: "Centre sportif Dragvoll B217",
-  es: "Centro deportivo Dragvoll B217",
+  no: VENUE_LABEL,
+  en: VENUE_LABEL,
+  da: VENUE_LABEL,
+  sv: VENUE_LABEL,
+  de: VENUE_LABEL,
+  zh: VENUE_LABEL,
+  fr: VENUE_LABEL,
+  es: VENUE_LABEL,
 };
 
-export const DEFAULT_SESSION_LOCATION = VENUE_LABELS.no;
+export const DEFAULT_SESSION_LOCATION = VENUE_LABEL;
 
-const DEFAULT_LOCATION_ALIASES = new Set(
-  [
-    ...Object.values(VENUE_LABELS),
-    "Dragvoll Idrettsenter",
-    "Dragvoll Idrettssenter",
-    "Dragvoll Idrettssenter 2. etasje gymsal",
-    "Dragvoll Sports Centre",
-    "Dragvoll Idrætscenter",
-    "Dragvoll idrottscenter",
-    "NTNU Dragvoll Idrettssenter",
-    "NTNU Dragvoll Sports Centre",
-    "NTNU Dragvoll Idrætscenter",
-    "NTNU Dragvoll idrottscenter",
-    "Sportzentrum Dragvoll",
-    "NTNU Sportzentrum Dragvoll",
-    "Dragvoll 体育中心",
-    "NTNU Dragvoll 体育中心",
-    "Centre sportif Dragvoll",
-    "Centre sportif NTNU Dragvoll",
-    "Centro deportivo Dragvoll",
-    "Centro deportivo NTNU Dragvoll",
-  ].map((value) => value.trim().toLowerCase())
+const DEFAULT_LOCATION_ALIASES = [
+  VENUE_LABEL,
+  "Dragvoll Sports Centre B217",
+  "Dragvoll Idrætscenter B217",
+  "Dragvoll idrottscenter B217",
+  "Sportzentrum Dragvoll B217",
+  "Dragvoll 体育中心 B217",
+  "Centre sportif Dragvoll B217",
+  "Centro deportivo Dragvoll B217",
+  "Dragvoll Idrettsenter",
+  "Dragvoll Idrettssenter",
+  "Dragvoll Idrettssenter 2. etasje gymsal",
+  "Dragvoll Sports Centre",
+  "Dragvoll Idrætscenter",
+  "Dragvoll idrottscenter",
+  "NTNU Dragvoll Idrettssenter",
+  "NTNU Dragvoll Sports Centre",
+  "NTNU Dragvoll Idrætscenter",
+  "NTNU Dragvoll idrottscenter",
+  "Sportzentrum Dragvoll",
+  "NTNU Sportzentrum Dragvoll",
+  "Dragvoll 体育中心",
+  "NTNU Dragvoll 体育中心",
+  "Centre sportif Dragvoll",
+  "Centre sportif NTNU Dragvoll",
+  "Centro deportivo Dragvoll",
+  "Centro deportivo NTNU Dragvoll",
+];
+
+const DEFAULT_LOCATION_ALIAS_SET = new Set(
+  DEFAULT_LOCATION_ALIASES.map((value) => value.trim().toLowerCase())
 );
+
+const SORTED_DEFAULT_LOCATION_ALIASES = [...new Set(DEFAULT_LOCATION_ALIASES)].sort(
+  (left, right) => right.length - left.length
+);
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 type Messages = {
   shell: {
@@ -1187,7 +1206,17 @@ export function isDefaultVenueLocation(location: string | null | undefined) {
     return false;
   }
 
-  return DEFAULT_LOCATION_ALIASES.has(location.trim().toLowerCase());
+  return DEFAULT_LOCATION_ALIAS_SET.has(location.trim().toLowerCase());
+}
+
+export function normalizeVenueText(text: string) {
+  let normalized = text;
+
+  for (const alias of SORTED_DEFAULT_LOCATION_ALIASES) {
+    normalized = normalized.replace(new RegExp(escapeRegExp(alias), "g"), VENUE_LABEL);
+  }
+
+  return normalized;
 }
 
 export function formatVenueLabel(location: string | null | undefined, locale: Locale) {

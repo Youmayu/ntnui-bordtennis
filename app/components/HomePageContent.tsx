@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { getIntlLocale, localizePathname } from "@/lib/site-content";
+import { getIntlLocale, getVenueLabel, localizePathname } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 
@@ -66,7 +66,7 @@ export default function HomePageContent({
     <div className="space-y-10">
       <section className="app-hero overflow-hidden rounded-[2rem] p-8 sm:p-10">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="app-badge app-badge-neutral">{messages.home.heroTag}</span>
+          <span className="app-badge app-badge-neutral">{getVenueLabel(locale)}</span>
         </div>
 
         <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
