@@ -589,6 +589,97 @@ a {
   color: var(--success-ink);
 }
 
+.app-faq-quicklinks {
+  display: grid;
+  gap: 1rem;
+}
+
+.app-faq-link {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: 1.2rem;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  box-shadow: var(--surface-shadow-soft);
+  text-decoration: none;
+}
+
+.app-faq-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-border);
+}
+
+.app-faq-link-title {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.app-faq-link-body {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.app-faq-section {
+  scroll-margin-top: 7rem;
+}
+
+.app-faq-grid {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.app-faq-item {
+  border-radius: 1.2rem;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-strong);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-faq-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.15rem;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.app-faq-summary::-webkit-details-marker {
+  display: none;
+}
+
+.app-faq-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 9999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.app-faq-item[open] .app-faq-icon {
+  transform: rotate(45deg);
+}
+
+.app-faq-answer {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0 1.15rem 1.15rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
 @media (max-width: 640px) {
   .app-header {
     position: static;
@@ -630,9 +721,21 @@ a {
   .app-button-danger {
     width: 100%;
   }
+
+  .app-faq-summary {
+    padding: 1rem;
+  }
+
+  .app-faq-answer {
+    padding: 0 1rem 1rem;
+  }
 }
 
 @media (min-width: 640px) {
+  .app-faq-quicklinks {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .app-roster-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

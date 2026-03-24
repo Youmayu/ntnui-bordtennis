@@ -96,6 +96,9 @@ export default function SiteHeader() {
           <Link className={navItemClass(isActive("/schedule"))} href={toLocalizedHref("/schedule")}>
             {messages.shell.nav.schedule}
           </Link>
+          <Link className={navItemClass(isActive("/faq"))} href={toLocalizedHref("/faq")}>
+            FAQ
+          </Link>
           <Link
             className={navItemClass(isActive("/register"), "register")}
             href={toLocalizedHref("/register")}
