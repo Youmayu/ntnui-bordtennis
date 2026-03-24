@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  normalizeMultilineDisplay,
+  normalizeSingleLineDisplay,
+} from "@/lib/input-safety";
 import { getIntlLocale } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 
@@ -45,10 +49,10 @@ export default function AnnouncementBarContent({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h2 className="text-base font-semibold text-[color:var(--accent-ink)]">
-                      {announcement.title}
+                      {normalizeSingleLineDisplay(announcement.title)}
                     </h2>
                     <p className="mt-1 whitespace-pre-line text-sm text-[color:var(--text-muted)]">
-                      {announcement.body}
+                      {normalizeMultilineDisplay(announcement.body)}
                     </p>
                   </div>
 

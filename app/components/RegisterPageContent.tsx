@@ -237,6 +237,7 @@ export default function RegisterPageContent() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={messages.register.namePlaceholder}
+            maxLength={80}
             className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
           />
           <div className="text-xs text-[color:var(--text-soft)]">{messages.register.nameHelp}</div>

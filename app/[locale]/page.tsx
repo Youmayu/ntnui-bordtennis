@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { pool } from "@/lib/db";
 import HomePageContent from "@/app/components/HomePageContent";
+import { normalizeSingleLineDisplay } from "@/lib/input-safety";
 import {
   getMessages,
   getVenueLabel,
@@ -103,7 +104,9 @@ export default async function LocalizedHomePage({
       />
       <HomePageContent
         session={session}
-        registeredNames={(regsRes.rows as { name: string }[]).map((row) => row.name)}
+        registeredNames={(regsRes.rows as { name: string }[]).map((row) =>
+          normalizeSingleLineDisplay(row.name)
+        )}
       />
     </>
   );

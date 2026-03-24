@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
+import { sanitizeLocation } from "@/lib/input-safety";
 import { REGISTRATION_STATUS } from "@/lib/registrations";
+import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 
 export async function GET() {
   const res = await pool.query(
@@ -33,5 +35,20 @@ export async function GET() {
     [REGISTRATION_STATUS.CONFIRMED, REGISTRATION_STATUS.WAITLIST]
   );
 
-  return NextResponse.json({ sessions: res.rows }, { status: 200 });
+  const sessions = (
+    res.rows as Array<{
+      id: number;
+      starts_at: string;
+      ends_at: string;
+      location: string;
+      capacity: number;
+      confirmed_count: number;
+      waitlist_count: number;
+    }>
+  ).map((session) => ({
+    ...session,
+    location: sanitizeLocation(session.location) ?? DEFAULT_SESSION_LOCATION,
+  }));
+
+  return NextResponse.json({ sessions }, { status: 200 });
 }

@@ -2,6 +2,7 @@ import type { PoolClient } from "pg";
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { isValidBirthMonthDay } from "@/lib/birth-month-day";
+import { sanitizeLevel, sanitizeMemberName } from "@/lib/input-safety";
 import {
   fillConfirmedSlotsFromWaitlist,
   getConfirmedRegistrationCount,
@@ -14,14 +15,16 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { sessionId, name, level, birthMonth, birthDay, turnstileToken, website } = body ?? {};
+    const safeName = typeof name === "string" ? sanitizeMemberName(name) : null;
+    const safeLevel = typeof level === "string" ? sanitizeLevel(level) : null;
 
     if (!sessionId || typeof sessionId !== "number") {
       return NextResponse.json({ error: "Ugyldig økt." }, { status: 400 });
     }
-    if (!name || typeof name !== "string" || name.trim().length < 2) {
+    if (!safeName) {
       return NextResponse.json({ error: "Ugyldig navn." }, { status: 400 });
     }
-    if (!level || typeof level !== "string") {
+    if (!safeLevel) {
       return NextResponse.json({ error: "Ugyldig nivå." }, { status: 400 });
     }
     if (!isValidBirthMonthDay(Number(birthMonth), Number(birthDay))) {
@@ -79,8 +82,8 @@ export async function POST(req: Request) {
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         sessionId,
-        name.trim(),
-        level.trim(),
+        safeName,
+        safeLevel,
         Number(birthMonth),
         Number(birthDay),
         registrationStatus,

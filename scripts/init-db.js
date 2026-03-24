@@ -54,6 +54,58 @@ async function main() {
     ALTER TABLE registrations
       ALTER COLUMN status SET NOT NULL;
 
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'sessions_location_length_check'
+      ) THEN
+        ALTER TABLE sessions
+          ADD CONSTRAINT sessions_location_length_check
+          CHECK (char_length(location) BETWEEN 3 AND 120) NOT VALID;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'sessions_capacity_bounds_check'
+      ) THEN
+        ALTER TABLE sessions
+          ADD CONSTRAINT sessions_capacity_bounds_check
+          CHECK (capacity BETWEEN 1 AND 200) NOT VALID;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'registrations_name_length_check'
+      ) THEN
+        ALTER TABLE registrations
+          ADD CONSTRAINT registrations_name_length_check
+          CHECK (char_length(name) BETWEEN 2 AND 80) NOT VALID;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'registrations_level_value_check'
+      ) THEN
+        ALTER TABLE registrations
+          ADD CONSTRAINT registrations_level_value_check
+          CHECK (level IN ('Nybegynner', 'Viderekommen', 'Erfaren')) NOT VALID;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'registrations_birth_month_bounds_check'
+      ) THEN
+        ALTER TABLE registrations
+          ADD CONSTRAINT registrations_birth_month_bounds_check
+          CHECK (birth_month IS NULL OR birth_month BETWEEN 1 AND 12) NOT VALID;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'registrations_birth_day_bounds_check'
+      ) THEN
+        ALTER TABLE registrations
+          ADD CONSTRAINT registrations_birth_day_bounds_check
+          CHECK (birth_day IS NULL OR birth_day BETWEEN 1 AND 31) NOT VALID;
+      END IF;
+
+    END $$;
+
     CREATE INDEX IF NOT EXISTS idx_registrations_session_id
       ON registrations(session_id);
 
@@ -70,7 +122,26 @@ async function main() {
 
     CREATE INDEX IF NOT EXISTS idx_announcements_created_at
       ON announcements(created_at DESC);
-      
+
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'announcements_title_length_check'
+      ) THEN
+        ALTER TABLE announcements
+          ADD CONSTRAINT announcements_title_length_check
+          CHECK (char_length(title) BETWEEN 3 AND 140) NOT VALID;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'announcements_body_length_check'
+      ) THEN
+        ALTER TABLE announcements
+          ADD CONSTRAINT announcements_body_length_check
+          CHECK (char_length(body) BETWEEN 3 AND 2000) NOT VALID;
+      END IF;
+    END $$;
+       
     CREATE TABLE IF NOT EXISTS unregister_requests (
       id SERIAL PRIMARY KEY,
       session_id INT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
+import { normalizeSingleLineDisplay } from "@/lib/input-safety";
 import { REGISTRATION_STATUS } from "@/lib/registrations";
 
 export async function GET(req: Request) {
@@ -23,5 +24,10 @@ export async function GET(req: Request) {
     [sessionId, REGISTRATION_STATUS.CONFIRMED]
   );
 
-  return NextResponse.json({ registrations: res.rows }, { status: 200 });
+  const registrations = (res.rows as { id: number; name: string }[]).map((registration) => ({
+    ...registration,
+    name: normalizeSingleLineDisplay(registration.name),
+  }));
+
+  return NextResponse.json({ registrations }, { status: 200 });
 }

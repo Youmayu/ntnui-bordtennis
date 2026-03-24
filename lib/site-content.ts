@@ -1,3 +1,8 @@
+import {
+  normalizeMultilineDisplay,
+  normalizeSingleLineDisplay,
+} from "@/lib/input-safety";
+
 export const LOCALE_INFO = {
   no: { htmlLang: "no", intlLocale: "no-NO", label: "Norsk" },
   en: { htmlLang: "en", intlLocale: "en-US", label: "English" },
@@ -1206,11 +1211,11 @@ export function isDefaultVenueLocation(location: string | null | undefined) {
     return false;
   }
 
-  return DEFAULT_LOCATION_ALIAS_SET.has(location.trim().toLowerCase());
+  return DEFAULT_LOCATION_ALIAS_SET.has(normalizeSingleLineDisplay(location).toLowerCase());
 }
 
 export function normalizeVenueText(text: string) {
-  let normalized = text;
+  let normalized = normalizeMultilineDisplay(text);
 
   for (const alias of SORTED_DEFAULT_LOCATION_ALIASES) {
     normalized = normalized.replace(new RegExp(escapeRegExp(alias), "g"), VENUE_LABEL);
@@ -1224,7 +1229,13 @@ export function formatVenueLabel(location: string | null | undefined, locale: Lo
     return getVenueLabel(locale);
   }
 
-  return isDefaultVenueLocation(location) ? getVenueLabel(locale) : location;
+  const normalizedLocation = normalizeSingleLineDisplay(location);
+
+  if (!normalizedLocation) {
+    return getVenueLabel(locale);
+  }
+
+  return isDefaultVenueLocation(normalizedLocation) ? getVenueLabel(locale) : normalizedLocation;
 }
 
 export function getLevelKey(levelValue: string): LevelKey {

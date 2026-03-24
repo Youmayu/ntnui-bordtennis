@@ -1,4 +1,13 @@
 import { pool } from "@/lib/db";
+import {
+  normalizeMultilineDisplay,
+  normalizeSingleLineDisplay,
+  sanitizeAnnouncementBody,
+  sanitizeAnnouncementTitle,
+  sanitizeLevel,
+  sanitizeLocation,
+  sanitizeMemberName,
+} from "@/lib/input-safety";
 import { createPageMetadata } from "@/lib/seo";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 import {
@@ -99,9 +108,20 @@ export default async function AdminPage() {
     )
     .catch(() => ({ rows: [] }));
 
-  const sessions = sessionsRes.rows as SessionRow[];
-  const regs = regsRes.rows as RegRow[];
-  const announcements = announcementsRes.rows as AnnouncementRow[];
+  const sessions = (sessionsRes.rows as SessionRow[]).map((session) => ({
+    ...session,
+    location: sanitizeLocation(session.location) ?? DEFAULT_SESSION_LOCATION,
+  }));
+  const regs = (regsRes.rows as RegRow[]).map((registration) => ({
+    ...registration,
+    name: normalizeSingleLineDisplay(registration.name),
+    level: sanitizeLevel(registration.level) ?? "Nybegynner",
+  }));
+  const announcements = (announcementsRes.rows as AnnouncementRow[]).map((announcement) => ({
+    ...announcement,
+    title: normalizeSingleLineDisplay(announcement.title),
+    body: normalizeMultilineDisplay(announcement.body),
+  }));
 
   async function deleteRegistration(formData: FormData) {
     "use server";
@@ -149,9 +169,9 @@ export default async function AdminPage() {
   async function updateRegistration(formData: FormData) {
     "use server";
     const id = Number(formData.get("id"));
-    const name = String(formData.get("name") ?? "").trim();
-    const level = String(formData.get("level") ?? "").trim();
-    if (!Number.isFinite(id) || name.length < 2 || !level) return;
+    const name = sanitizeMemberName(String(formData.get("name") ?? ""));
+    const level = sanitizeLevel(String(formData.get("level") ?? ""));
+    if (!Number.isFinite(id) || !name || !level) return;
 
     await pool.query(
       `UPDATE registrations SET name = $2, level = $3 WHERE id = $1`,
@@ -161,11 +181,11 @@ export default async function AdminPage() {
 
   async function addAnnouncement(formData: FormData) {
     "use server";
-    const title = String(formData.get("title") ?? "").trim();
-    const body = String(formData.get("body") ?? "").trim();
+    const title = sanitizeAnnouncementTitle(String(formData.get("title") ?? ""));
+    const body = sanitizeAnnouncementBody(String(formData.get("body") ?? ""));
     const expiresAtLocal = String(formData.get("expires_at") ?? "").trim();
 
-    if (title.length < 3 || body.length < 3) return;
+    if (!title || !body) return;
 
     await pool.query(
       `INSERT INTO announcements (title, body, expires_at)
@@ -193,7 +213,7 @@ export default async function AdminPage() {
     const id = Number(formData.get("id"));
     const startsAtLocal = String(formData.get("starts_at") ?? "");
     const endsAtLocal = String(formData.get("ends_at") ?? "");
-    const location = String(formData.get("location") ?? "").trim();
+    const location = sanitizeLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity"));
 
     if (!Number.isFinite(id)) return;
@@ -236,7 +256,7 @@ export default async function AdminPage() {
     "use server";
     const startsAtLocal = String(formData.get("starts_at") ?? "");
     const endsAtLocal = String(formData.get("ends_at") ?? "");
-    const location = String(formData.get("location") ?? "").trim();
+    const location = sanitizeLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity") ?? 20);
 
     if (!startsAtLocal || !endsAtLocal || !location) return;
@@ -289,6 +309,7 @@ export default async function AdminPage() {
                   name="title"
                   className="rounded-lg border bg-background px-3 py-2 text-sm"
                   placeholder="F.eks. Trening 24. april er kansellert"
+                  maxLength={140}
                   required
                 />
               </div>
@@ -309,6 +330,7 @@ export default async function AdminPage() {
                 name="body"
                 className="min-h-[96px] rounded-lg border bg-background px-3 py-2 text-sm"
                 placeholder="F.eks. Hallen er stengt grunnet arrangement."
+                maxLength={2000}
                 required
               />
             </div>
@@ -414,6 +436,7 @@ export default async function AdminPage() {
               <input
                 name="location"
                 defaultValue={DEFAULT_SESSION_LOCATION}
+                maxLength={120}
                 className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
                 required
               />
@@ -488,6 +511,7 @@ export default async function AdminPage() {
                       form={`session-${session.id}`}
                       name="location"
                       defaultValue={session.location}
+                      maxLength={120}
                       className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
                       required
                     />

@@ -65,6 +65,7 @@ export default function AdminClient({
                   form={`update-${r.id}`}
                   name={`name-${r.id}`}
                   defaultValue={r.name}
+                  maxLength={80}
                   className="w-56 rounded-lg border bg-background px-2 py-1"
                 />
               </td>
