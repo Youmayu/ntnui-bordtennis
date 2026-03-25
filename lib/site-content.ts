@@ -1218,7 +1218,10 @@ export function normalizeVenueText(text: string) {
   let normalized = normalizeMultilineDisplay(text);
 
   for (const alias of SORTED_DEFAULT_LOCATION_ALIASES) {
-    normalized = normalized.replace(new RegExp(escapeRegExp(alias), "g"), VENUE_LABEL);
+    normalized = normalized.replace(
+      new RegExp(`${escapeRegExp(alias)}(?!\\s+B217)`, "g"),
+      VENUE_LABEL
+    );
   }
 
   return normalized;
