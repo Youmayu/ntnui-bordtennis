@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
 import { pool } from "@/lib/db";
 import SchedulePageContent from "@/app/components/SchedulePageContent";
 import { getMessages, getVenueLabel, isLocale, type Locale } from "@/lib/site-content";
@@ -55,6 +56,7 @@ export default async function LocalizedSchedulePage({
     notFound();
   }
 
+  await ensureAutoScheduledSessions();
   const res = await pool.query(
     `SELECT
        s.id,

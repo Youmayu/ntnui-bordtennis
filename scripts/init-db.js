@@ -24,6 +24,40 @@ async function main() {
       capacity  INT NOT NULL DEFAULT 20
     );
 
+    CREATE TABLE IF NOT EXISTS schedule_settings (
+      id INT PRIMARY KEY CHECK (id = 1),
+      auto_enabled BOOLEAN NOT NULL DEFAULT TRUE
+    );
+
+    INSERT INTO schedule_settings (id, auto_enabled)
+    VALUES (1, TRUE)
+    ON CONFLICT (id) DO NOTHING;
+
+    CREATE TABLE IF NOT EXISTS schedule_templates (
+      id SERIAL PRIMARY KEY,
+      weekday INT NOT NULL CHECK (weekday BETWEEN 1 AND 7),
+      starts_at_time TIME NOT NULL,
+      ends_at_time TIME NOT NULL,
+      location TEXT NOT NULL,
+      capacity INT NOT NULL DEFAULT 16 CHECK (capacity BETWEEN 1 AND 200),
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      CHECK (char_length(location) BETWEEN 3 AND 120)
+    );
+
+    CREATE TABLE IF NOT EXISTS schedule_exceptions (
+      id SERIAL PRIMARY KEY,
+      template_id INT NOT NULL REFERENCES schedule_templates(id) ON DELETE CASCADE,
+      week_start DATE NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (template_id, week_start)
+    );
+
+    ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS auto_template_id INT REFERENCES schedule_templates(id) ON DELETE SET NULL;
+
+    ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS auto_week_start DATE;
+
     CREATE TABLE IF NOT EXISTS registrations (
       id SERIAL PRIMARY KEY,
       session_id INT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
@@ -112,6 +146,14 @@ async function main() {
     CREATE INDEX IF NOT EXISTS idx_registrations_session_status_created_at
       ON registrations(session_id, status, created_at);
 
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_auto_template_week
+      ON sessions(auto_template_id, auto_week_start)
+      WHERE auto_template_id IS NOT NULL AND auto_week_start IS NOT NULL;
+
+    CREATE INDEX IF NOT EXISTS idx_sessions_auto_week_start
+      ON sessions(auto_week_start)
+      WHERE auto_week_start IS NOT NULL;
+
     CREATE TABLE IF NOT EXISTS announcements (
       id SERIAL PRIMARY KEY,
       title TEXT NOT NULL,
@@ -175,6 +217,51 @@ async function main() {
   } else {
     console.log("Sessions already exist, skipping seed.");
   }
+
+  await pool.query(`
+    DO $$
+    DECLARE
+      template_source_week TIMESTAMP;
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM schedule_templates LIMIT 1) THEN
+        SELECT date_trunc('week', starts_at AT TIME ZONE 'Europe/Oslo')
+        INTO template_source_week
+        FROM sessions
+        WHERE ends_at > NOW()
+        ORDER BY starts_at ASC
+        LIMIT 1;
+
+        IF template_source_week IS NULL THEN
+          SELECT date_trunc('week', starts_at AT TIME ZONE 'Europe/Oslo')
+          INTO template_source_week
+          FROM sessions
+          ORDER BY starts_at ASC
+          LIMIT 1;
+        END IF;
+
+        IF template_source_week IS NOT NULL THEN
+          INSERT INTO schedule_templates (
+            weekday,
+            starts_at_time,
+            ends_at_time,
+            location,
+            capacity,
+            is_active
+          )
+          SELECT
+            EXTRACT(ISODOW FROM starts_at AT TIME ZONE 'Europe/Oslo')::int,
+            (starts_at AT TIME ZONE 'Europe/Oslo')::time,
+            (ends_at AT TIME ZONE 'Europe/Oslo')::time,
+            location,
+            capacity,
+            TRUE
+          FROM sessions
+          WHERE date_trunc('week', starts_at AT TIME ZONE 'Europe/Oslo') = template_source_week
+          ORDER BY starts_at ASC;
+        END IF;
+      END IF;
+    END $$;
+  `);
 
   await pool.end();
   console.log("DB init done.");

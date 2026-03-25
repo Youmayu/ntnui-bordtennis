@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
 import { pool } from "@/lib/db";
 import { sanitizeLocation } from "@/lib/input-safety";
 import { REGISTRATION_STATUS } from "@/lib/registrations";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 
 export async function GET() {
+  await ensureAutoScheduledSessions();
+
   const res = await pool.query(
     `SELECT
        s.id,

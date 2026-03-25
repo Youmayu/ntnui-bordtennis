@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
 import { pool } from "@/lib/db";
 import HomePageContent from "@/app/components/HomePageContent";
 import { normalizeSingleLineDisplay } from "@/lib/input-safety";
@@ -65,6 +66,7 @@ export default async function LocalizedHomePage({
   }
 
   const structuredData = getLocalizedHomeStructuredData(locale);
+  await ensureAutoScheduledSessions();
   const nextSessionRes = await pool.query(
     `SELECT id, starts_at, ends_at, location, capacity, NOW() AS current_time
      FROM sessions

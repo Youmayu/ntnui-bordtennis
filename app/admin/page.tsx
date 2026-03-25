@@ -1,5 +1,12 @@
 import { pool } from "@/lib/db";
 import {
+  ensureAutoScheduleScaffold,
+  ensureAutoScheduledSessions,
+  generateNextWeekFromAutoSchedule,
+  normalizeAutoScheduleLocation,
+  rememberDeletedAutoSession,
+} from "@/lib/auto-schedule";
+import {
   normalizeMultilineDisplay,
   normalizeSingleLineDisplay,
   sanitizeAnnouncementBody,
@@ -23,6 +30,8 @@ type SessionRow = {
   ends_at: string;
   location: string;
   capacity: number;
+  auto_template_id: number | null;
+  auto_week_start: string | null;
 };
 
 type RegRow = {
@@ -42,6 +51,38 @@ type AnnouncementRow = {
   created_at: string;
   is_active: boolean;
 };
+
+type ScheduleSettingsRow = {
+  auto_enabled: boolean;
+};
+
+type ScheduleTemplateRow = {
+  id: number;
+  weekday: number;
+  starts_at_time: string;
+  ends_at_time: string;
+  location: string;
+  capacity: number;
+  is_active: boolean;
+};
+
+type AutoScheduleOverviewRow = {
+  current_week_start_local: string;
+  next_week_start_local: string;
+  current_week_last_end_local: string | null;
+  active_template_count: number;
+  next_week_session_count: number;
+};
+
+const WEEKDAY_OPTIONS = [
+  { value: 1, label: "Mandag" },
+  { value: 2, label: "Tirsdag" },
+  { value: 3, label: "Onsdag" },
+  { value: 4, label: "Torsdag" },
+  { value: 5, label: "Fredag" },
+  { value: 6, label: "Lørdag" },
+  { value: 7, label: "Søndag" },
+] as const;
 
 function fmtOslo(dt: Date) {
   return new Intl.DateTimeFormat("no-NO", {
@@ -70,6 +111,23 @@ function toDatetimeLocalOslo(value: string) {
   return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
 
+function toTimeInputValue(value: string) {
+  return value.slice(0, 5);
+}
+
+function isValidTimeInput(value: string) {
+  return /^\d{2}:\d{2}$/.test(value);
+}
+
+function fmtOsloDate(value: string) {
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  return `${day}.${month}.${year}`;
+}
+
 export const dynamic = "force-dynamic";
 export const metadata = {
   ...createPageMetadata({
@@ -84,11 +142,59 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
+  await ensureAutoScheduleScaffold();
+  await ensureAutoScheduledSessions();
+
+  const settingsRes = await pool.query(
+    `SELECT auto_enabled
+     FROM schedule_settings
+     WHERE id = 1`
+  );
+
+  const templatesRes = await pool.query(
+    `SELECT id, weekday, starts_at_time, ends_at_time, location, capacity, is_active
+     FROM schedule_templates
+     ORDER BY weekday ASC, starts_at_time ASC, id ASC`
+  );
+
+  const overviewRes = await pool.query(
+    `WITH context AS (
+       SELECT date_trunc('week', timezone('Europe/Oslo', NOW())) AS current_week_start_local
+     ),
+     active_templates AS (
+       SELECT weekday, starts_at_time, ends_at_time
+       FROM schedule_templates
+       WHERE is_active = TRUE
+     )
+     SELECT
+       context.current_week_start_local::date::text AS current_week_start_local,
+       (context.current_week_start_local + INTERVAL '7 days')::date::text AS next_week_start_local,
+       MAX(
+         context.current_week_start_local
+         + make_interval(days => active_templates.weekday - 1)
+         + active_templates.ends_at_time
+         + CASE
+             WHEN active_templates.ends_at_time <= active_templates.starts_at_time THEN INTERVAL '1 day'
+             ELSE INTERVAL '0 day'
+           END
+       )::text AS current_week_last_end_local,
+       COUNT(active_templates.weekday)::int AS active_template_count,
+       (
+         SELECT COUNT(*)::int
+         FROM sessions s
+         WHERE (s.starts_at AT TIME ZONE 'Europe/Oslo') >= context.current_week_start_local + INTERVAL '7 days'
+           AND (s.starts_at AT TIME ZONE 'Europe/Oslo') < context.current_week_start_local + INTERVAL '14 days'
+       ) AS next_week_session_count
+     FROM context
+     LEFT JOIN active_templates ON TRUE
+     GROUP BY context.current_week_start_local`
+  );
+
   const sessionsRes = await pool.query(
-    `SELECT id, starts_at, ends_at, location, capacity
+    `SELECT id, starts_at, ends_at, location, capacity, auto_template_id, auto_week_start
      FROM sessions
      ORDER BY starts_at ASC
-     LIMIT 30`
+     LIMIT 50`
   );
 
   const regsRes = await pool.query(
@@ -108,6 +214,20 @@ export default async function AdminPage() {
     )
     .catch(() => ({ rows: [] }));
 
+  const autoScheduleSettings =
+    (settingsRes.rows[0] as ScheduleSettingsRow | undefined) ?? { auto_enabled: true };
+  const autoScheduleOverview =
+    (overviewRes.rows[0] as AutoScheduleOverviewRow | undefined) ?? {
+      current_week_start_local: "",
+      next_week_start_local: "",
+      current_week_last_end_local: null,
+      active_template_count: 0,
+      next_week_session_count: 0,
+    };
+  const templates = (templatesRes.rows as ScheduleTemplateRow[]).map((template) => ({
+    ...template,
+    location: normalizeAutoScheduleLocation(template.location),
+  }));
   const sessions = (sessionsRes.rows as SessionRow[]).map((session) => ({
     ...session,
     location: sanitizeLocation(session.location) ?? DEFAULT_SESSION_LOCATION,
@@ -208,6 +328,87 @@ export default async function AdminPage() {
     await pool.query(`DELETE FROM announcements WHERE id = $1`, [id]);
   }
 
+  async function updateAutoScheduleSettings(formData: FormData) {
+    "use server";
+    const autoEnabled = String(formData.get("auto_enabled") ?? "") === "true";
+
+    await pool.query(
+      `INSERT INTO schedule_settings (id, auto_enabled)
+       VALUES (1, $1)
+       ON CONFLICT (id)
+       DO UPDATE SET auto_enabled = EXCLUDED.auto_enabled`,
+      [autoEnabled]
+    );
+  }
+
+  async function addScheduleTemplate(formData: FormData) {
+    "use server";
+    const weekday = Number(formData.get("weekday"));
+    const startsAtTime = String(formData.get("starts_at_time") ?? "");
+    const endsAtTime = String(formData.get("ends_at_time") ?? "");
+    const location = normalizeAutoScheduleLocation(String(formData.get("location") ?? ""));
+    const capacity = Number(formData.get("capacity"));
+    const isActive = String(formData.get("is_active") ?? "") === "on";
+
+    if (!Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
+    if (!isValidTimeInput(startsAtTime) || !isValidTimeInput(endsAtTime)) return;
+    if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
+
+    await pool.query(
+      `INSERT INTO schedule_templates (
+         weekday,
+         starts_at_time,
+         ends_at_time,
+         location,
+         capacity,
+         is_active
+       )
+       VALUES ($1, $2::time, $3::time, $4, $5, $6)`,
+      [weekday, startsAtTime, endsAtTime, location, capacity, isActive]
+    );
+  }
+
+  async function updateScheduleTemplate(formData: FormData) {
+    "use server";
+    const id = Number(formData.get("id"));
+    const weekday = Number(formData.get("weekday"));
+    const startsAtTime = String(formData.get("starts_at_time") ?? "");
+    const endsAtTime = String(formData.get("ends_at_time") ?? "");
+    const location = normalizeAutoScheduleLocation(String(formData.get("location") ?? ""));
+    const capacity = Number(formData.get("capacity"));
+    const isActive = String(formData.get("is_active") ?? "") === "on";
+
+    if (!Number.isFinite(id)) return;
+    if (!Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
+    if (!isValidTimeInput(startsAtTime) || !isValidTimeInput(endsAtTime)) return;
+    if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
+
+    await pool.query(
+      `UPDATE schedule_templates
+       SET weekday = $2,
+           starts_at_time = $3::time,
+           ends_at_time = $4::time,
+           location = $5,
+           capacity = $6,
+           is_active = $7
+       WHERE id = $1`,
+      [id, weekday, startsAtTime, endsAtTime, location, capacity, isActive]
+    );
+  }
+
+  async function deleteScheduleTemplate(formData: FormData) {
+    "use server";
+    const id = Number(formData.get("id"));
+    if (!Number.isFinite(id)) return;
+    await pool.query(`DELETE FROM schedule_templates WHERE id = $1`, [id]);
+  }
+
+  async function generateNextWeek(formData: FormData) {
+    "use server";
+    void formData;
+    await generateNextWeekFromAutoSchedule();
+  }
+
   async function updateSession(formData: FormData) {
     "use server";
     const id = Number(formData.get("id"));
@@ -284,12 +485,328 @@ export default async function AdminPage() {
     "use server";
     const id = Number(formData.get("id"));
     if (!Number.isFinite(id)) return;
-    await pool.query(`DELETE FROM sessions WHERE id = $1`, [id]);
+
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const sessionRes = await client.query(
+        `SELECT auto_template_id, auto_week_start, starts_at
+         FROM sessions
+         WHERE id = $1
+         FOR UPDATE`,
+        [id]
+      );
+
+      if (sessionRes.rowCount === 0) {
+        await client.query("ROLLBACK");
+        return;
+      }
+
+      const session = sessionRes.rows[0] as {
+        auto_template_id: number | null;
+        auto_week_start: string | null;
+        starts_at: string;
+      };
+
+      await rememberDeletedAutoSession(client, session);
+      await client.query(`DELETE FROM sessions WHERE id = $1`, [id]);
+      await client.query("COMMIT");
+    } catch {
+      await client.query("ROLLBACK").catch(() => {});
+      throw new Error("Could not delete session.");
+    } finally {
+      client.release();
+    }
   }
 
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">Admin</h1>
+
+      <section className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm">
+        <div>
+          <h2 className="text-lg font-semibold">Automatisk ukeplan</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sett opp faste treningsdager én gang, så oppretter nettsiden neste ukes økter
+            automatisk når denne ukens siste planlagte trening er ferdig.
+          </p>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border bg-background p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                Auto-plan
+              </div>
+              <div className="mt-2 text-lg font-semibold">
+                {autoScheduleSettings.auto_enabled ? "På" : "Av"}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-background p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                Aktive maler
+              </div>
+              <div className="mt-2 text-lg font-semibold">
+                {autoScheduleOverview.active_template_count}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-background p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                Neste uke
+              </div>
+              <div className="mt-2 text-lg font-semibold">
+                {autoScheduleOverview.next_week_start_local
+                  ? fmtOsloDate(autoScheduleOverview.next_week_start_local)
+                  : "Ikke satt"}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {autoScheduleOverview.next_week_session_count} økter ligger allerede inne
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-start gap-3">
+            <form action={updateAutoScheduleSettings} className="flex items-end gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">Status</label>
+                <select
+                  name="auto_enabled"
+                  defaultValue={autoScheduleSettings.auto_enabled ? "true" : "false"}
+                  className="rounded-lg border bg-background px-3 py-2 text-sm"
+                >
+                  <option value="true">På</option>
+                  <option value="false">Av</option>
+                </select>
+              </div>
+
+              <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
+                Lagre auto-plan
+              </button>
+            </form>
+
+            <form action={generateNextWeek}>
+              <button className="rounded-lg border px-3 py-2 text-sm hover:opacity-90">
+                Opprett neste uke nå
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border bg-background p-4">
+          <div className="mb-3 text-sm font-medium">Legg til fast treningsdag</div>
+          <form action={addScheduleTemplate} className="grid gap-3 lg:grid-cols-[160px_120px_120px_minmax(0,1fr)_120px_auto_auto]">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Ukedag</label>
+              <select
+                name="weekday"
+                defaultValue="5"
+                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                required
+              >
+                {WEEKDAY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Start</label>
+              <input
+                name="starts_at_time"
+                type="time"
+                defaultValue="16:30"
+                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Slutt</label>
+              <input
+                name="ends_at_time"
+                type="time"
+                defaultValue="18:30"
+                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Sted</label>
+              <input
+                name="location"
+                defaultValue={DEFAULT_SESSION_LOCATION}
+                maxLength={120}
+                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Kapasitet</label>
+              <input
+                name="capacity"
+                type="number"
+                min={1}
+                max={200}
+                defaultValue={16}
+                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                required
+              />
+            </div>
+
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="is_active" defaultChecked />
+              Aktiv
+            </label>
+
+            <div className="flex items-end">
+              <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
+                Legg til mal
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-left text-muted-foreground">
+              <tr className="border-b">
+                <th className="py-2 pr-3">Ukedag</th>
+                <th className="py-2 pr-3">Start</th>
+                <th className="py-2 pr-3">Slutt</th>
+                <th className="py-2 pr-3">Sted</th>
+                <th className="py-2 pr-3">Kapasitet</th>
+                <th className="py-2 pr-3">Aktiv</th>
+                <th className="py-2 pr-3">Lagre</th>
+                <th className="py-2">Slett</th>
+              </tr>
+            </thead>
+            <tbody>
+              {templates.map((template) => (
+                <tr key={template.id} className="align-top border-b last:border-0">
+                  <td className="py-3 pr-3">
+                    <select
+                      form={`template-${template.id}`}
+                      name="weekday"
+                      defaultValue={String(template.weekday)}
+                      className="rounded-lg border bg-background px-2 py-1 text-sm"
+                    >
+                      {WEEKDAY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+
+                  <td className="py-3 pr-3">
+                    <input
+                      form={`template-${template.id}`}
+                      name="starts_at_time"
+                      type="time"
+                      defaultValue={toTimeInputValue(template.starts_at_time)}
+                      className="rounded-lg border bg-background px-2 py-1 text-sm"
+                      required
+                    />
+                  </td>
+
+                  <td className="py-3 pr-3">
+                    <input
+                      form={`template-${template.id}`}
+                      name="ends_at_time"
+                      type="time"
+                      defaultValue={toTimeInputValue(template.ends_at_time)}
+                      className="rounded-lg border bg-background px-2 py-1 text-sm"
+                      required
+                    />
+                  </td>
+
+                  <td className="py-3 pr-3">
+                    <input
+                      form={`template-${template.id}`}
+                      name="location"
+                      defaultValue={template.location}
+                      maxLength={120}
+                      className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
+                      required
+                    />
+                  </td>
+
+                  <td className="py-3 pr-3">
+                    <input
+                      form={`template-${template.id}`}
+                      name="capacity"
+                      type="number"
+                      min={1}
+                      max={200}
+                      defaultValue={template.capacity}
+                      className="w-24 rounded-lg border bg-background px-2 py-1 text-sm"
+                      required
+                    />
+                  </td>
+
+                  <td className="py-3 pr-3">
+                    <input
+                      form={`template-${template.id}`}
+                      name="is_active"
+                      type="checkbox"
+                      defaultChecked={template.is_active}
+                    />
+                  </td>
+
+                  <td className="py-3 pr-3">
+                    <form id={`template-${template.id}`} action={updateScheduleTemplate} className="flex gap-2">
+                      <input type="hidden" name="id" value={template.id} />
+                      <button className="rounded-lg border bg-primary px-3 py-1 text-primary-foreground hover:opacity-90">
+                        Lagre
+                      </button>
+                    </form>
+                  </td>
+
+                  <td className="py-3">
+                    <form action={deleteScheduleTemplate}>
+                      <input type="hidden" name="id" value={template.id} />
+                      <button className="rounded-lg border px-3 py-1 hover:opacity-90">
+                        Slett
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+
+              {templates.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-6 text-muted-foreground">
+                    Ingen faste treningsdager er lagt inn enda.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="rounded-2xl border bg-background p-4 text-sm text-muted-foreground">
+          {autoScheduleOverview.current_week_last_end_local ? (
+            <p>
+              Neste uke opprettes når siste aktive mal for denne uken er ferdig:
+              {" "}
+              {fmtOslo(new Date(autoScheduleOverview.current_week_last_end_local))}
+              . Du kan også opprette neste uke manuelt når du vil.
+            </p>
+          ) : (
+            <p>
+              Legg inn minst én aktiv mal for at automatisk oppsett skal kunne opprette nye økter.
+            </p>
+          )}
+        </div>
+      </section>
 
       <section className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm">
         <div>
@@ -465,6 +982,7 @@ export default async function AdminPage() {
             <thead className="text-left text-muted-foreground">
               <tr className="border-b">
                 <th className="py-2 pr-3">ID</th>
+                <th className="py-2 pr-3">Kilde</th>
                 <th className="py-2 pr-3">Start</th>
                 <th className="py-2 pr-3">Slutt</th>
                 <th className="py-2 pr-3">Sted</th>
@@ -477,6 +995,25 @@ export default async function AdminPage() {
               {sessions.map((session) => (
                 <tr key={session.id} className="align-top border-b last:border-0">
                   <td className="py-3 pr-3">{session.id}</td>
+
+                  <td className="py-3 pr-3">
+                    {session.auto_template_id ? (
+                      <div className="space-y-1">
+                        <span className="rounded-full border border-[color:rgba(19,60,67,0.14)] bg-[rgba(19,60,67,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:rgb(24,60,56)]">
+                          Auto
+                        </span>
+                        {session.auto_week_start && (
+                          <div className="text-xs text-muted-foreground">
+                            Uke fra {fmtOsloDate(session.auto_week_start)}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="rounded-full border border-[color:rgba(113,91,83,0.16)] bg-[rgba(113,91,83,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:rgb(113,91,83)]">
+                        Manuell
+                      </span>
+                    )}
+                  </td>
 
                   <td className="py-3 pr-3">
                     <div className="mb-1 text-xs text-muted-foreground">
@@ -552,7 +1089,7 @@ export default async function AdminPage() {
 
               {sessions.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-6 text-muted-foreground">
+                  <td colSpan={8} className="py-6 text-muted-foreground">
                     Ingen økter i databasen.
                   </td>
                 </tr>
