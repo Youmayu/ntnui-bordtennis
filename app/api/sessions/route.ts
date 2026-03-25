@@ -6,7 +6,7 @@ import { REGISTRATION_STATUS } from "@/lib/registrations";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 
 export async function GET() {
-  await ensureAutoScheduledSessions();
+  await ensureAutoScheduledSessions().catch(() => {});
 
   const res = await pool.query(
     `SELECT

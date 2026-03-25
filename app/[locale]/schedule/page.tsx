@@ -56,7 +56,7 @@ export default async function LocalizedSchedulePage({
     notFound();
   }
 
-  await ensureAutoScheduledSessions();
+  await ensureAutoScheduledSessions().catch(() => {});
   const res = await pool.query(
     `SELECT
        s.id,

@@ -74,6 +74,13 @@ type AutoScheduleOverviewRow = {
   next_week_session_count: number;
 };
 
+type AutoScheduleSchemaStatusRow = {
+  has_schedule_settings: boolean;
+  has_schedule_templates: boolean;
+  has_auto_template_id: boolean;
+  has_auto_week_start: boolean;
+};
+
 const WEEKDAY_OPTIONS = [
   { value: 1, label: "Mandag" },
   { value: 2, label: "Tirsdag" },
@@ -142,59 +149,134 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
-  await ensureAutoScheduleScaffold();
-  await ensureAutoScheduledSessions();
-
-  const settingsRes = await pool.query(
-    `SELECT auto_enabled
-     FROM schedule_settings
-     WHERE id = 1`
+  const schemaStatusRes = await pool.query<AutoScheduleSchemaStatusRow>(
+    `SELECT
+       to_regclass('public.schedule_settings') IS NOT NULL AS has_schedule_settings,
+       to_regclass('public.schedule_templates') IS NOT NULL AS has_schedule_templates,
+       EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'sessions'
+           AND column_name = 'auto_template_id'
+       ) AS has_auto_template_id,
+       EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'sessions'
+           AND column_name = 'auto_week_start'
+       ) AS has_auto_week_start`
   );
 
-  const templatesRes = await pool.query(
-    `SELECT id, weekday, starts_at_time, ends_at_time, location, capacity, is_active
-     FROM schedule_templates
-     ORDER BY weekday ASC, starts_at_time ASC, id ASC`
-  );
+  const autoScheduleSchema =
+    schemaStatusRes.rows[0] ??
+    ({
+      has_schedule_settings: false,
+      has_schedule_templates: false,
+      has_auto_template_id: false,
+      has_auto_week_start: false,
+    } satisfies AutoScheduleSchemaStatusRow);
 
-  const overviewRes = await pool.query(
-    `WITH context AS (
-       SELECT date_trunc('week', timezone('Europe/Oslo', NOW())) AS current_week_start_local
-     ),
-     active_templates AS (
-       SELECT weekday, starts_at_time, ends_at_time
-       FROM schedule_templates
-       WHERE is_active = TRUE
-     )
-     SELECT
-       context.current_week_start_local::date::text AS current_week_start_local,
-       (context.current_week_start_local + INTERVAL '7 days')::date::text AS next_week_start_local,
-       MAX(
-         context.current_week_start_local
-         + make_interval(days => active_templates.weekday - 1)
-         + active_templates.ends_at_time
-         + CASE
-             WHEN active_templates.ends_at_time <= active_templates.starts_at_time THEN INTERVAL '1 day'
-             ELSE INTERVAL '0 day'
-           END
-       )::text AS current_week_last_end_local,
-       COUNT(active_templates.weekday)::int AS active_template_count,
-       (
-         SELECT COUNT(*)::int
-         FROM sessions s
-         WHERE (s.starts_at AT TIME ZONE 'Europe/Oslo') >= context.current_week_start_local + INTERVAL '7 days'
-           AND (s.starts_at AT TIME ZONE 'Europe/Oslo') < context.current_week_start_local + INTERVAL '14 days'
-       ) AS next_week_session_count
-     FROM context
-     LEFT JOIN active_templates ON TRUE
-     GROUP BY context.current_week_start_local`
-  );
+  const autoScheduleAvailable =
+    autoScheduleSchema.has_schedule_settings &&
+    autoScheduleSchema.has_schedule_templates &&
+    autoScheduleSchema.has_auto_template_id &&
+    autoScheduleSchema.has_auto_week_start;
+
+  let autoScheduleError: string | null = null;
+  let autoScheduleSettings: ScheduleSettingsRow = { auto_enabled: true };
+  let autoScheduleOverview: AutoScheduleOverviewRow = {
+    current_week_start_local: "",
+    next_week_start_local: "",
+    current_week_last_end_local: null,
+    active_template_count: 0,
+    next_week_session_count: 0,
+  };
+  let templates: ScheduleTemplateRow[] = [];
+
+  if (autoScheduleAvailable) {
+    try {
+      await ensureAutoScheduleScaffold();
+      await ensureAutoScheduledSessions();
+
+      const [settingsRes, templatesRes, overviewRes] = await Promise.all([
+        pool.query(
+          `SELECT auto_enabled
+           FROM schedule_settings
+           WHERE id = 1`
+        ),
+        pool.query(
+          `SELECT id, weekday, starts_at_time, ends_at_time, location, capacity, is_active
+           FROM schedule_templates
+           ORDER BY weekday ASC, starts_at_time ASC, id ASC`
+        ),
+        pool.query(
+          `WITH context AS (
+             SELECT date_trunc('week', timezone('Europe/Oslo', NOW())) AS current_week_start_local
+           ),
+           active_templates AS (
+             SELECT weekday, starts_at_time, ends_at_time
+             FROM schedule_templates
+             WHERE is_active = TRUE
+           )
+           SELECT
+             context.current_week_start_local::date::text AS current_week_start_local,
+             (context.current_week_start_local + INTERVAL '7 days')::date::text AS next_week_start_local,
+             MAX(
+               (
+                 (context.current_week_start_local::date + make_interval(days => active_templates.weekday - 1))::timestamp
+                 + active_templates.ends_at_time
+                 + CASE
+                     WHEN active_templates.ends_at_time <= active_templates.starts_at_time THEN INTERVAL '1 day'
+                     ELSE INTERVAL '0 day'
+                   END
+               )
+             )::text AS current_week_last_end_local,
+             COUNT(active_templates.weekday)::int AS active_template_count,
+             (
+               SELECT COUNT(*)::int
+               FROM sessions s
+               WHERE (s.starts_at AT TIME ZONE 'Europe/Oslo') >= context.current_week_start_local + INTERVAL '7 days'
+                 AND (s.starts_at AT TIME ZONE 'Europe/Oslo') < context.current_week_start_local + INTERVAL '14 days'
+             ) AS next_week_session_count
+           FROM context
+           LEFT JOIN active_templates ON TRUE
+           GROUP BY context.current_week_start_local`
+        ),
+      ]);
+
+      autoScheduleSettings =
+        (settingsRes.rows[0] as ScheduleSettingsRow | undefined) ?? { auto_enabled: true };
+      autoScheduleOverview =
+        (overviewRes.rows[0] as AutoScheduleOverviewRow | undefined) ?? autoScheduleOverview;
+      templates = (templatesRes.rows as ScheduleTemplateRow[]).map((template) => ({
+        ...template,
+        location: normalizeAutoScheduleLocation(template.location),
+      }));
+    } catch (error) {
+      autoScheduleError =
+        error instanceof Error ? error.message : "Auto-plan kunne ikke lastes.";
+    }
+  }
 
   const sessionsRes = await pool.query(
-    `SELECT id, starts_at, ends_at, location, capacity, auto_template_id, auto_week_start
-     FROM sessions
-     ORDER BY starts_at ASC
-     LIMIT 50`
+    autoScheduleSchema.has_auto_template_id && autoScheduleSchema.has_auto_week_start
+      ? `SELECT id, starts_at, ends_at, location, capacity, auto_template_id, auto_week_start
+         FROM sessions
+         ORDER BY starts_at ASC
+         LIMIT 50`
+      : `SELECT
+           id,
+           starts_at,
+           ends_at,
+           location,
+           capacity,
+           NULL::int AS auto_template_id,
+           NULL::text AS auto_week_start
+         FROM sessions
+         ORDER BY starts_at ASC
+         LIMIT 50`
   );
 
   const regsRes = await pool.query(
@@ -214,20 +296,6 @@ export default async function AdminPage() {
     )
     .catch(() => ({ rows: [] }));
 
-  const autoScheduleSettings =
-    (settingsRes.rows[0] as ScheduleSettingsRow | undefined) ?? { auto_enabled: true };
-  const autoScheduleOverview =
-    (overviewRes.rows[0] as AutoScheduleOverviewRow | undefined) ?? {
-      current_week_start_local: "",
-      next_week_start_local: "",
-      current_week_last_end_local: null,
-      active_template_count: 0,
-      next_week_session_count: 0,
-    };
-  const templates = (templatesRes.rows as ScheduleTemplateRow[]).map((template) => ({
-    ...template,
-    location: normalizeAutoScheduleLocation(template.location),
-  }));
   const sessions = (sessionsRes.rows as SessionRow[]).map((session) => ({
     ...session,
     location: sanitizeLocation(session.location) ?? DEFAULT_SESSION_LOCATION,
@@ -486,6 +554,11 @@ export default async function AdminPage() {
     const id = Number(formData.get("id"));
     if (!Number.isFinite(id)) return;
 
+    if (!(autoScheduleSchema.has_auto_template_id && autoScheduleSchema.has_auto_week_start)) {
+      await pool.query(`DELETE FROM sessions WHERE id = $1`, [id]);
+      return;
+    }
+
     const client = await pool.connect();
 
     try {
@@ -532,6 +605,11 @@ export default async function AdminPage() {
             Sett opp faste treningsdager én gang, så oppretter nettsiden neste ukes økter
             automatisk når denne ukens siste planlagte trening er ferdig.
           </p>
+          {autoScheduleError && (
+            <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
+              Auto-plan kunne ikke lastes helt: {autoScheduleError}
+            </p>
+          )}
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">

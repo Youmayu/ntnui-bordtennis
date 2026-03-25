@@ -66,7 +66,7 @@ export default async function LocalizedHomePage({
   }
 
   const structuredData = getLocalizedHomeStructuredData(locale);
-  await ensureAutoScheduledSessions();
+  await ensureAutoScheduledSessions().catch(() => {});
   const nextSessionRes = await pool.query(
     `SELECT id, starts_at, ends_at, location, capacity, NOW() AS current_time
      FROM sessions
