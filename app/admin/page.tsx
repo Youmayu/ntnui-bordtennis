@@ -126,7 +126,24 @@ function isValidTimeInput(value: string) {
   return /^\d{2}:\d{2}$/.test(value);
 }
 
-function fmtOsloDate(value: string) {
+function fmtOsloDate(value: string | Date | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return new Intl.DateTimeFormat("no-NO", {
+      timeZone: "Europe/Oslo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(value);
+  }
+
+  if (typeof value !== "string") {
+    return String(value);
+  }
+
   const [year, month, day] = value.split("-");
   if (!year || !month || !day) {
     return value;
@@ -262,7 +279,14 @@ export default async function AdminPage() {
 
   const sessionsRes = await pool.query(
     autoScheduleSchema.has_auto_template_id && autoScheduleSchema.has_auto_week_start
-      ? `SELECT id, starts_at, ends_at, location, capacity, auto_template_id, auto_week_start
+      ? `SELECT
+           id,
+           starts_at,
+           ends_at,
+           location,
+           capacity,
+           auto_template_id,
+           auto_week_start::text AS auto_week_start
          FROM sessions
          ORDER BY starts_at ASC
          LIMIT 50`
