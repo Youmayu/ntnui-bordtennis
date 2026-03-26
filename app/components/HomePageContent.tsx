@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { getIntlLocale, getVenueLabel, localizePathname } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
@@ -23,9 +24,23 @@ export default function HomePageContent({
 }) {
   const { locale, messages } = useSitePreferences();
   const intlLocale = getIntlLocale(locale);
+  const venueLabel = getVenueLabel(locale);
   const scheduleHref = localizePathname("/schedule", locale);
   const registerHref = localizePathname("/register", locale);
   const unregisterHref = localizePathname("/unregister", locale);
+  const hallImage = (
+    <div className="app-photo-stage">
+      <Image
+        src="/images/website/treningshall.jpg"
+        alt={`Training hall at ${venueLabel}`}
+        width={2048}
+        height={1152}
+        priority
+        sizes="(min-width: 1280px) 22rem, (min-width: 1024px) 18rem, 100vw"
+        className="app-photo-image"
+      />
+    </div>
+  );
 
   if (!session) {
     return (
@@ -34,6 +49,7 @@ export default function HomePageContent({
           {messages.home.emptyTitle}
         </h1>
         <p className="text-[color:var(--text-muted)]">{messages.home.emptyBody}</p>
+        <div className="max-w-3xl">{hallImage}</div>
         <Link className="app-button-secondary inline-flex" href={scheduleHref}>
           {messages.home.ctaSchedule}
         </Link>
@@ -66,7 +82,7 @@ export default function HomePageContent({
     <div className="space-y-10">
       <section className="app-hero overflow-hidden rounded-[2rem] p-8 sm:p-10">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="app-badge app-badge-neutral">{getVenueLabel(locale)}</span>
+          <span className="app-badge app-badge-neutral">{venueLabel}</span>
         </div>
 
         <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
@@ -179,6 +195,7 @@ export default function HomePageContent({
             <div>{messages.home.levelBody}</div>
             <div className="pt-2 text-[color:var(--text-soft)]">{messages.home.bringLabel}</div>
             <div>{messages.home.bringBody}</div>
+            <div className="pt-3">{hallImage}</div>
           </div>
         </aside>
       </section>

@@ -558,6 +558,35 @@ a {
   transform: translateY(-1px);
 }
 
+.app-photo-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid var(--surface-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 32%),
+    var(--surface-strong);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-photo-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 26%),
+    linear-gradient(0deg, rgba(17, 12, 9, 0.12), transparent 24%);
+}
+
+.app-photo-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
 .app-field {
   border: 1px solid var(--border-muted);
   background: var(--surface-strong);
