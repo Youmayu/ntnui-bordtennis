@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import { normalizeVenueText } from "@/lib/site-content";
@@ -66,17 +67,29 @@ export default function AboutPageContent() {
         />
       </section>
 
-      <section className="app-surface p-6">
-        <h2 className="text-lg font-semibold text-[color:var(--text-strong)]">
-          {messages.about.locationTitle}
-        </h2>
-        <div className="mt-2">
-          <VenueLink
-            locale={locale}
-            className="text-[color:var(--accent)] hover:underline"
-            textClassName="font-medium text-[color:var(--accent)]"
-            showMazeMapBadge
+      <section className="app-surface overflow-hidden p-0">
+        <div className="app-location-photo-shell" aria-hidden="true">
+          <Image
+            src="/images/website/treningshall.jpg"
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="app-location-photo-image"
           />
+        </div>
+
+        <div className="relative z-10 p-6">
+          <h2 className="text-lg font-semibold text-[color:var(--text-strong)]">
+            {messages.about.locationTitle}
+          </h2>
+          <div className="mt-2">
+            <VenueLink
+              locale={locale}
+              className="text-[color:var(--accent)] hover:underline"
+              textClassName="font-medium text-[color:var(--accent)]"
+              showMazeMapBadge
+            />
+          </div>
         </div>
       </section>
     </div>

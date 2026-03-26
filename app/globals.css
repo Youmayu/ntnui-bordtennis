@@ -558,33 +558,75 @@ a {
   transform: translateY(-1px);
 }
 
-.app-photo-stage {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1.5rem;
-  border: 1px solid var(--surface-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 32%),
-    var(--surface-strong);
-  box-shadow: var(--surface-shadow-soft);
+.app-hero-photo {
+  isolation: isolate;
 }
 
-.app-photo-stage::after {
+.app-hero-photo-shell,
+.app-location-photo-shell {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.app-hero-photo-shell::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 26%),
-    linear-gradient(0deg, rgba(17, 12, 9, 0.12), transparent 24%);
+    linear-gradient(90deg, rgba(255, 248, 241, 0.94) 0%, rgba(255, 248, 241, 0.8) 42%, rgba(255, 248, 241, 0.32) 74%, rgba(255, 248, 241, 0.18) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 28%);
 }
 
-.app-photo-image {
+.app-hero-photo-image,
+.app-location-photo-image {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
+  height: 100%;
   object-fit: cover;
+  object-position: center 58%;
+}
+
+.app-hero-photo-image {
+  opacity: 0.42;
+  transform: scale(1.02);
+}
+
+.app-location-photo-shell {
+  position: relative;
+  height: 15rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.app-location-photo-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 24%),
+    linear-gradient(0deg, rgba(17, 12, 9, 0.28), transparent 38%);
+}
+
+.app-location-photo-image {
+  opacity: 0.92;
+}
+
+[data-theme="dark"] .app-hero-photo-shell::after {
+  background:
+    linear-gradient(90deg, rgba(20, 18, 20, 0.94) 0%, rgba(20, 18, 20, 0.82) 44%, rgba(20, 18, 20, 0.4) 74%, rgba(20, 18, 20, 0.22) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 24%);
+}
+
+[data-theme="dark"] .app-hero-photo-image {
+  opacity: 0.34;
+}
+
+[data-theme="dark"] .app-location-photo-shell::after {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 24%),
+    linear-gradient(0deg, rgba(7, 6, 8, 0.46), transparent 40%);
 }
 
 .app-field {
@@ -751,6 +793,16 @@ a {
     width: 100%;
   }
 
+  .app-hero-photo-shell::after {
+    background:
+      linear-gradient(180deg, rgba(255, 248, 241, 0.9) 0%, rgba(255, 248, 241, 0.8) 34%, rgba(255, 248, 241, 0.46) 68%, rgba(255, 248, 241, 0.28) 100%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 24%);
+  }
+
+  .app-location-photo-shell {
+    height: 12rem;
+  }
+
   .app-faq-summary {
     padding: 1rem;
   }
@@ -767,5 +819,9 @@ a {
 
   .app-roster-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-location-photo-shell {
+    height: 18rem;
   }
 }

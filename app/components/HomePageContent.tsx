@@ -28,31 +28,41 @@ export default function HomePageContent({
   const scheduleHref = localizePathname("/schedule", locale);
   const registerHref = localizePathname("/register", locale);
   const unregisterHref = localizePathname("/unregister", locale);
-  const hallImage = (
-    <div className="app-photo-stage">
-      <Image
-        src="/images/website/treningshall.jpg"
-        alt={`Training hall at ${venueLabel}`}
-        width={2048}
-        height={1152}
-        priority
-        sizes="(min-width: 1280px) 22rem, (min-width: 1024px) 18rem, 100vw"
-        className="app-photo-image"
-      />
-    </div>
-  );
 
   if (!session) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
-          {messages.home.emptyTitle}
-        </h1>
-        <p className="text-[color:var(--text-muted)]">{messages.home.emptyBody}</p>
-        <div className="max-w-3xl">{hallImage}</div>
-        <Link className="app-button-secondary inline-flex" href={scheduleHref}>
-          {messages.home.ctaSchedule}
-        </Link>
+      <div className="space-y-10">
+        <section className="app-hero app-hero-photo overflow-hidden rounded-[2rem] p-8 sm:p-10">
+          <div className="app-hero-photo-shell" aria-hidden="true">
+            <Image
+              src="/images/website/treningshall.jpg"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="app-hero-photo-image"
+            />
+          </div>
+
+          <div className="relative z-10 max-w-3xl">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="app-badge app-badge-neutral">{venueLabel}</span>
+            </div>
+
+            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
+              {messages.home.emptyTitle}
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--text-muted)]">
+              {messages.home.emptyBody}
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link className="app-button-secondary inline-flex" href={scheduleHref}>
+                {messages.home.ctaSchedule}
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -80,28 +90,41 @@ export default function HomePageContent({
 
   return (
     <div className="space-y-10">
-      <section className="app-hero overflow-hidden rounded-[2rem] p-8 sm:p-10">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="app-badge app-badge-neutral">{venueLabel}</span>
+      <section className="app-hero app-hero-photo overflow-hidden rounded-[2rem] p-8 sm:p-10">
+        <div className="app-hero-photo-shell" aria-hidden="true">
+          <Image
+            src="/images/website/treningshall.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="app-hero-photo-image"
+          />
         </div>
 
-        <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
-          {messages.home.heroTitle}
-        </h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--text-muted)]">
-          {messages.home.heroBody}
-        </p>
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="app-badge app-badge-neutral">{venueLabel}</span>
+          </div>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link href={registerHref} className="app-button-success inline-flex items-center">
-            {messages.home.ctaRegister}
-          </Link>
-          <Link href={unregisterHref} className="app-button-danger inline-flex items-center">
-            {messages.shell.nav.unregister}
-          </Link>
-          <Link href={scheduleHref} className="app-button-secondary inline-flex items-center">
-            {messages.home.ctaSchedule}
-          </Link>
+          <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
+            {messages.home.heroTitle}
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--text-muted)]">
+            {messages.home.heroBody}
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href={registerHref} className="app-button-success inline-flex items-center">
+              {messages.home.ctaRegister}
+            </Link>
+            <Link href={unregisterHref} className="app-button-danger inline-flex items-center">
+              {messages.shell.nav.unregister}
+            </Link>
+            <Link href={scheduleHref} className="app-button-secondary inline-flex items-center">
+              {messages.home.ctaSchedule}
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -195,7 +218,6 @@ export default function HomePageContent({
             <div>{messages.home.levelBody}</div>
             <div className="pt-2 text-[color:var(--text-soft)]">{messages.home.bringLabel}</div>
             <div>{messages.home.bringBody}</div>
-            <div className="pt-3">{hallImage}</div>
           </div>
         </aside>
       </section>
