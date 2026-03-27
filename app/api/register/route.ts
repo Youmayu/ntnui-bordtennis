@@ -14,7 +14,16 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { sessionId, name, level, birthMonth, birthDay, turnstileToken, website } = body ?? {};
+    const {
+      sessionId,
+      name,
+      level,
+      birthMonth,
+      birthDay,
+      turnstileToken,
+      website,
+      memberConfirmed,
+    } = body ?? {};
     const safeName = typeof name === "string" ? sanitizeMemberName(name) : null;
     const safeLevel = typeof level === "string" ? sanitizeLevel(level) : null;
 
@@ -69,6 +78,11 @@ export async function POST(req: Request) {
     if (!fillResult.sessionExists || !fillResult.sessionOpen) {
       await client.query("ROLLBACK");
       return NextResponse.json({ error: "Økten finnes ikke." }, { status: 404 });
+    }
+
+    if (fillResult.membersOnly && memberConfirmed !== true) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Bekreft medlemskap først." }, { status: 400 });
     }
 
     const confirmedCount = await getConfirmedRegistrationCount(client, sessionId);

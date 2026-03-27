@@ -15,6 +15,7 @@ export async function GET() {
        s.ends_at,
        s.location,
        s.capacity,
+       s.members_only,
        COALESCE(confirmed.confirmed_count, 0) AS confirmed_count,
        COALESCE(waitlist.waitlist_count, 0) AS waitlist_count
      FROM sessions s
@@ -45,6 +46,7 @@ export async function GET() {
       ends_at: string;
       location: string;
       capacity: number;
+      members_only: boolean;
       confirmed_count: number;
       waitlist_count: number;
     }>

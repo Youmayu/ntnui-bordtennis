@@ -30,6 +30,7 @@ type SessionRow = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   auto_template_id: number | null;
   auto_week_start: string | null;
 };
@@ -63,6 +64,7 @@ type ScheduleTemplateRow = {
   ends_at_time: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   is_active: boolean;
 };
 
@@ -224,7 +226,7 @@ export default async function AdminPage() {
            WHERE id = 1`
         ),
         pool.query(
-          `SELECT id, weekday, starts_at_time, ends_at_time, location, capacity, is_active
+          `SELECT id, weekday, starts_at_time, ends_at_time, location, capacity, members_only, is_active
            FROM schedule_templates
            ORDER BY weekday ASC, starts_at_time ASC, id ASC`
         ),
@@ -285,6 +287,7 @@ export default async function AdminPage() {
            ends_at,
            location,
            capacity,
+           members_only,
            auto_template_id,
            auto_week_start::text AS auto_week_start
          FROM sessions
@@ -296,6 +299,7 @@ export default async function AdminPage() {
            ends_at,
            location,
            capacity,
+           TRUE AS members_only,
            NULL::int AS auto_template_id,
            NULL::text AS auto_week_start
          FROM sessions
@@ -440,6 +444,7 @@ export default async function AdminPage() {
     const endsAtTime = String(formData.get("ends_at_time") ?? "");
     const location = normalizeAutoScheduleLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity"));
+    const membersOnly = String(formData.get("members_only") ?? "") === "on";
     const isActive = String(formData.get("is_active") ?? "") === "on";
 
     if (!Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
@@ -453,10 +458,11 @@ export default async function AdminPage() {
          ends_at_time,
          location,
          capacity,
+         members_only,
          is_active
        )
-       VALUES ($1, $2::time, $3::time, $4, $5, $6)`,
-      [weekday, startsAtTime, endsAtTime, location, capacity, isActive]
+       VALUES ($1, $2::time, $3::time, $4, $5, $6, $7)`,
+      [weekday, startsAtTime, endsAtTime, location, capacity, membersOnly, isActive]
     );
   }
 
@@ -468,6 +474,7 @@ export default async function AdminPage() {
     const endsAtTime = String(formData.get("ends_at_time") ?? "");
     const location = normalizeAutoScheduleLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity"));
+    const membersOnly = String(formData.get("members_only") ?? "") === "on";
     const isActive = String(formData.get("is_active") ?? "") === "on";
 
     if (!Number.isFinite(id)) return;
@@ -482,9 +489,10 @@ export default async function AdminPage() {
            ends_at_time = $4::time,
            location = $5,
            capacity = $6,
-           is_active = $7
+           members_only = $7,
+           is_active = $8
        WHERE id = $1`,
-      [id, weekday, startsAtTime, endsAtTime, location, capacity, isActive]
+      [id, weekday, startsAtTime, endsAtTime, location, capacity, membersOnly, isActive]
     );
   }
 
@@ -508,6 +516,7 @@ export default async function AdminPage() {
     const endsAtLocal = String(formData.get("ends_at") ?? "");
     const location = sanitizeLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity"));
+    const membersOnly = String(formData.get("members_only") ?? "") === "on";
 
     if (!Number.isFinite(id)) return;
     if (!startsAtLocal || !endsAtLocal || !location) return;
@@ -524,7 +533,8 @@ export default async function AdminPage() {
          SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
              ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
              location  = $4,
-             capacity  = $5
+             capacity  = $5,
+             members_only = $6
         WHERE id = $1`,
         [
           id,
@@ -532,6 +542,7 @@ export default async function AdminPage() {
           endsAtLocal,
           location,
           capacity,
+          membersOnly,
         ]
       );
 
@@ -551,24 +562,27 @@ export default async function AdminPage() {
     const endsAtLocal = String(formData.get("ends_at") ?? "");
     const location = sanitizeLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity") ?? 20);
+    const membersOnly = String(formData.get("members_only") ?? "") === "on";
 
     if (!startsAtLocal || !endsAtLocal || !location) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
     if (startsAtLocal >= endsAtLocal) return;
 
     await pool.query(
-      `INSERT INTO sessions (starts_at, ends_at, location, capacity)
+      `INSERT INTO sessions (starts_at, ends_at, location, capacity, members_only)
        VALUES (
          ($1::timestamp AT TIME ZONE 'Europe/Oslo'),
          ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
          $3,
-         $4
+         $4,
+         $5
        )`,
       [
         startsAtLocal,
         endsAtLocal,
         location,
         capacity,
+        membersOnly,
       ]
     );
   }
@@ -764,6 +778,11 @@ export default async function AdminPage() {
             </div>
 
             <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="members_only" defaultChecked />
+              Kun medlemmer
+            </label>
+
+            <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="is_active" defaultChecked />
               Aktiv
             </label>
@@ -785,6 +804,7 @@ export default async function AdminPage() {
                 <th className="py-2 pr-3">Slutt</th>
                 <th className="py-2 pr-3">Sted</th>
                 <th className="py-2 pr-3">Kapasitet</th>
+                <th className="py-2 pr-3">Kun medlemmer</th>
                 <th className="py-2 pr-3">Aktiv</th>
                 <th className="py-2 pr-3">Lagre</th>
                 <th className="py-2">Slett</th>
@@ -857,6 +877,15 @@ export default async function AdminPage() {
                   <td className="py-3 pr-3">
                     <input
                       form={`template-${template.id}`}
+                      name="members_only"
+                      type="checkbox"
+                      defaultChecked={template.members_only}
+                    />
+                  </td>
+
+                  <td className="py-3 pr-3">
+                    <input
+                      form={`template-${template.id}`}
                       name="is_active"
                       type="checkbox"
                       defaultChecked={template.is_active}
@@ -885,7 +914,7 @@ export default async function AdminPage() {
 
               {templates.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-6 text-muted-foreground">
+                  <td colSpan={9} className="py-6 text-muted-foreground">
                     Ingen faste treningsdager er lagt inn enda.
                   </td>
                 </tr>
@@ -1073,6 +1102,11 @@ export default async function AdminPage() {
               />
             </div>
 
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="members_only" defaultChecked />
+              Kun medlemmer
+            </label>
+
             <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
               Legg til
             </button>
@@ -1089,6 +1123,7 @@ export default async function AdminPage() {
                 <th className="py-2 pr-3">Slutt</th>
                 <th className="py-2 pr-3">Sted</th>
                 <th className="py-2 pr-3">Kapasitet</th>
+                <th className="py-2 pr-3">Kun medlemmer</th>
                 <th className="py-2 pr-3">Lagre</th>
                 <th className="py-2">Slett</th>
               </tr>
@@ -1170,6 +1205,15 @@ export default async function AdminPage() {
                   </td>
 
                   <td className="py-3 pr-3">
+                    <input
+                      form={`session-${session.id}`}
+                      name="members_only"
+                      type="checkbox"
+                      defaultChecked={session.members_only}
+                    />
+                  </td>
+
+                  <td className="py-3 pr-3">
                     <form id={`session-${session.id}`} action={updateSession} className="flex gap-2">
                       <input type="hidden" name="id" value={session.id} />
                       <button className="rounded-lg border bg-primary px-3 py-1 text-primary-foreground hover:opacity-90">
@@ -1191,7 +1235,7 @@ export default async function AdminPage() {
 
               {sessions.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-6 text-muted-foreground">
+                  <td colSpan={9} className="py-6 text-muted-foreground">
                     Ingen økter i databasen.
                   </td>
                 </tr>

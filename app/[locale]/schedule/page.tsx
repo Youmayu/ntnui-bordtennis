@@ -15,6 +15,7 @@ type SessionRow = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   registered_count: number;
   current_time: string;
 };
@@ -64,6 +65,7 @@ export default async function LocalizedSchedulePage({
        s.ends_at,
        s.location,
        s.capacity,
+       s.members_only,
        COALESCE(reg_counts.registered_count, 0) AS registered_count,
        NOW() AS current_time
      FROM sessions s

@@ -38,6 +38,8 @@ const LEVEL_KEY_BY_VALUE: Record<string, LevelKey> = {
 export const MAZEMAP_URL =
   "https://use.mazemap.com/?utm_medium=qr-code-mobile#v=1&config=ntnu&campusid=18&zlevel=2&center=10.475060,63.406574&zoom=17.8&sharepoitype=identifier&sharepoi=850-B217";
 
+export const MEMBERSHIP_SIGNUP_URL = "https://medlem.ntnui.no/groups/bordtennis/";
+
 export const VENUE_LABEL = "Dragvoll Idrettssenter B217";
 
 const VENUE_LABELS: Record<Locale, string> = {
@@ -52,6 +54,89 @@ const VENUE_LABELS: Record<Locale, string> = {
 };
 
 export const DEFAULT_SESSION_LOCATION = VENUE_LABEL;
+
+type SessionAccessMessages = {
+  membersOnly: string;
+  openForEverybody: string;
+  memberNotice: string;
+  memberConfirmLabel: string;
+  memberConfirmError: string;
+  memberSignupCta: string;
+};
+
+const SESSION_ACCESS_MESSAGES: Record<Locale, SessionAccessMessages> = {
+  no: {
+    membersOnly: "Kun for medlemmer",
+    openForEverybody: "Åpen for alle",
+    memberNotice:
+      "Denne økten er kun for medlemmer av NTNUI Bordtennis. Hvis du ikke er medlem ennå, meld deg inn først.",
+    memberConfirmLabel: "Jeg bekrefter at jeg er medlem av NTNUI Bordtennis.",
+    memberConfirmError: "Bekreft medlemskap før du sender inn.",
+    memberSignupCta: "Meld deg inn her",
+  },
+  en: {
+    membersOnly: "Members only",
+    openForEverybody: "Open for everybody",
+    memberNotice:
+      "This session is for NTNUI Table Tennis members only. If you are not a member yet, sign up first.",
+    memberConfirmLabel: "I confirm that I am a member of NTNUI Table Tennis.",
+    memberConfirmError: "Confirm membership before submitting.",
+    memberSignupCta: "Sign up here",
+  },
+  da: {
+    membersOnly: "Kun for medlemmer",
+    openForEverybody: "Åben for alle",
+    memberNotice:
+      "Denne træning er kun for medlemmer af NTNUI Bordtennis. Hvis du ikke er medlem endnu, så meld dig ind først.",
+    memberConfirmLabel: "Jeg bekræfter, at jeg er medlem af NTNUI Bordtennis.",
+    memberConfirmError: "Bekræft medlemskab før du sender.",
+    memberSignupCta: "Meld dig ind her",
+  },
+  sv: {
+    membersOnly: "Endast för medlemmar",
+    openForEverybody: "Öppen för alla",
+    memberNotice:
+      "Det här passet är bara för medlemmar i NTNUI Bordtennis. Om du inte är medlem ännu, bli medlem först.",
+    memberConfirmLabel: "Jag bekräftar att jag är medlem i NTNUI Bordtennis.",
+    memberConfirmError: "Bekräfta medlemskap innan du skickar.",
+    memberSignupCta: "Bli medlem här",
+  },
+  de: {
+    membersOnly: "Nur für Mitglieder",
+    openForEverybody: "Offen für alle",
+    memberNotice:
+      "Diese Einheit ist nur für Mitglieder von NTNUI Tischtennis. Wenn du noch kein Mitglied bist, melde dich zuerst an.",
+    memberConfirmLabel: "Ich bestätige, dass ich Mitglied von NTNUI Tischtennis bin.",
+    memberConfirmError: "Bitte bestätige die Mitgliedschaft vor dem Senden.",
+    memberSignupCta: "Hier anmelden",
+  },
+  zh: {
+    membersOnly: "仅限会员",
+    openForEverybody: "所有人开放",
+    memberNotice: "这节训练仅限 NTNUI 乒乓球会员参加。如果你还不是会员，请先注册会员。",
+    memberConfirmLabel: "我确认自己是 NTNUI 乒乓球会员。",
+    memberConfirmError: "提交前请先确认会员身份。",
+    memberSignupCta: "点此注册会员",
+  },
+  fr: {
+    membersOnly: "Réservé aux membres",
+    openForEverybody: "Ouvert à tous",
+    memberNotice:
+      "Cette séance est réservée aux membres de NTNUI Tennis de table. Si vous n'êtes pas encore membre, inscrivez-vous d'abord.",
+    memberConfirmLabel: "Je confirme que je suis membre de NTNUI Tennis de table.",
+    memberConfirmError: "Confirmez votre adhésion avant d'envoyer.",
+    memberSignupCta: "S'inscrire ici",
+  },
+  es: {
+    membersOnly: "Solo para miembros",
+    openForEverybody: "Abierto para todos",
+    memberNotice:
+      "Este entrenamiento es solo para miembros de NTNUI Tenis de mesa. Si todavía no eres miembro, inscríbete primero.",
+    memberConfirmLabel: "Confirmo que soy miembro de NTNUI Tenis de mesa.",
+    memberConfirmError: "Confirma tu membresía antes de enviar.",
+    memberSignupCta: "Hazte miembro aquí",
+  },
+};
 
 const DEFAULT_LOCATION_ALIASES = [
   VENUE_LABEL,
@@ -1200,6 +1285,10 @@ export function getIntlLocale(locale: Locale) {
 
 export function getMessages(locale: Locale) {
   return SITE_MESSAGES[locale];
+}
+
+export function getSessionAccessMessages(locale: Locale) {
+  return SESSION_ACCESS_MESSAGES[locale];
 }
 
 export function getVenueLabel(locale: Locale) {

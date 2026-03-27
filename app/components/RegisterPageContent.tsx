@@ -8,6 +8,8 @@ import {
   LEVEL_OPTIONS,
   formatVenueLabel,
   getIntlLocale,
+  getSessionAccessMessages,
+  MEMBERSHIP_SIGNUP_URL,
   type Locale,
 } from "@/lib/site-content";
 import { getDaysInMonth } from "@/lib/birth-month-day";
@@ -18,6 +20,7 @@ type Session = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   confirmed_count: number;
   waitlist_count: number;
 };
@@ -55,6 +58,7 @@ function getPreferredSessionId(
 export default function RegisterPageContent() {
   const { locale, messages } = useSitePreferences();
   const intlLocale = getIntlLocale(locale);
+  const accessMessages = getSessionAccessMessages(locale);
   const monthOptions = useMemo(() => getMonthOptions(locale), [locale]);
 
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -63,6 +67,7 @@ export default function RegisterPageContent() {
   const [level, setLevel] = useState("Nybegynner");
   const [birthMonth, setBirthMonth] = useState<number | null>(null);
   const [birthDay, setBirthDay] = useState<number | null>(null);
+  const [memberConfirmed, setMemberConfirmed] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -80,8 +85,14 @@ export default function RegisterPageContent() {
   );
 
   const disabled = useMemo(
-    () => name.trim().length < 2 || !sessionId || !birthMonth || !birthDay || !turnstileToken,
-    [birthDay, birthMonth, name, sessionId, turnstileToken]
+    () =>
+      name.trim().length < 2 ||
+      !sessionId ||
+      !birthMonth ||
+      !birthDay ||
+      !turnstileToken ||
+      (selectedSession?.members_only === true && !memberConfirmed),
+    [birthDay, birthMonth, memberConfirmed, name, selectedSession?.members_only, sessionId, turnstileToken]
   );
 
   async function loadSessions(preferredSessionId?: number | null) {
@@ -129,6 +140,10 @@ export default function RegisterPageContent() {
       setError(messages.register.errors.birthDate);
       return;
     }
+    if (selectedSession?.members_only && !memberConfirmed) {
+      setError(accessMessages.memberConfirmError);
+      return;
+    }
 
     const res = await fetch("/api/register", {
       method: "POST",
@@ -139,6 +154,7 @@ export default function RegisterPageContent() {
         level,
         birthMonth,
         birthDay,
+        memberConfirmed,
         turnstileToken: submittedToken,
         website: "",
       }),
@@ -161,6 +177,7 @@ export default function RegisterPageContent() {
     setLevel("Nybegynner");
     setBirthMonth(null);
     setBirthDay(null);
+    setMemberConfirmed(false);
     await loadSessions(sessionId);
   }
 
@@ -192,7 +209,10 @@ export default function RegisterPageContent() {
           <label className="text-sm font-medium">{messages.register.sessionLabel}</label>
           <select
             value={sessionId ?? ""}
-            onChange={(e) => setSessionId(Number(e.target.value))}
+            onChange={(e) => {
+              setSessionId(Number(e.target.value));
+              setMemberConfirmed(false);
+            }}
             className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
           >
             {sessions.map((session) => (
@@ -212,6 +232,19 @@ export default function RegisterPageContent() {
           </select>
           {selectedSession && (
             <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <span
+                  className={
+                    selectedSession.members_only
+                      ? "app-badge app-badge-accent"
+                      : "app-badge app-badge-neutral"
+                  }
+                >
+                  {selectedSession.members_only
+                    ? accessMessages.membersOnly
+                    : accessMessages.openForEverybody}
+                </span>
+              </div>
               <VenueLink
                 locale={locale}
                 location={selectedSession.location}
@@ -230,6 +263,36 @@ export default function RegisterPageContent() {
             </div>
           )}
         </div>
+
+        {selectedSession?.members_only && (
+          <div className="space-y-4 rounded-2xl border border-[color:var(--accent-border)] bg-[color:var(--accent-soft)] px-4 py-4">
+            <div className="space-y-2">
+              <div className="text-sm font-semibold text-[color:var(--accent-ink)]">
+                {accessMessages.membersOnly}
+              </div>
+              <p className="text-sm text-[color:var(--text-body)]">{accessMessages.memberNotice}</p>
+            </div>
+
+            <label className="flex items-start gap-3 text-sm text-[color:var(--text-body)]">
+              <input
+                type="checkbox"
+                checked={memberConfirmed}
+                onChange={(e) => setMemberConfirmed(e.target.checked)}
+                className="mt-1 h-4 w-4 accent-[color:var(--accent)]"
+              />
+              <span>{accessMessages.memberConfirmLabel}</span>
+            </label>
+
+            <a
+              href={MEMBERSHIP_SIGNUP_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="app-button-secondary w-full justify-center sm:w-auto"
+            >
+              {accessMessages.memberSignupCta}
+            </a>
+          </div>
+        )}
 
         <div className="space-y-2">
           <label className="text-sm font-medium">{messages.register.nameLabel}</label>

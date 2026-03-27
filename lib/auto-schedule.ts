@@ -21,6 +21,7 @@ type ActiveTemplateRow = {
   ends_at_time: string;
   location: string;
   capacity: number;
+  members_only: boolean;
 };
 
 type InsertedRow = {
@@ -161,7 +162,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
     }
 
     const templatesRes = await client.query<ActiveTemplateRow>(
-      `SELECT id, weekday, starts_at_time::text, ends_at_time::text, location, capacity
+      `SELECT id, weekday, starts_at_time::text, ends_at_time::text, location, capacity, members_only
        FROM schedule_templates
        WHERE is_active = TRUE
        ORDER BY weekday ASC, starts_at_time ASC, id ASC`
@@ -185,6 +186,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
            ends_at,
            location,
            capacity,
+           members_only,
            auto_template_id,
            auto_week_start
          )
@@ -194,21 +196,22 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
            $5,
            $6,
            $7,
+           $8,
            $1::date
          FROM target
          WHERE (
-           $8::boolean
+           $9::boolean
            OR NOT EXISTS (
              SELECT 1
              FROM schedule_exceptions e
-             WHERE e.template_id = $7
+             WHERE e.template_id = $8
                AND e.week_start = $1::date
            )
          )
            AND NOT EXISTS (
              SELECT 1
              FROM sessions existing
-             WHERE existing.auto_template_id = $7
+             WHERE existing.auto_template_id = $8
                AND existing.auto_week_start = $1::date
            )
            AND NOT EXISTS (
@@ -224,6 +227,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
           template.ends_at_time,
           template.location,
           template.capacity,
+          template.members_only,
           template.id,
           force,
         ]

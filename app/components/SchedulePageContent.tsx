@@ -1,6 +1,6 @@
 "use client";
 
-import { getIntlLocale } from "@/lib/site-content";
+import { getIntlLocale, getSessionAccessMessages } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 
@@ -10,6 +10,7 @@ type Session = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   registered_count: number;
   current_time: string;
 };
@@ -17,6 +18,7 @@ type Session = {
 export default function SchedulePageContent({ sessions }: { sessions: Session[] }) {
   const { locale, messages } = useSitePreferences();
   const intlLocale = getIntlLocale(locale);
+  const accessMessages = getSessionAccessMessages(locale);
 
   const formatter = new Intl.DateTimeFormat(intlLocale, {
     timeZone: "Europe/Oslo",
@@ -63,9 +65,24 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                       {formatter.format(new Date(session.starts_at))}
                     </td>
                     <td className="py-3 pr-3">
-                      <span className={isActive ? "app-badge app-badge-success" : "app-badge app-badge-accent"}>
-                        {isActive ? messages.schedule.active : messages.schedule.upcoming}
-                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className={isActive ? "app-badge app-badge-success" : "app-badge app-badge-accent"}
+                        >
+                          {isActive ? messages.schedule.active : messages.schedule.upcoming}
+                        </span>
+                        <span
+                          className={
+                            session.members_only
+                              ? "app-badge app-badge-accent"
+                              : "app-badge app-badge-neutral"
+                          }
+                        >
+                          {session.members_only
+                            ? accessMessages.membersOnly
+                            : accessMessages.openForEverybody}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-3 pr-3">
                       <VenueLink

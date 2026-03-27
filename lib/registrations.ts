@@ -13,6 +13,7 @@ type Queryable = Pick<PoolClient, "query">;
 type SessionStateRow = {
   capacity: number;
   session_open: boolean;
+  members_only: boolean;
 };
 
 type CountRow = {
@@ -28,7 +29,7 @@ export async function fillConfirmedSlotsFromWaitlist(
   sessionId: number
 ) {
   const sessionRes = await client.query<SessionStateRow>(
-    `SELECT capacity, ends_at > NOW() AS session_open
+    `SELECT capacity, ends_at > NOW() AS session_open, members_only
      FROM sessions
      WHERE id = $1
      FOR UPDATE`,
@@ -36,13 +37,25 @@ export async function fillConfirmedSlotsFromWaitlist(
   );
 
   if (sessionRes.rowCount === 0) {
-    return { sessionExists: false as const, sessionOpen: false as const, promotedCount: 0, capacity: 0 };
+    return {
+      sessionExists: false as const,
+      sessionOpen: false as const,
+      promotedCount: 0,
+      capacity: 0,
+      membersOnly: false,
+    };
   }
 
-  const { capacity, session_open: sessionOpen } = sessionRes.rows[0];
+  const { capacity, session_open: sessionOpen, members_only: membersOnly } = sessionRes.rows[0];
 
   if (!sessionOpen) {
-    return { sessionExists: true as const, sessionOpen: false as const, promotedCount: 0, capacity };
+    return {
+      sessionExists: true as const,
+      sessionOpen: false as const,
+      promotedCount: 0,
+      capacity,
+      membersOnly,
+    };
   }
 
   let promotedCount = 0;
@@ -79,7 +92,13 @@ export async function fillConfirmedSlotsFromWaitlist(
     promotedCount += 1;
   }
 
-  return { sessionExists: true as const, sessionOpen: true as const, promotedCount, capacity };
+  return {
+    sessionExists: true as const,
+    sessionOpen: true as const,
+    promotedCount,
+    capacity,
+    membersOnly,
+  };
 }
 
 export async function getConfirmedRegistrationCount(
