@@ -6,7 +6,7 @@ export default function FaqPageContent({ locale }: { locale: Locale }) {
 
   return (
     <div className="space-y-8">
-      <section className="app-hero overflow-hidden rounded-[2rem] p-8 sm:p-10">
+      <section className="app-hero overflow-hidden p-8 sm:p-10">
         <div className="flex flex-wrap items-center gap-3">
           <span className="app-badge app-badge-accent">{faq.badge}</span>
         </div>
@@ -23,13 +23,15 @@ export default function FaqPageContent({ locale }: { locale: Locale }) {
         <div className="text-sm font-medium uppercase tracking-[0.18em] text-[color:var(--text-soft)]">
           {faq.quickLinksTitle}
         </div>
-        <div className="app-faq-quicklinks">
-          {faq.sections.map((section) => (
-            <a key={section.id} href={`#${section.id}`} className="app-faq-link">
-              <span className="app-faq-link-title">{section.title}</span>
-              <span className="app-faq-link-body">{section.description}</span>
-            </a>
-          ))}
+        <div className="app-surface overflow-hidden p-0">
+          <div className="app-faq-quicklinks">
+            {faq.sections.map((section) => (
+              <a key={section.id} href={`#${section.id}`} className="app-faq-link">
+                <span className="app-faq-link-title">{section.title}</span>
+                <span className="app-faq-link-body">{section.description}</span>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 

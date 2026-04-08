@@ -32,7 +32,7 @@ export default function HomePageContent({
   if (!session) {
     return (
       <div className="space-y-12">
-        <section className="app-hero app-hero-photo app-stage-shell overflow-hidden rounded-[2.4rem] p-8 sm:p-10">
+        <section className="app-hero app-hero-photo app-stage-shell overflow-hidden p-8 sm:p-10">
           <div className="app-hero-photo-shell" aria-hidden="true">
             <Image
               src="/images/website/treningshall.jpg"
@@ -104,7 +104,7 @@ export default function HomePageContent({
 
   return (
     <div className="space-y-12">
-      <section className="app-hero app-hero-photo app-stage-shell overflow-hidden rounded-[2.4rem] p-8 sm:p-10">
+      <section className="app-hero app-hero-photo app-stage-shell overflow-hidden p-8 sm:p-10">
         <div className="app-hero-photo-shell" aria-hidden="true">
           <Image
             src="/images/website/treningshall.jpg"
@@ -184,74 +184,79 @@ export default function HomePageContent({
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
-        <div className="app-surface app-roster-shell p-6 sm:p-8">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <div className="app-panel-eyebrow">{isActive ? messages.home.currentTitle : messages.home.nextTitle}</div>
-              <h2 className="app-panel-title mt-3">
-                {messages.home.registeredCount(registeredNames.length, session.capacity)}
-              </h2>
-              <p className="app-panel-body mt-2">{dateFormatter.format(new Date(session.starts_at))}</p>
-            </div>
+      <section className="app-surface app-home-board overflow-hidden p-0">
+        <div className="app-home-board-grid">
+          <div className="app-home-board-primary p-6 sm:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <div className="app-panel-eyebrow">
+                  {isActive ? messages.home.currentTitle : messages.home.nextTitle}
+                </div>
+                <h2 className="app-panel-title mt-3">
+                  {messages.home.registeredCount(registeredNames.length, session.capacity)}
+                </h2>
+                <p className="app-panel-body mt-2">{dateFormatter.format(new Date(session.starts_at))}</p>
+              </div>
 
-            <div className="app-stat-card min-w-[170px] px-5 py-4 text-sm">
-              <div className="font-semibold text-white">{messages.home.spotsLeft(spotsLeft)}</div>
-              <div className="mt-1 text-white/78">
-                {isActive ? messages.home.currentStatus : messages.home.nextStatus}
+              <div className="app-stat-card min-w-[170px] px-5 py-4 text-sm">
+                <div className="font-semibold text-white">{messages.home.spotsLeft(spotsLeft)}</div>
+                <div className="mt-1 text-white/78">
+                  {isActive ? messages.home.currentStatus : messages.home.nextStatus}
+                </div>
               </div>
             </div>
+
+            <div className="mt-6 pt-6">
+              {registeredNames.length === 0 ? (
+                <span className="text-sm text-[color:var(--text-soft)]">
+                  {messages.home.nobodyRegistered}
+                </span>
+              ) : (
+                <div className="app-roster-grid">
+                  {registeredNames.slice(0, 20).map((name, index) => (
+                    <div key={`${name}-${index}`} className="app-roster-row">
+                      <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="app-roster-name">{name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href={registerHref} className="app-button-success inline-flex">
+                {messages.home.ctaRegister}
+              </Link>
+              <Link href={unregisterHref} className="app-button-danger inline-flex">
+                {messages.shell.nav.unregister}
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-6 border-t border-[color:var(--border-muted)] pt-6">
-            {registeredNames.length === 0 ? (
-              <span className="text-sm text-[color:var(--text-soft)]">
-                {messages.home.nobodyRegistered}
-              </span>
-            ) : (
-              <div className="app-roster-grid">
-                {registeredNames.slice(0, 20).map((name, index) => (
-                  <div key={`${name}-${index}`} className="app-roster-row">
-                    <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="app-roster-name">{name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <aside className="app-home-board-secondary p-6 text-sm sm:p-8">
+            <div className="app-panel-eyebrow">{messages.home.infoTitle}</div>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={registerHref} className="app-button-success inline-flex">
-              {messages.home.ctaRegister}
-            </Link>
-            <Link href={unregisterHref} className="app-button-danger inline-flex">
-              {messages.shell.nav.unregister}
-            </Link>
-          </div>
+            <div className="app-side-block space-y-2">
+              <div className="text-[color:var(--text-soft)]">{messages.home.locationLabel}</div>
+              <VenueLink
+                locale={locale}
+                className="font-medium text-[color:var(--accent)] hover:underline"
+                textClassName="font-medium"
+                showMazeMapBadge
+              />
+            </div>
+
+            <div className="app-side-block">
+              <div className="text-[color:var(--text-soft)]">{messages.home.levelLabel}</div>
+              <div className="mt-2">{messages.home.levelBody}</div>
+            </div>
+
+            <div className="app-side-block">
+              <div className="text-[color:var(--text-soft)]">{messages.home.bringLabel}</div>
+              <div className="mt-2">{messages.home.bringBody}</div>
+            </div>
+          </aside>
         </div>
-
-        <aside className="app-surface app-info-panel space-y-4 p-6 text-sm">
-          <div className="app-panel-eyebrow">{messages.home.infoTitle}</div>
-          <div className="space-y-2">
-            <div className="text-[color:var(--text-soft)]">{messages.home.locationLabel}</div>
-            <VenueLink
-              locale={locale}
-              className="font-medium text-[color:var(--accent)] hover:underline"
-              textClassName="font-medium"
-              showMazeMapBadge
-            />
-          </div>
-
-          <div className="border-t border-[color:var(--border-muted)] pt-4">
-            <div className="text-[color:var(--text-soft)]">{messages.home.levelLabel}</div>
-            <div className="mt-2">{messages.home.levelBody}</div>
-          </div>
-
-          <div className="border-t border-[color:var(--border-muted)] pt-4">
-            <div className="text-[color:var(--text-soft)]">{messages.home.bringLabel}</div>
-            <div className="mt-2">{messages.home.bringBody}</div>
-          </div>
-        </aside>
       </section>
     </div>
   );

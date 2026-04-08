@@ -16,7 +16,7 @@ function PersonCard({ role, name, email, phone }: PersonCardProps) {
   const { messages } = useSitePreferences();
 
   return (
-    <article className="app-surface app-person-card p-6">
+    <article className="app-person-card p-6">
       <div className="app-person-role">{role}</div>
       <div className="mt-4 text-xl font-semibold text-[color:var(--text-strong)]">{name}</div>
 
@@ -47,7 +47,7 @@ export default function AboutPageContent() {
 
   return (
     <div className="space-y-10">
-      <section className="app-hero overflow-hidden rounded-[2.4rem] p-8 sm:p-10">
+      <section className="app-hero overflow-hidden p-8 sm:p-10">
         <span className="app-badge app-badge-accent">{messages.about.badge}</span>
         <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
           {messages.about.title}
@@ -57,7 +57,7 @@ export default function AboutPageContent() {
         </p>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="app-surface app-people-board overflow-hidden p-0 md:grid-cols-3">
         <PersonCard role={messages.about.roles.leader} name={"Maja B\u00F6"} email="maja.bockenkamp@ntnui.no" />
         <PersonCard role={messages.about.roles.deputy} name="He You Ma" email="he.ma@ntnui.no" />
         <PersonCard

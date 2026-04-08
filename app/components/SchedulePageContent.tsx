@@ -46,7 +46,7 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
 
   return (
     <div className="space-y-8">
-      <section className="app-hero overflow-hidden rounded-[2.4rem] p-8 sm:p-10">
+      <section className="app-hero overflow-hidden p-8 sm:p-10">
         <span className="app-badge app-badge-accent">{messages.schedule.badge}</span>
         <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
           {messages.schedule.title}
@@ -57,66 +57,70 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
       <section className="space-y-4">
         <div className="app-panel-eyebrow">{messages.schedule.tableTitle}</div>
 
-        {sessions.length === 0 ? (
-          <div className="app-surface p-6 text-[color:var(--text-soft)]">{messages.schedule.empty}</div>
-        ) : (
-          <div className="app-schedule-list">
-            {sessions.map((session) => {
-              const now = new Date(session.current_time).getTime();
-              const isActive =
-                new Date(session.starts_at).getTime() <= now &&
-                new Date(session.ends_at).getTime() > now;
+        <div className="app-surface app-schedule-board overflow-hidden p-0">
+          {sessions.length === 0 ? (
+            <div className="p-6 text-[color:var(--text-soft)]">{messages.schedule.empty}</div>
+          ) : (
+            <div className="app-schedule-list">
+              {sessions.map((session) => {
+                const now = new Date(session.current_time).getTime();
+                const isActive =
+                  new Date(session.starts_at).getTime() <= now &&
+                  new Date(session.ends_at).getTime() > now;
 
-              return (
-                <article key={session.id} className="app-surface app-schedule-item p-5 sm:p-6">
-                  <div className="app-schedule-dateblock">
-                    <div className="app-schedule-day">{dayFormatter.format(new Date(session.starts_at))}</div>
-                    <div className="app-schedule-month">{monthFormatter.format(new Date(session.starts_at))}</div>
-                    <div className="app-schedule-weekday">{weekdayFormatter.format(new Date(session.starts_at))}</div>
-                  </div>
+                return (
+                  <article key={session.id} className="app-schedule-row p-5 sm:p-6">
+                    <div className="app-schedule-item">
+                      <div className="app-schedule-dateblock">
+                        <div className="app-schedule-day">{dayFormatter.format(new Date(session.starts_at))}</div>
+                        <div className="app-schedule-month">{monthFormatter.format(new Date(session.starts_at))}</div>
+                        <div className="app-schedule-weekday">{weekdayFormatter.format(new Date(session.starts_at))}</div>
+                      </div>
 
-                  <div className="app-schedule-content">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div>
-                        <div className="app-schedule-time">
-                          {timeFormatter.format(new Date(session.starts_at))}
-                          {" - "}
-                          {timeFormatter.format(new Date(session.ends_at))}
+                      <div className="app-schedule-content">
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div>
+                            <div className="app-schedule-time">
+                              {timeFormatter.format(new Date(session.starts_at))}
+                              {" - "}
+                              {timeFormatter.format(new Date(session.ends_at))}
+                            </div>
+                            <div className="app-schedule-meta">{formatter.format(new Date(session.starts_at))}</div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <span className={isActive ? "app-badge app-badge-success" : "app-badge app-badge-accent"}>
+                              {isActive ? messages.schedule.active : messages.schedule.upcoming}
+                            </span>
+                            <span
+                              className={
+                                session.registered_count >= session.capacity
+                                  ? "app-badge app-badge-danger"
+                                  : "app-badge app-badge-success"
+                              }
+                            >
+                              {session.registered_count}/{session.capacity}
+                            </span>
+                          </div>
                         </div>
-                        <div className="app-schedule-meta">{formatter.format(new Date(session.starts_at))}</div>
-                      </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        <span className={isActive ? "app-badge app-badge-success" : "app-badge app-badge-accent"}>
-                          {isActive ? messages.schedule.active : messages.schedule.upcoming}
-                        </span>
-                        <span
-                          className={
-                            session.registered_count >= session.capacity
-                              ? "app-badge app-badge-danger"
-                              : "app-badge app-badge-success"
-                          }
-                        >
-                          {session.registered_count}/{session.capacity}
-                        </span>
+                        <div className="mt-4">
+                          <VenueLink
+                            locale={locale}
+                            location={session.location}
+                            className="text-[color:var(--accent)] hover:underline"
+                            textClassName="font-medium"
+                            showMazeMapBadge
+                          />
+                        </div>
                       </div>
                     </div>
-
-                    <div className="mt-4">
-                      <VenueLink
-                        locale={locale}
-                        location={session.location}
-                        className="text-[color:var(--accent)] hover:underline"
-                        textClassName="font-medium"
-                        showMazeMapBadge
-                      />
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );

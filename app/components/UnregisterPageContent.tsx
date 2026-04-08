@@ -202,148 +202,150 @@ export default function UnregisterPageContent() {
         <p className="text-[color:var(--text-muted)]">{messages.unregister.body}</p>
       </div>
 
-      <div className="app-form-layout grid gap-6 lg:grid-cols-[minmax(0,1.08fr)_320px]">
-        <form onSubmit={onSubmit} className="app-surface app-form-shell space-y-5 p-6 sm:p-8">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{messages.unregister.sessionLabel}</label>
-            <select
-              value={sessionId ?? ""}
-              onChange={(e) => handleSessionChange(e.target.value ? Number(e.target.value) : null)}
-              className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
-            >
-              {sessions.map((session) => (
-                <option key={session.id} value={session.id}>
-                  {new Intl.DateTimeFormat(intlLocale, {
-                    timeZone: "Europe/Oslo",
-                    weekday: "short",
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(new Date(session.starts_at))}
-                  {" - "}
-                  {formatVenueLabel(session.location, locale)}
-                </option>
-              ))}
-            </select>
-            {selectedSession && (
-              <VenueLink
-                locale={locale}
-                location={selectedSession.location}
-                className="text-xs text-[color:var(--accent)] hover:underline"
-                textClassName="font-medium"
-                showMazeMapBadge
-              />
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{messages.unregister.whoLabel}</label>
-            <select
-              value={registrationId ?? ""}
-              onChange={(e) => setRegistrationId(e.target.value ? Number(e.target.value) : null)}
-              disabled={registrations.length === 0}
-              className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none disabled:opacity-60"
-            >
-              {registrations.length === 0 ? (
-                <option value="">{messages.unregister.noRegistrations}</option>
-              ) : (
-                registrations.map((registration) => (
-                  <option key={registration.id} value={registration.id}>
-                    {formatRegistrationLabel(registration)}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+      <div className="app-surface app-form-board overflow-hidden p-0">
+        <div className="app-form-board-grid">
+          <form onSubmit={onSubmit} className="app-form-shell space-y-5 p-6 sm:p-8">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.unregister.birthMonthLabel}</label>
+              <label className="text-sm font-medium">{messages.unregister.sessionLabel}</label>
               <select
-                value={birthMonth ?? ""}
-                onChange={(e) => handleBirthMonthChange(e.target.value ? Number(e.target.value) : null)}
+                value={sessionId ?? ""}
+                onChange={(e) => handleSessionChange(e.target.value ? Number(e.target.value) : null)}
                 className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
               >
-                <option value="">{messages.unregister.chooseMonth}</option>
-                {monthOptions.map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
+                {sessions.map((session) => (
+                  <option key={session.id} value={session.id}>
+                    {new Intl.DateTimeFormat(intlLocale, {
+                      timeZone: "Europe/Oslo",
+                      weekday: "short",
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }).format(new Date(session.starts_at))}
+                    {" - "}
+                    {formatVenueLabel(session.location, locale)}
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.unregister.birthDayLabel}</label>
-              <select
-                value={birthDay ?? ""}
-                onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
-                disabled={!birthMonth}
-                className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none disabled:opacity-60"
-              >
-                <option value="">{messages.unregister.chooseDay}</option>
-                {dayOptions.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <TurnstileWidget
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
-            token={turnstileToken}
-            onTokenChange={setTurnstileToken}
-          />
-
-          <button type="submit" disabled={disabled} className="app-button-danger w-full justify-center">
-            {messages.unregister.submit}
-          </button>
-
-          {error && <div className="app-alert-error">{error}</div>}
-          {message && <div className="app-alert-success">{message}</div>}
-        </form>
-
-        <aside className="app-form-aside">
-          {selectedSession && (
-            <div className="app-surface app-panel p-6">
-              <div className="app-panel-eyebrow">{messages.unregister.sessionLabel}</div>
-              <div className="app-panel-title mt-3">{sessionDateFormatter.format(new Date(selectedSession.starts_at))}</div>
-              <div className="app-panel-body mt-2">
-                {sessionTimeFormatter.format(new Date(selectedSession.starts_at))}
-                {" - "}
-                {sessionTimeFormatter.format(new Date(selectedSession.ends_at))}
-              </div>
-              <div className="mt-4">
+              {selectedSession && (
                 <VenueLink
                   locale={locale}
                   location={selectedSession.location}
-                  className="font-medium text-[color:var(--accent)] hover:underline"
+                  className="text-xs text-[color:var(--accent)] hover:underline"
                   textClassName="font-medium"
                   showMazeMapBadge
                 />
-              </div>
-              <div className="mt-5">
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{messages.unregister.whoLabel}</label>
+              <select
+                value={registrationId ?? ""}
+                onChange={(e) => setRegistrationId(e.target.value ? Number(e.target.value) : null)}
+                disabled={registrations.length === 0}
+                className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none disabled:opacity-60"
+              >
                 {registrations.length === 0 ? (
-                  <span className="text-sm text-[color:var(--text-soft)]">
-                    {messages.unregister.noRegistrations}
-                  </span>
+                  <option value="">{messages.unregister.noRegistrations}</option>
                 ) : (
-                  <div className="space-y-3">
-                    {registrations.slice(0, 5).map((registration, index) => (
-                      <div key={registration.id} className="app-roster-row">
-                        <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
-                        <span className="app-roster-name">{registration.name}</span>
-                      </div>
-                    ))}
-                  </div>
+                  registrations.map((registration) => (
+                    <option key={registration.id} value={registration.id}>
+                      {formatRegistrationLabel(registration)}
+                    </option>
+                  ))
                 )}
+              </select>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{messages.unregister.birthMonthLabel}</label>
+                <select
+                  value={birthMonth ?? ""}
+                  onChange={(e) => handleBirthMonthChange(e.target.value ? Number(e.target.value) : null)}
+                  className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
+                >
+                  <option value="">{messages.unregister.chooseMonth}</option>
+                  {monthOptions.map((month) => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{messages.unregister.birthDayLabel}</label>
+                <select
+                  value={birthDay ?? ""}
+                  onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
+                  disabled={!birthMonth}
+                  className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none disabled:opacity-60"
+                >
+                  <option value="">{messages.unregister.chooseDay}</option>
+                  {dayOptions.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-          )}
-        </aside>
+
+            <TurnstileWidget
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
+              token={turnstileToken}
+              onTokenChange={setTurnstileToken}
+            />
+
+            <button type="submit" disabled={disabled} className="app-button-danger w-full justify-center">
+              {messages.unregister.submit}
+            </button>
+
+            {error && <div className="app-alert-error">{error}</div>}
+            {message && <div className="app-alert-success">{message}</div>}
+          </form>
+
+          <aside className="app-form-aside app-form-board-side p-6 sm:p-8">
+            {selectedSession && (
+              <div className="app-panel app-side-block">
+                <div className="app-panel-eyebrow">{messages.unregister.sessionLabel}</div>
+                <div className="app-panel-title mt-3">{sessionDateFormatter.format(new Date(selectedSession.starts_at))}</div>
+                <div className="app-panel-body mt-2">
+                  {sessionTimeFormatter.format(new Date(selectedSession.starts_at))}
+                  {" - "}
+                  {sessionTimeFormatter.format(new Date(selectedSession.ends_at))}
+                </div>
+                <div className="mt-4">
+                  <VenueLink
+                    locale={locale}
+                    location={selectedSession.location}
+                    className="font-medium text-[color:var(--accent)] hover:underline"
+                    textClassName="font-medium"
+                    showMazeMapBadge
+                  />
+                </div>
+                <div className="mt-5">
+                  {registrations.length === 0 ? (
+                    <span className="text-sm text-[color:var(--text-soft)]">
+                      {messages.unregister.noRegistrations}
+                    </span>
+                  ) : (
+                    <div className="space-y-3">
+                      {registrations.slice(0, 5).map((registration, index) => (
+                        <div key={registration.id} className="app-roster-row">
+                          <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
+                          <span className="app-roster-name">{registration.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </aside>
+        </div>
       </div>
     </div>
   );

@@ -48,76 +48,82 @@ export default function SiteHeader() {
     <header className="app-header z-50 md:sticky md:top-0 md:backdrop-blur-xl">
       <div className="mx-auto max-w-6xl px-4 py-3 sm:py-4">
         <div className="app-header-frame">
-          <Link href={toLocalizedHref("/")} className="app-brand">
-            <span className="app-brand-mark" aria-hidden="true" />
-            <span className="app-brand-meta">
-              <span className="app-brand-subtitle">NTNUI</span>
-              <span className="app-brand-title">{messages.shell.brand}</span>
-            </span>
-          </Link>
+          <div className="app-header-main">
+            <Link href={toLocalizedHref("/")} className="app-brand">
+              <span className="app-brand-mark" aria-hidden="true">
+                <span className="app-brand-paddle" />
+                <span className="app-brand-handle" />
+                <span className="app-brand-ball" />
+              </span>
+              <span className="app-brand-meta">
+                <span className="app-brand-subtitle">NTNUI</span>
+                <span className="app-brand-title">{messages.shell.brand}</span>
+              </span>
+            </Link>
 
-          <div className="app-toolbar">
-            <label className="app-control-label">
-              <span className="sr-only">{messages.shell.languageLabel}</span>
-              <select
-                className="app-control-select"
-                aria-label={messages.shell.languageLabel}
-                value={locale}
-                onChange={(event) => {
-                  const nextLocale = event.target.value as Locale;
-                  setLocale(nextLocale);
+            <div className="app-toolbar">
+              <label className="app-control-label">
+                <span className="sr-only">{messages.shell.languageLabel}</span>
+                <select
+                  className="app-control-select"
+                  aria-label={messages.shell.languageLabel}
+                  value={locale}
+                  onChange={(event) => {
+                    const nextLocale = event.target.value as Locale;
+                    setLocale(nextLocale);
 
-                  if (!isAdminPath) {
-                    const query = searchParams.toString();
-                    const nextPath = localizePathname(currentPublicPath, nextLocale);
-                    router.replace(query ? `${nextPath}?${query}` : nextPath);
-                  }
-                }}
+                    if (!isAdminPath) {
+                      const query = searchParams.toString();
+                      const nextPath = localizePathname(currentPublicPath, nextLocale);
+                      router.replace(query ? `${nextPath}?${query}` : nextPath);
+                    }
+                  }}
+                >
+                  {Object.entries(LOCALE_INFO).map(([key, info]) => (
+                    <option key={key} value={key}>
+                      {info.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="button"
+                className="app-theme-toggle"
+                aria-label={`${messages.shell.themeLabel}: ${
+                  theme === "light" ? messages.shell.themeDark : messages.shell.themeLight
+                }`}
+                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
               >
-                {Object.entries(LOCALE_INFO).map(([key, info]) => (
-                  <option key={key} value={key}>
-                    {info.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <button
-              type="button"
-              className="app-theme-toggle"
-              aria-label={`${messages.shell.themeLabel}: ${
-                theme === "light" ? messages.shell.themeDark : messages.shell.themeLight
-              }`}
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            >
-              {theme === "light" ? messages.shell.themeDark : messages.shell.themeLight}
-            </button>
+                {theme === "light" ? messages.shell.themeDark : messages.shell.themeLight}
+              </button>
+            </div>
           </div>
-        </div>
 
-        <nav className="app-nav-strip mt-3 flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
-          <Link className={navItemClass(isActive("/schedule"))} href={toLocalizedHref("/schedule")}>
-            {messages.shell.nav.schedule}
-          </Link>
-          <Link className={navItemClass(isActive("/faq"))} href={toLocalizedHref("/faq")}>
-            FAQ
-          </Link>
-          <Link
-            className={navItemClass(isActive("/register"), "register")}
-            href={toLocalizedHref("/register")}
-          >
-            {messages.shell.nav.register}
-          </Link>
-          <Link
-            className={navItemClass(isActive("/unregister"), "unregister")}
-            href={toLocalizedHref("/unregister")}
-          >
-            {messages.shell.nav.unregister}
-          </Link>
-          <Link className={navItemClass(isActive("/about"))} href={toLocalizedHref("/about")}>
-            {messages.shell.nav.about}
-          </Link>
-        </nav>
+          <nav className="app-nav-strip flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
+            <Link className={navItemClass(isActive("/schedule"))} href={toLocalizedHref("/schedule")}>
+              {messages.shell.nav.schedule}
+            </Link>
+            <Link className={navItemClass(isActive("/faq"))} href={toLocalizedHref("/faq")}>
+              FAQ
+            </Link>
+            <Link
+              className={navItemClass(isActive("/register"), "register")}
+              href={toLocalizedHref("/register")}
+            >
+              {messages.shell.nav.register}
+            </Link>
+            <Link
+              className={navItemClass(isActive("/unregister"), "unregister")}
+              href={toLocalizedHref("/unregister")}
+            >
+              {messages.shell.nav.unregister}
+            </Link>
+            <Link className={navItemClass(isActive("/about"))} href={toLocalizedHref("/about")}>
+              {messages.shell.nav.about}
+            </Link>
+          </nav>
+        </div>
       </div>
     </header>
   );

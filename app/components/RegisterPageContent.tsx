@@ -199,171 +199,169 @@ export default function RegisterPageContent() {
         <p className="text-[color:var(--text-muted)]">{messages.register.body}</p>
       </div>
 
-      <div className="app-form-layout grid gap-6 lg:grid-cols-[minmax(0,1.08fr)_320px]">
-        <form onSubmit={onSubmit} className="app-surface app-form-shell space-y-5 p-6 sm:p-8">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{messages.register.sessionLabel}</label>
-            <select
-              value={sessionId ?? ""}
-              onChange={(e) => setSessionId(Number(e.target.value))}
-              className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
-            >
-              {sessions.map((session) => (
-                <option key={session.id} value={session.id}>
-                  {new Intl.DateTimeFormat(intlLocale, {
-                    timeZone: "Europe/Oslo",
-                    weekday: "short",
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(new Date(session.starts_at))}
-                  {" - "}
-                  {formatVenueLabel(session.location, locale)}
-                </option>
-              ))}
-            </select>
-            {selectedSession && (
-              <div className="space-y-2">
-                <VenueLink
-                  locale={locale}
-                  location={selectedSession.location}
-                  className="text-xs text-[color:var(--accent)] hover:underline"
-                  textClassName="font-medium"
-                  showMazeMapBadge
-                />
-                {selectedSessionIsFull && (
-                  <div className="text-xs font-medium text-[color:var(--danger-ink)]">
-                    {messages.register.fullNotice}
-                    {selectedSession.waitlist_count > 0
-                      ? ` ${messages.register.waitlistCount(selectedSession.waitlist_count)}`
-                      : ""}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{messages.register.nameLabel}</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={messages.register.namePlaceholder}
-              maxLength={80}
-              className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
-            />
-            <div className="text-xs text-[color:var(--text-soft)]">{messages.register.nameHelp}</div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{messages.register.levelLabel}</label>
-            <select
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
-            >
-              {LEVEL_OPTIONS.map((option) => (
-                <option key={option.key} value={option.value}>
-                  {messages.levels[option.key]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+      <div className="app-surface app-form-board overflow-hidden p-0">
+        <div className="app-form-board-grid">
+          <form onSubmit={onSubmit} className="app-form-shell space-y-5 p-6 sm:p-8">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.register.birthMonthLabel}</label>
+              <label className="text-sm font-medium">{messages.register.sessionLabel}</label>
               <select
-                value={birthMonth ?? ""}
-                onChange={(e) => handleBirthMonthChange(e.target.value ? Number(e.target.value) : null)}
+                value={sessionId ?? ""}
+                onChange={(e) => setSessionId(Number(e.target.value))}
                 className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
               >
-                <option value="">{messages.register.chooseMonth}</option>
-                {monthOptions.map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
+                {sessions.map((session) => (
+                  <option key={session.id} value={session.id}>
+                    {new Intl.DateTimeFormat(intlLocale, {
+                      timeZone: "Europe/Oslo",
+                      weekday: "short",
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }).format(new Date(session.starts_at))}
+                    {" - "}
+                    {formatVenueLabel(session.location, locale)}
                   </option>
                 ))}
               </select>
+              {selectedSession && (
+                <div className="space-y-2">
+                  <VenueLink
+                    locale={locale}
+                    location={selectedSession.location}
+                    className="text-xs text-[color:var(--accent)] hover:underline"
+                    textClassName="font-medium"
+                    showMazeMapBadge
+                  />
+                  {selectedSessionIsFull && (
+                    <div className="text-xs font-medium text-[color:var(--danger-ink)]">
+                      {messages.register.fullNotice}
+                      {selectedSession.waitlist_count > 0
+                        ? ` ${messages.register.waitlistCount(selectedSession.waitlist_count)}`
+                        : ""}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.register.birthDayLabel}</label>
+              <label className="text-sm font-medium">{messages.register.nameLabel}</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={messages.register.namePlaceholder}
+                maxLength={80}
+                className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
+              />
+              <div className="text-xs text-[color:var(--text-soft)]">{messages.register.nameHelp}</div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{messages.register.levelLabel}</label>
               <select
-                value={birthDay ?? ""}
-                onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
-                disabled={!birthMonth}
-                className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none disabled:opacity-60"
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+                className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
               >
-                <option value="">{messages.register.chooseDay}</option>
-                {dayOptions.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
+                {LEVEL_OPTIONS.map((option) => (
+                  <option key={option.key} value={option.value}>
+                    {messages.levels[option.key]}
                   </option>
                 ))}
               </select>
             </div>
-          </div>
 
-          <TurnstileWidget
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
-            token={turnstileToken}
-            onTokenChange={setTurnstileToken}
-          />
-
-          <button type="submit" disabled={disabled} className="app-button-success w-full justify-center">
-            {messages.register.submit}
-          </button>
-
-          {error && <div className="app-alert-error">{error}</div>}
-          {message && <div className="app-alert-success">{message}</div>}
-        </form>
-
-        <aside className="app-form-aside space-y-4">
-          {selectedSession && (
-            <div className="app-surface app-panel p-6">
-              <div className="app-panel-eyebrow">{messages.register.sessionLabel}</div>
-              <div className="app-panel-title mt-3">{sessionDateFormatter.format(new Date(selectedSession.starts_at))}</div>
-              <div className="app-panel-body mt-2">
-                {sessionTimeFormatter.format(new Date(selectedSession.starts_at))}
-                {" - "}
-                {sessionTimeFormatter.format(new Date(selectedSession.ends_at))}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{messages.register.birthMonthLabel}</label>
+                <select
+                  value={birthMonth ?? ""}
+                  onChange={(e) => handleBirthMonthChange(e.target.value ? Number(e.target.value) : null)}
+                  className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
+                >
+                  <option value="">{messages.register.chooseMonth}</option>
+                  {monthOptions.map((month) => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="mt-4">
-                <VenueLink
-                  locale={locale}
-                  location={selectedSession.location}
-                  className="font-medium text-[color:var(--accent)] hover:underline"
-                  textClassName="font-medium"
-                  showMazeMapBadge
-                />
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{messages.register.birthDayLabel}</label>
+                <select
+                  value={birthDay ?? ""}
+                  onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
+                  disabled={!birthMonth}
+                  className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none disabled:opacity-60"
+                >
+                  <option value="">{messages.register.chooseDay}</option>
+                  {dayOptions.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <span className="app-badge app-badge-success">
-                  {selectedSession.confirmed_count}/{selectedSession.capacity}
-                </span>
-                {selectedSession.waitlist_count > 0 && (
-                  <span className="app-badge app-badge-accent">
-                    {messages.register.waitlistCount(selectedSession.waitlist_count)}
+            </div>
+
+            <TurnstileWidget
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
+              token={turnstileToken}
+              onTokenChange={setTurnstileToken}
+            />
+
+            <button type="submit" disabled={disabled} className="app-button-success w-full justify-center">
+              {messages.register.submit}
+            </button>
+
+            {error && <div className="app-alert-error">{error}</div>}
+            {message && <div className="app-alert-success">{message}</div>}
+          </form>
+
+          <aside className="app-form-aside app-form-board-side p-6 sm:p-8">
+            {selectedSession && (
+              <div className="app-panel app-side-block">
+                <div className="app-panel-eyebrow">{messages.register.sessionLabel}</div>
+                <div className="app-panel-title mt-3">{sessionDateFormatter.format(new Date(selectedSession.starts_at))}</div>
+                <div className="app-panel-body mt-2">
+                  {sessionTimeFormatter.format(new Date(selectedSession.starts_at))}
+                  {" - "}
+                  {sessionTimeFormatter.format(new Date(selectedSession.ends_at))}
+                </div>
+                <div className="mt-4">
+                  <VenueLink
+                    locale={locale}
+                    location={selectedSession.location}
+                    className="font-medium text-[color:var(--accent)] hover:underline"
+                    textClassName="font-medium"
+                    showMazeMapBadge
+                  />
+                </div>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className="app-badge app-badge-success">
+                    {selectedSession.confirmed_count}/{selectedSession.capacity}
                   </span>
-                )}
+                  {selectedSession.waitlist_count > 0 && (
+                    <span className="app-badge app-badge-accent">
+                      {messages.register.waitlistCount(selectedSession.waitlist_count)}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="app-surface app-info-panel p-6 text-sm">
-            <div className="app-panel-eyebrow">{messages.home.infoTitle}</div>
-            <div className="border-t border-[color:var(--border-muted)] pt-4 text-[color:var(--text-soft)]">
-              {messages.home.levelLabel}
+            <div className="app-side-block text-sm">
+              <div className="app-panel-eyebrow">{messages.home.infoTitle}</div>
+              <div className="mt-4 text-[color:var(--text-soft)]">{messages.home.levelLabel}</div>
+              <div className="mt-2">{messages.home.levelBody}</div>
+              <div className="mt-5 text-[color:var(--text-soft)]">{messages.home.bringLabel}</div>
+              <div className="mt-2">{messages.home.bringBody}</div>
             </div>
-            <div className="mt-2">{messages.home.levelBody}</div>
-            <div className="border-t border-[color:var(--border-muted)] pt-4 text-[color:var(--text-soft)]">
-              {messages.home.bringLabel}
-            </div>
-            <div className="mt-2">{messages.home.bringBody}</div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </div>
     </div>
   );
