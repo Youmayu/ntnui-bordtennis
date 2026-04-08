@@ -26,48 +26,83 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
     hour: "2-digit",
     minute: "2-digit",
   });
+  const weekdayFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    weekday: "long",
+  });
+  const dayFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    day: "2-digit",
+  });
+  const monthFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    month: "short",
+  });
+  const timeFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-3">
+    <div className="space-y-8">
+      <section className="app-hero overflow-hidden rounded-[2.4rem] p-8 sm:p-10">
         <span className="app-badge app-badge-accent">{messages.schedule.badge}</span>
         <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
           {messages.schedule.title}
         </h1>
-        <p className="max-w-2xl text-[color:var(--text-muted)]">{messages.schedule.body}</p>
-      </div>
+        <p className="mt-4 max-w-2xl text-[color:var(--text-muted)]">{messages.schedule.body}</p>
+      </section>
 
-      <div className="app-surface p-6">
-        <div className="text-sm text-[color:var(--text-soft)]">{messages.schedule.tableTitle}</div>
+      <section className="space-y-4">
+        <div className="app-panel-eyebrow">{messages.schedule.tableTitle}</div>
 
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-[color:var(--text-soft)]">
-              <tr className="border-b border-[color:var(--border-muted)]">
-                <th className="py-2 pr-3">{messages.schedule.when}</th>
-                <th className="py-2 pr-3">{messages.schedule.status}</th>
-                <th className="py-2 pr-3">{messages.schedule.location}</th>
-                <th className="py-2">{messages.schedule.capacity}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sessions.map((session) => {
-                const now = new Date(session.current_time).getTime();
-                const isActive =
-                  new Date(session.starts_at).getTime() <= now &&
-                  new Date(session.ends_at).getTime() > now;
+        {sessions.length === 0 ? (
+          <div className="app-surface p-6 text-[color:var(--text-soft)]">{messages.schedule.empty}</div>
+        ) : (
+          <div className="app-schedule-list">
+            {sessions.map((session) => {
+              const now = new Date(session.current_time).getTime();
+              const isActive =
+                new Date(session.starts_at).getTime() <= now &&
+                new Date(session.ends_at).getTime() > now;
 
-                return (
-                  <tr key={session.id} className="border-b border-[color:var(--border-muted)] last:border-0">
-                    <td className="py-3 pr-3 font-medium">
-                      {formatter.format(new Date(session.starts_at))}
-                    </td>
-                    <td className="py-3 pr-3">
-                      <span className={isActive ? "app-badge app-badge-success" : "app-badge app-badge-accent"}>
-                        {isActive ? messages.schedule.active : messages.schedule.upcoming}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-3">
+              return (
+                <article key={session.id} className="app-surface app-schedule-item p-5 sm:p-6">
+                  <div className="app-schedule-dateblock">
+                    <div className="app-schedule-day">{dayFormatter.format(new Date(session.starts_at))}</div>
+                    <div className="app-schedule-month">{monthFormatter.format(new Date(session.starts_at))}</div>
+                    <div className="app-schedule-weekday">{weekdayFormatter.format(new Date(session.starts_at))}</div>
+                  </div>
+
+                  <div className="app-schedule-content">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className="app-schedule-time">
+                          {timeFormatter.format(new Date(session.starts_at))}
+                          {" - "}
+                          {timeFormatter.format(new Date(session.ends_at))}
+                        </div>
+                        <div className="app-schedule-meta">{formatter.format(new Date(session.starts_at))}</div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <span className={isActive ? "app-badge app-badge-success" : "app-badge app-badge-accent"}>
+                          {isActive ? messages.schedule.active : messages.schedule.upcoming}
+                        </span>
+                        <span
+                          className={
+                            session.registered_count >= session.capacity
+                              ? "app-badge app-badge-danger"
+                              : "app-badge app-badge-success"
+                          }
+                        >
+                          {session.registered_count}/{session.capacity}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
                       <VenueLink
                         locale={locale}
                         location={session.location}
@@ -75,33 +110,14 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                         textClassName="font-medium"
                         showMazeMapBadge
                       />
-                    </td>
-                    <td className="py-3 text-[color:var(--text-soft)]">
-                      <span
-                        className={
-                          session.registered_count >= session.capacity
-                            ? "app-badge app-badge-danger"
-                            : "app-badge app-badge-success"
-                        }
-                      >
-                        {session.registered_count}/{session.capacity}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {sessions.length === 0 && (
-                <tr>
-                  <td className="py-6 text-[color:var(--text-soft)]" colSpan={4}>
-                    {messages.schedule.empty}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

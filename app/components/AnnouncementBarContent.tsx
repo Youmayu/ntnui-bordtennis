@@ -32,7 +32,7 @@ export default function AnnouncementBarContent({
           <span className="app-badge app-badge-accent">{messages.announcements.heading}</span>
         </div>
 
-        <div className="mt-4 grid gap-3">
+        <div className="app-announcement-grid mt-4 grid gap-3">
           {announcements.map((announcement) => {
             const expiresAtLabel = announcement.expires_at
               ? new Intl.DateTimeFormat(getIntlLocale(locale), {

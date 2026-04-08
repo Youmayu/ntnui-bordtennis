@@ -32,10 +32,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body className="min-h-screen bg-background text-foreground">
         <SitePreferencesProvider initialLocale={locale} initialTheme={theme}>
-          <SiteHeader />
-          <AnnouncementBar />
-          <main className="mx-auto max-w-6xl px-4 py-10 sm:py-12">{children}</main>
-          <SiteFooter />
+          <div className="app-site-shell">
+            <div className="app-site-orb app-site-orb-one" aria-hidden="true" />
+            <div className="app-site-orb app-site-orb-two" aria-hidden="true" />
+            <SiteHeader />
+            <AnnouncementBar />
+            <main className="app-main-shell">
+              <div className="app-page-stack mx-auto max-w-6xl px-4 py-10 sm:py-14">{children}</div>
+            </main>
+            <SiteFooter />
+          </div>
         </SitePreferencesProvider>
       </body>
     </html>

@@ -46,53 +46,56 @@ export default function SiteHeader() {
 
   return (
     <header className="app-header z-50 md:sticky md:top-0 md:backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 sm:justify-between sm:gap-4 sm:py-4">
-        <Link
-          href={toLocalizedHref("/")}
-          className="app-brand shrink-0 text-base font-semibold tracking-tight sm:text-lg"
-        >
-          {messages.shell.brand}
-        </Link>
+      <div className="mx-auto max-w-6xl px-4 py-3 sm:py-4">
+        <div className="app-header-frame">
+          <Link href={toLocalizedHref("/")} className="app-brand">
+            <span className="app-brand-mark" aria-hidden="true" />
+            <span className="app-brand-meta">
+              <span className="app-brand-subtitle">NTNUI</span>
+              <span className="app-brand-title">{messages.shell.brand}</span>
+            </span>
+          </Link>
 
-        <div className="ml-auto flex items-center gap-2 sm:ml-0 sm:flex-wrap">
-          <label className="app-control-label">
-            <span className="sr-only">{messages.shell.languageLabel}</span>
-            <select
-              className="app-control-select"
-              aria-label={messages.shell.languageLabel}
-              value={locale}
-              onChange={(event) => {
-                const nextLocale = event.target.value as Locale;
-                setLocale(nextLocale);
+          <div className="app-toolbar">
+            <label className="app-control-label">
+              <span className="sr-only">{messages.shell.languageLabel}</span>
+              <select
+                className="app-control-select"
+                aria-label={messages.shell.languageLabel}
+                value={locale}
+                onChange={(event) => {
+                  const nextLocale = event.target.value as Locale;
+                  setLocale(nextLocale);
 
-                if (!isAdminPath) {
-                  const query = searchParams.toString();
-                  const nextPath = localizePathname(currentPublicPath, nextLocale);
-                  router.replace(query ? `${nextPath}?${query}` : nextPath);
-                }
-              }}
+                  if (!isAdminPath) {
+                    const query = searchParams.toString();
+                    const nextPath = localizePathname(currentPublicPath, nextLocale);
+                    router.replace(query ? `${nextPath}?${query}` : nextPath);
+                  }
+                }}
+              >
+                {Object.entries(LOCALE_INFO).map(([key, info]) => (
+                  <option key={key} value={key}>
+                    {info.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="button"
+              className="app-theme-toggle"
+              aria-label={`${messages.shell.themeLabel}: ${
+                theme === "light" ? messages.shell.themeDark : messages.shell.themeLight
+              }`}
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
             >
-              {Object.entries(LOCALE_INFO).map(([key, info]) => (
-                <option key={key} value={key}>
-                  {info.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button
-            type="button"
-            className="app-theme-toggle"
-            aria-label={`${messages.shell.themeLabel}: ${
-              theme === "light" ? messages.shell.themeDark : messages.shell.themeLight
-            }`}
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          >
-            {theme === "light" ? messages.shell.themeDark : messages.shell.themeLight}
-          </button>
+              {theme === "light" ? messages.shell.themeDark : messages.shell.themeLight}
+            </button>
+          </div>
         </div>
 
-        <nav className="order-3 flex w-full items-center gap-2 overflow-x-auto pb-1 text-sm sm:order-none sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0">
+        <nav className="app-nav-strip mt-3 flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
           <Link className={navItemClass(isActive("/schedule"))} href={toLocalizedHref("/schedule")}>
             {messages.shell.nav.schedule}
           </Link>

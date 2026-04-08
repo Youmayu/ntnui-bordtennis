@@ -16,9 +16,9 @@ function PersonCard({ role, name, email, phone }: PersonCardProps) {
   const { messages } = useSitePreferences();
 
   return (
-    <div className="app-surface p-6">
-      <div className="text-sm text-[color:var(--text-soft)]">{role}</div>
-      <div className="mt-1 text-lg font-semibold text-[color:var(--text-strong)]">{name}</div>
+    <article className="app-surface app-person-card p-6">
+      <div className="app-person-role">{role}</div>
+      <div className="mt-4 text-xl font-semibold text-[color:var(--text-strong)]">{name}</div>
 
       <div className="mt-4 space-y-2 text-sm">
         {email && (
@@ -38,7 +38,7 @@ function PersonCard({ role, name, email, phone }: PersonCardProps) {
           </div>
         )}
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -46,16 +46,16 @@ export default function AboutPageContent() {
   const { locale, messages } = useSitePreferences();
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-3">
+    <div className="space-y-10">
+      <section className="app-hero overflow-hidden rounded-[2.4rem] p-8 sm:p-10">
         <span className="app-badge app-badge-accent">{messages.about.badge}</span>
         <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
           {messages.about.title}
         </h1>
-        <p className="max-w-2xl text-[color:var(--text-muted)]">
+        <p className="mt-4 max-w-2xl text-[color:var(--text-muted)]">
           {normalizeVenueText(messages.about.body)}
         </p>
-      </div>
+      </section>
 
       <section className="grid gap-6 md:grid-cols-3">
         <PersonCard role={messages.about.roles.leader} name={"Maja B\u00F6"} email="maja.bockenkamp@ntnui.no" />
@@ -67,7 +67,7 @@ export default function AboutPageContent() {
         />
       </section>
 
-      <section className="app-surface overflow-hidden p-0">
+      <section className="app-surface app-location-stage overflow-hidden p-0">
         <div className="app-location-photo-shell" aria-hidden="true">
           <Image
             src="/images/website/treningshall.jpg"
@@ -78,11 +78,12 @@ export default function AboutPageContent() {
           />
         </div>
 
-        <div className="relative z-10 p-6">
-          <h2 className="text-lg font-semibold text-[color:var(--text-strong)]">
+        <div className="relative z-10 p-6 sm:p-8">
+          <div className="app-panel-eyebrow">{messages.about.locationTitle}</div>
+          <h2 className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
             {messages.about.locationTitle}
           </h2>
-          <div className="mt-2">
+          <div className="mt-4">
             <VenueLink
               locale={locale}
               className="text-[color:var(--accent)] hover:underline"

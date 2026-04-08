@@ -8,16 +8,24 @@ export default function SiteFooter() {
 
   return (
     <footer className="app-footer">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <VenueLink
-            locale={locale}
-            className="font-medium text-[color:var(--accent)] hover:underline"
-            textClassName="font-medium text-[color:var(--accent)]"
-            showMazeMapBadge
-          />
+      <div className="mx-auto max-w-6xl px-4 pb-8 pt-12">
+        <div className="app-footer-shell">
+          <div className="app-footer-brand">
+            <div className="app-footer-kicker">NTNUI</div>
+            <div className="app-footer-title">{messages.shell.brand}</div>
+          </div>
+
+          <div className="app-footer-location">
+            <VenueLink
+              locale={locale}
+              className="font-medium text-[color:var(--accent)] hover:underline"
+              textClassName="font-medium text-[color:var(--accent)]"
+              showMazeMapBadge
+            />
+          </div>
+
+          <div className="app-footer-copy">{messages.shell.footerCopyright(new Date().getFullYear())}</div>
         </div>
-        <div>{messages.shell.footerCopyright(new Date().getFullYear())}</div>
       </div>
     </footer>
   );
