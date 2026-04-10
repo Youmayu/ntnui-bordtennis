@@ -91,9 +91,29 @@ const WEEKDAY_OPTIONS = [
   { value: 3, label: "Onsdag" },
   { value: 4, label: "Torsdag" },
   { value: 5, label: "Fredag" },
-  { value: 6, label: "Lørdag" },
-  { value: 7, label: "Søndag" },
+  { value: 6, label: "Lordag" },
+  { value: 7, label: "Sondag" },
 ] as const;
+
+function getWeekdayLabel(weekday: number) {
+  return WEEKDAY_OPTIONS.find((option) => option.value === weekday)?.label ?? `Dag ${weekday}`;
+}
+
+function getAccessLabel(membersOnly: boolean) {
+  return membersOnly ? "Kun medlemmer" : "Apen trening";
+}
+
+function getAccessBadgeClass(membersOnly: boolean) {
+  return membersOnly ? "app-badge app-badge-neutral" : "app-badge app-badge-success";
+}
+
+function getSourceBadgeClass(isAuto: boolean) {
+  return isAuto ? "app-badge app-badge-accent" : "app-badge app-badge-neutral";
+}
+
+function getStatusBadgeClass(active: boolean) {
+  return active ? "app-badge app-badge-success" : "app-badge app-badge-neutral";
+}
 
 function fmtOslo(dt: Date) {
   return new Intl.DateTimeFormat("no-NO", {
@@ -607,21 +627,8 @@ export default async function AdminPage() {
                  capacity  = $5
              WHERE id = $1`,
         autoScheduleSchema.has_session_members_only
-          ? [
-              id,
-              startsAtLocal,
-              endsAtLocal,
-              location,
-              capacity,
-              membersOnly,
-            ]
-          : [
-              id,
-              startsAtLocal,
-              endsAtLocal,
-              location,
-              capacity,
-            ]
+          ? [id, startsAtLocal, endsAtLocal, location, capacity, membersOnly]
+          : [id, startsAtLocal, endsAtLocal, location, capacity]
       );
 
       await fillConfirmedSlotsFromWaitlist(client, id);
@@ -664,19 +671,8 @@ export default async function AdminPage() {
              $4
            )`,
       autoScheduleSchema.has_session_members_only
-        ? [
-            startsAtLocal,
-            endsAtLocal,
-            location,
-            capacity,
-            membersOnly,
-          ]
-        : [
-            startsAtLocal,
-            endsAtLocal,
-            location,
-            capacity,
-          ]
+        ? [startsAtLocal, endsAtLocal, location, capacity, membersOnly]
+        : [startsAtLocal, endsAtLocal, location, capacity]
     );
   }
 
@@ -725,105 +721,186 @@ export default async function AdminPage() {
     }
   }
 
+  const activeAnnouncementCount = announcements.filter((announcement) => announcement.is_active).length;
+  const activeTemplateCount = templates.filter((template) => template.is_active).length;
+  const autoSessionCount = sessions.filter((session) => Boolean(session.auto_template_id)).length;
+  const confirmedRegistrationCount = regs.filter(
+    (registration) => registration.status === REGISTRATION_STATUS.CONFIRMED
+  ).length;
+  const waitlistRegistrationCount = regs.filter(
+    (registration) => registration.status === REGISTRATION_STATUS.WAITLIST
+  ).length;
+
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold">Admin</h1>
+      <section className="app-surface overflow-hidden p-6 sm:p-8">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-3">
+            <span className="app-badge app-badge-accent">Admin</span>
+            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
+              Kontrollpanel
+            </h1>
+            <p className="max-w-3xl text-[color:var(--text-muted)]">
+              Hold ukeplan, okter, beskjeder og pameldinger oppdatert fra ett sted. De tyngste
+              seksjonene er samlet i kort og detaljer i stedet for brede tabeller.
+            </p>
+          </div>
 
-      <section className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm">
-        <div>
-          <h2 className="text-lg font-semibold">Automatisk ukeplan</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sett opp faste treningsdager én gang, så oppretter nettsiden neste ukes økter
-            automatisk når denne ukens siste planlagte trening er ferdig.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Huk av <span className="font-medium">Kun medlemmer</span> for vanlige økter. Fjern
-            haken for å gjøre en trening åpen for alle.
-          </p>
-          {!templateMembersOnlyAvailable && (
-            <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
-              Kjør <code>node scripts/init-db.js</code> for å aktivere tilgangsvalg for faste
-              treningsdager.
-            </p>
-          )}
-          {autoScheduleError && (
-            <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
-              Auto-plan kunne ikke lastes helt: {autoScheduleError}
-            </p>
-          )}
+          <nav className="flex flex-wrap gap-3">
+            <a href="#auto-plan" className="app-button-secondary inline-flex">
+              Auto-plan
+            </a>
+            <a href="#announcements" className="app-button-secondary inline-flex">
+              Beskjeder
+            </a>
+            <a href="#sessions" className="app-button-secondary inline-flex">
+              Okter
+            </a>
+            <a href="#registrations" className="app-button-secondary inline-flex">
+              Pameldinger
+            </a>
+          </nav>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border bg-background p-4">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Auto-plan
-              </div>
-              <div className="mt-2 text-lg font-semibold">
-                {autoScheduleSettings.auto_enabled ? "På" : "Av"}
-              </div>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
+            <div className="app-panel-eyebrow">Neste uke</div>
+            <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
+              {autoScheduleOverview.next_week_session_count}
             </div>
-
-            <div className="rounded-2xl border bg-background p-4">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Aktive maler
-              </div>
-              <div className="mt-2 text-lg font-semibold">
-                {autoScheduleOverview.active_template_count}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border bg-background p-4">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Neste uke
-              </div>
-              <div className="mt-2 text-lg font-semibold">
-                {autoScheduleOverview.next_week_start_local
-                  ? fmtOsloDate(autoScheduleOverview.next_week_start_local)
-                  : "Ikke satt"}
-              </div>
-              <div className="mt-1 text-xs text-muted-foreground">
-                {autoScheduleOverview.next_week_session_count} økter ligger allerede inne
-              </div>
+            <div className="mt-2 text-sm text-[color:var(--text-muted)]">
+              Okter klare for{" "}
+              {autoScheduleOverview.next_week_start_local
+                ? fmtOsloDate(autoScheduleOverview.next_week_start_local)
+                : "neste uke"}
             </div>
           </div>
 
-          <div className="flex flex-wrap items-start gap-3">
-            <form action={updateAutoScheduleSettings} className="flex items-end gap-3">
+          <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
+            <div className="app-panel-eyebrow">Maler</div>
+            <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
+              {activeTemplateCount}/{templates.length}
+            </div>
+            <div className="mt-2 text-sm text-[color:var(--text-muted)]">
+              Aktive faste treningsdager
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
+            <div className="app-panel-eyebrow">Okter</div>
+            <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
+              {sessions.length}
+            </div>
+            <div className="mt-2 text-sm text-[color:var(--text-muted)]">
+              {autoSessionCount} auto og {sessions.length - autoSessionCount} manuelle
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
+            <div className="app-panel-eyebrow">Pameldinger</div>
+            <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
+              {confirmedRegistrationCount + waitlistRegistrationCount}
+            </div>
+            <div className="mt-2 text-sm text-[color:var(--text-muted)]">
+              {confirmedRegistrationCount} bekreftet, {waitlistRegistrationCount} venteliste
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="auto-plan" className="app-surface space-y-6 p-6 sm:p-8">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">
+              Automatisk ukeplan
+            </h2>
+            <p className="mt-2 max-w-3xl text-[color:var(--text-muted)]">
+              Sett opp faste treningsdager en gang, sa fylles neste uke inn automatisk. Klikk pa
+              et kort for a redigere en mal.
+            </p>
+            {!templateMembersOnlyAvailable && (
+              <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
+                Kjor <code>node scripts/init-db.js</code> for a aktivere tilgangsvalg for faste
+                treningsdager.
+              </p>
+            )}
+            {autoScheduleError && (
+              <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
+                Auto-plan kunne ikke lastes helt: {autoScheduleError}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <form action={updateAutoScheduleSettings} className="flex flex-wrap items-end gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Status</label>
+                <label className="text-xs text-[color:var(--text-soft)]">Status</label>
                 <select
                   name="auto_enabled"
                   defaultValue={autoScheduleSettings.auto_enabled ? "true" : "false"}
-                  className="rounded-lg border bg-background px-3 py-2 text-sm"
+                  className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                 >
-                  <option value="true">På</option>
+                  <option value="true">Pa</option>
                   <option value="false">Av</option>
                 </select>
               </div>
 
-              <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
-                Lagre auto-plan
-              </button>
+              <button className="app-button-primary inline-flex">Lagre auto-plan</button>
             </form>
 
             <form action={generateNextWeek}>
-              <button className="rounded-lg border px-3 py-2 text-sm hover:opacity-90">
-                Opprett neste uke nå
-              </button>
+              <button className="app-button-secondary inline-flex">Opprett neste uke na</button>
             </form>
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-background p-4">
-          <div className="mb-3 text-sm font-medium">Legg til fast treningsdag</div>
-          <form action={addScheduleTemplate} className="grid gap-3 lg:grid-cols-[160px_120px_120px_minmax(0,1fr)_120px_auto_auto_auto]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
+              <div className="app-panel-eyebrow">Auto-plan</div>
+              <div className="mt-3 text-xl font-semibold text-[color:var(--text-strong)]">
+                {autoScheduleSettings.auto_enabled ? "Pa" : "Av"}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
+              <div className="app-panel-eyebrow">Aktive maler</div>
+              <div className="mt-3 text-xl font-semibold text-[color:var(--text-strong)]">
+                {autoScheduleOverview.active_template_count}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
+              <div className="app-panel-eyebrow">Siste okt denne uken</div>
+              <div className="mt-3 text-sm font-medium text-[color:var(--text-strong)]">
+                {autoScheduleOverview.current_week_last_end_local
+                  ? fmtOslo(new Date(autoScheduleOverview.current_week_last_end_local))
+                  : "Ingen aktive maler"}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4 text-sm text-[color:var(--text-muted)]">
+            {autoScheduleOverview.current_week_last_end_local ? (
+              <p>
+                Neste uke opprettes nar siste aktive mal for denne uken er ferdig:{" "}
+                {fmtOslo(new Date(autoScheduleOverview.current_week_last_end_local))}.
+              </p>
+            ) : (
+              <p>Legg inn minst en aktiv mal for at automatisk oppsett skal kunne opprette nye okter.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="app-panel-eyebrow">Legg til fast treningsdag</div>
+          <form action={addScheduleTemplate} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Ukedag</label>
+              <label className="text-xs text-[color:var(--text-soft)]">Ukedag</label>
               <select
                 name="weekday"
                 defaultValue="5"
-                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                 required
               >
                 {WEEKDAY_OPTIONS.map((option) => (
@@ -835,47 +912,47 @@ export default async function AdminPage() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Start</label>
+              <label className="text-xs text-[color:var(--text-soft)]">Start</label>
               <input
                 name="starts_at_time"
                 type="time"
                 defaultValue="16:30"
-                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                 required
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Slutt</label>
+              <label className="text-xs text-[color:var(--text-soft)]">Slutt</label>
               <input
                 name="ends_at_time"
                 type="time"
                 defaultValue="18:30"
-                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                 required
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Sted</label>
-              <input
-                name="location"
-                defaultValue={DEFAULT_SESSION_LOCATION}
-                maxLength={120}
-                className="rounded-lg border bg-background px-3 py-2 text-sm"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Kapasitet</label>
+              <label className="text-xs text-[color:var(--text-soft)]">Kapasitet</label>
               <input
                 name="capacity"
                 type="number"
                 min={1}
                 max={200}
                 defaultValue={16}
-                className="rounded-lg border bg-background px-3 py-2 text-sm"
+                className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1 md:col-span-2 xl:col-span-4">
+              <label className="text-xs text-[color:var(--text-soft)]">Sted</label>
+              <input
+                name="location"
+                defaultValue={DEFAULT_SESSION_LOCATION}
+                maxLength={120}
+                className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                 required
               />
             </div>
@@ -892,41 +969,57 @@ export default async function AdminPage() {
 
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="is_active" defaultChecked />
-              Aktiv
+              Aktiv mal
             </label>
 
-            <div className="flex items-end">
-              <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
-                Legg til mal
-              </button>
+            <div className="md:col-span-2 xl:col-span-2">
+              <button className="app-button-primary inline-flex">Legg til mal</button>
             </div>
           </form>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-muted-foreground">
-              <tr className="border-b">
-                <th className="py-2 pr-3">Ukedag</th>
-                <th className="py-2 pr-3">Start</th>
-                <th className="py-2 pr-3">Slutt</th>
-                <th className="py-2 pr-3">Sted</th>
-                <th className="py-2 pr-3">Kapasitet</th>
-                <th className="py-2 pr-3">Tilgang</th>
-                <th className="py-2 pr-3">Aktiv</th>
-                <th className="py-2 pr-3">Lagre</th>
-                <th className="py-2">Slett</th>
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map((template) => (
-                <tr key={template.id} className="align-top border-b last:border-0">
-                  <td className="py-3 pr-3">
+        <div className="grid gap-4 xl:grid-cols-2">
+          {templates.map((template) => (
+            <details
+              key={template.id}
+              className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)]"
+            >
+              <summary className="flex cursor-pointer list-none flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="app-panel-eyebrow">{getWeekdayLabel(template.weekday)}</div>
+                  <div className="mt-2 text-xl font-semibold text-[color:var(--text-strong)]">
+                    {toTimeInputValue(template.starts_at_time)} - {toTimeInputValue(template.ends_at_time)}
+                  </div>
+                  <div className="mt-2 text-sm text-[color:var(--text-muted)]">
+                    {template.location}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 sm:justify-end">
+                  <span className={getAccessBadgeClass(template.members_only)}>
+                    {getAccessLabel(template.members_only)}
+                  </span>
+                  <span className="app-badge app-badge-accent">{template.capacity} plasser</span>
+                  <span className={getStatusBadgeClass(template.is_active)}>
+                    {template.is_active ? "Aktiv" : "Av"}
+                  </span>
+                </div>
+              </summary>
+
+              <div className="border-t border-[color:var(--border-muted)] p-5">
+                <form
+                  id={`template-${template.id}`}
+                  action={updateScheduleTemplate}
+                  className="grid gap-3 sm:grid-cols-2"
+                >
+                  <input type="hidden" name="id" value={template.id} />
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-[color:var(--text-soft)]">Ukedag</label>
                     <select
-                      form={`template-${template.id}`}
                       name="weekday"
                       defaultValue={String(template.weekday)}
-                      className="rounded-lg border bg-background px-2 py-1 text-sm"
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                     >
                       {WEEKDAY_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -934,292 +1027,225 @@ export default async function AdminPage() {
                         </option>
                       ))}
                     </select>
-                  </td>
+                  </div>
 
-                  <td className="py-3 pr-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-[color:var(--text-soft)]">Kapasitet</label>
                     <input
-                      form={`template-${template.id}`}
-                      name="starts_at_time"
-                      type="time"
-                      defaultValue={toTimeInputValue(template.starts_at_time)}
-                      className="rounded-lg border bg-background px-2 py-1 text-sm"
-                      required
-                    />
-                  </td>
-
-                  <td className="py-3 pr-3">
-                    <label className="flex items-center gap-2 text-sm whitespace-nowrap">
-                      <input
-                        form={`template-${template.id}`}
-                        name="members_only"
-                        type="checkbox"
-                        defaultChecked={template.members_only}
-                        disabled={!templateMembersOnlyAvailable}
-                      />
-                      Kun medlemmer
-                    </label>
-                  </td>
-
-                  <td className="py-3 pr-3">
-                    <input
-                      form={`template-${template.id}`}
-                      name="ends_at_time"
-                      type="time"
-                      defaultValue={toTimeInputValue(template.ends_at_time)}
-                      className="rounded-lg border bg-background px-2 py-1 text-sm"
-                      required
-                    />
-                  </td>
-
-                  <td className="py-3 pr-3">
-                    <input
-                      form={`template-${template.id}`}
-                      name="location"
-                      defaultValue={template.location}
-                      maxLength={120}
-                      className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
-                      required
-                    />
-                  </td>
-
-                  <td className="py-3 pr-3">
-                    <input
-                      form={`template-${template.id}`}
                       name="capacity"
                       type="number"
                       min={1}
                       max={200}
                       defaultValue={template.capacity}
-                      className="w-24 rounded-lg border bg-background px-2 py-1 text-sm"
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                       required
                     />
-                  </td>
+                  </div>
 
-                  <td className="py-3 pr-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-[color:var(--text-soft)]">Start</label>
                     <input
-                      form={`template-${template.id}`}
-                      name="is_active"
-                      type="checkbox"
-                      defaultChecked={template.is_active}
+                      name="starts_at_time"
+                      type="time"
+                      defaultValue={toTimeInputValue(template.starts_at_time)}
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+                      required
                     />
-                  </td>
+                  </div>
 
-                  <td className="py-3 pr-3">
-                    <form id={`template-${template.id}`} action={updateScheduleTemplate} className="flex gap-2">
-                      <input type="hidden" name="id" value={template.id} />
-                      <button className="rounded-lg border bg-primary px-3 py-1 text-primary-foreground hover:opacity-90">
-                        Lagre
-                      </button>
-                    </form>
-                  </td>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-[color:var(--text-soft)]">Slutt</label>
+                    <input
+                      name="ends_at_time"
+                      type="time"
+                      defaultValue={toTimeInputValue(template.ends_at_time)}
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+                      required
+                    />
+                  </div>
 
-                  <td className="py-3">
-                    <form action={deleteScheduleTemplate}>
-                      <input type="hidden" name="id" value={template.id} />
-                      <button className="rounded-lg border px-3 py-1 hover:opacity-90">
-                        Slett
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-xs text-[color:var(--text-soft)]">Sted</label>
+                    <input
+                      name="location"
+                      defaultValue={template.location}
+                      maxLength={120}
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+                      required
+                    />
+                  </div>
 
-              {templates.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="py-6 text-muted-foreground">
-                    Ingen faste treningsdager er lagt inn enda.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      name="members_only"
+                      type="checkbox"
+                      defaultChecked={template.members_only}
+                      disabled={!templateMembersOnlyAvailable}
+                    />
+                    Kun medlemmer
+                  </label>
 
-        <div className="rounded-2xl border bg-background p-4 text-sm text-muted-foreground">
-          {autoScheduleOverview.current_week_last_end_local ? (
-            <p>
-              Neste uke opprettes når siste aktive mal for denne uken er ferdig:
-              {" "}
-              {fmtOslo(new Date(autoScheduleOverview.current_week_last_end_local))}
-              . Du kan også opprette neste uke manuelt når du vil.
-            </p>
-          ) : (
-            <p>
-              Legg inn minst én aktiv mal for at automatisk oppsett skal kunne opprette nye økter.
-            </p>
-          )}
+                  <label className="flex items-center gap-2 text-sm">
+                    <input name="is_active" type="checkbox" defaultChecked={template.is_active} />
+                    Aktiv mal
+                  </label>
+                </form>
+
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <button form={`template-${template.id}`} type="submit" className="app-button-primary inline-flex">
+                    Lagre mal
+                  </button>
+
+                  <form action={deleteScheduleTemplate}>
+                    <input type="hidden" name="id" value={template.id} />
+                    <button className="app-button-secondary inline-flex">Slett mal</button>
+                  </form>
+                </div>
+              </div>
+            </details>
+          ))}
         </div>
       </section>
 
-      <section className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm">
-        <div>
-          <h2 className="text-lg font-semibold">Beskjeder</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Vis viktige meldinger tydelig på hele nettstedet. De vises automatisk på alle sider.
-          </p>
+      <section id="announcements" className="app-surface space-y-6 p-6 sm:p-8">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Beskjeder</h2>
+            <p className="mt-2 max-w-3xl text-[color:var(--text-muted)]">
+              Publisering og oversikt er samlet i ett roligere oppsett.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <span className="app-badge app-badge-success">{activeAnnouncementCount} aktive</span>
+            <span className="app-badge app-badge-neutral">{announcements.length} totalt</span>
+          </div>
         </div>
 
-        <div className="rounded-2xl border bg-background p-4">
-          <div className="mb-3 text-sm font-medium">Legg til ny beskjed</div>
-          <form action={addAnnouncement} className="grid gap-3">
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Tittel</label>
-                <input
-                  name="title"
-                  className="rounded-lg border bg-background px-3 py-2 text-sm"
-                  placeholder="F.eks. Trening 24. april er kansellert"
-                  maxLength={140}
-                  required
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Vis til (valgfritt)</label>
-                <input
-                  name="expires_at"
-                  type="datetime-local"
-                  className="rounded-lg border bg-background px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
-
+        <form action={addAnnouncement} className="grid gap-3">
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_240px]">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Melding</label>
-              <textarea
-                name="body"
-                className="min-h-[96px] rounded-lg border bg-background px-3 py-2 text-sm"
-                placeholder="F.eks. Hallen er stengt grunnet arrangement."
-                maxLength={2000}
+              <label className="text-xs text-[color:var(--text-soft)]">Tittel</label>
+              <input
+                name="title"
+                className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+                placeholder="F.eks. Trening 24. april er kansellert"
+                maxLength={140}
                 required
               />
             </div>
 
-            <div>
-              <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
-                Publiser beskjed
-              </button>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[color:var(--text-soft)]">Vis til (valgfritt)</label>
+              <input
+                name="expires_at"
+                type="datetime-local"
+                className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+              />
             </div>
-          </form>
-        </div>
+          </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-muted-foreground">
-              <tr className="border-b">
-                <th className="py-2 pr-3">Status</th>
-                <th className="py-2 pr-3">Tittel</th>
-                <th className="py-2 pr-3">Melding</th>
-                <th className="py-2 pr-3">Vis til</th>
-                <th className="py-2 pr-3">Opprettet</th>
-                <th className="py-2">Slett</th>
-              </tr>
-            </thead>
-            <tbody>
-              {announcements.map((announcement) => (
-                <tr key={announcement.id} className="align-top border-b last:border-0">
-                  <td className="py-3 pr-3">
-                    {announcement.is_active ? (
-                      <span className="rounded-full border border-[color:rgba(19,60,67,0.14)] bg-[rgba(19,60,67,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:rgb(24,60,56)]">
-                        Aktiv
-                      </span>
-                    ) : (
-                      <span className="rounded-full border border-[color:rgba(113,91,83,0.16)] bg-[rgba(113,91,83,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:rgb(113,91,83)]">
-                        Utløpt
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3 pr-3 font-medium">{announcement.title}</td>
-                  <td className="py-3 pr-3 whitespace-pre-line text-muted-foreground">
-                    {announcement.body}
-                  </td>
-                  <td className="py-3 pr-3 whitespace-nowrap text-muted-foreground">
-                    {announcement.expires_at ? fmtOslo(new Date(announcement.expires_at)) : "Manuelt"}
-                  </td>
-                  <td className="py-3 pr-3 whitespace-nowrap text-muted-foreground">
-                    {fmtOslo(new Date(announcement.created_at))}
-                  </td>
-                  <td className="py-3">
-                    <form action={deleteAnnouncement}>
-                      <input type="hidden" name="id" value={announcement.id} />
-                      <button className="rounded-lg border px-3 py-1 hover:opacity-90">
-                        Slett
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-[color:var(--text-soft)]">Melding</label>
+            <textarea
+              name="body"
+              className="app-field min-h-[120px] rounded-2xl px-4 py-3 text-sm outline-none"
+              placeholder="F.eks. Hallen er stengt grunnet arrangement."
+              maxLength={2000}
+              required
+            />
+          </div>
 
-              {announcements.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-6 text-muted-foreground">
-                    Ingen beskjeder enda.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <div>
+            <button className="app-button-primary inline-flex">Publiser beskjed</button>
+          </div>
+        </form>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          {announcements.map((announcement) => (
+            <article
+              key={announcement.id}
+              className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-5"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="app-panel-eyebrow">Beskjed #{announcement.id}</div>
+                  <h3 className="mt-2 text-xl font-semibold text-[color:var(--text-strong)]">
+                    {announcement.title}
+                  </h3>
+                </div>
+
+                <span className={getStatusBadgeClass(announcement.is_active)}>
+                  {announcement.is_active ? "Aktiv" : "Utlopt"}
+                </span>
+              </div>
+
+              <div className="mt-4 whitespace-pre-line text-sm leading-7 text-[color:var(--text-muted)]">
+                {announcement.body}
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-3 text-sm text-[color:var(--text-muted)]">
+                <span>Opprettet: {fmtOslo(new Date(announcement.created_at))}</span>
+                <span>
+                  Vis til: {announcement.expires_at ? fmtOslo(new Date(announcement.expires_at)) : "Manuelt"}
+                </span>
+              </div>
+
+              <div className="mt-5">
+                <form action={deleteAnnouncement}>
+                  <input type="hidden" name="id" value={announcement.id} />
+                  <button className="app-button-secondary inline-flex">Slett beskjed</button>
+                </form>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section className="space-y-6 rounded-2xl border bg-card p-6 shadow-sm">
+      <section id="sessions" className="app-surface space-y-6 p-6 sm:p-8">
         <div>
-          <h2 className="text-lg font-semibold">Økter</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Rediger tidspunkt, sted, kapasitet og om økten er kun for medlemmer eller åpen
-            trening. Du kan også legge til nye økter.
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Okter</h2>
+          <p className="mt-2 max-w-3xl text-[color:var(--text-muted)]">
+            Rediger tidspunkt, sted, kapasitet og tilgangsniva uten brede tabeller. Klikk pa en
+            okt for a apne redigeringen.
           </p>
-          {!sessionMembersOnlyAvailable && (
-            <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
-              Kjør <code>node scripts/init-db.js</code> for å aktivere tilgangsvalg for økter.
-            </p>
-          )}
         </div>
 
-        <div className="rounded-2xl border bg-background p-4">
-          <div className="mb-3 text-sm font-medium">Legg til ny økt</div>
-          <form action={addSession} className="flex flex-wrap items-end gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Start (Oslo)</label>
-              <input
-                name="starts_at"
-                type="datetime-local"
-                className="rounded-lg border bg-background px-2 py-1 text-sm"
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Slutt (Oslo)</label>
-              <input
-                name="ends_at"
-                type="datetime-local"
-                className="rounded-lg border bg-background px-2 py-1 text-sm"
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Sted</label>
-              <input
-                name="location"
-                defaultValue={DEFAULT_SESSION_LOCATION}
-                maxLength={120}
-                className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Kapasitet</label>
-              <input
-                name="capacity"
-                type="number"
-                min={1}
-                max={200}
-                defaultValue={16}
-                className="w-24 rounded-lg border bg-background px-2 py-1 text-sm"
-                required
-              />
-            </div>
+        <form action={addSession} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-[color:var(--text-soft)]">Start (Oslo)</label>
+            <input
+              name="starts_at"
+              type="datetime-local"
+              className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+              required
+            />
+          </div>
 
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-[color:var(--text-soft)]">Slutt (Oslo)</label>
+            <input
+              name="ends_at"
+              type="datetime-local"
+              className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-[color:var(--text-soft)]">Kapasitet</label>
+            <input
+              name="capacity"
+              type="number"
+              min={1}
+              max={200}
+              defaultValue={16}
+              className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+              required
+            />
+          </div>
+
+          <div className="flex items-end">
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -1229,108 +1255,103 @@ export default async function AdminPage() {
               />
               Kun medlemmer
             </label>
+          </div>
 
-            <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
-              Legg til
-            </button>
-          </form>
-        </div>
+          <div className="flex flex-col gap-1 md:col-span-2 xl:col-span-4">
+            <label className="text-xs text-[color:var(--text-soft)]">Sted</label>
+            <input
+              name="location"
+              defaultValue={DEFAULT_SESSION_LOCATION}
+              maxLength={120}
+              className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+              required
+            />
+          </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-muted-foreground">
-              <tr className="border-b">
-                <th className="py-2 pr-3">ID</th>
-                <th className="py-2 pr-3">Kilde</th>
-                <th className="py-2 pr-3">Start</th>
-                <th className="py-2 pr-3">Slutt</th>
-                <th className="py-2 pr-3">Sted</th>
-                <th className="py-2 pr-3">Kapasitet</th>
-                <th className="py-2 pr-3">Tilgang</th>
-                <th className="py-2 pr-3">Lagre</th>
-                <th className="py-2">Slett</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sessions.map((session) => (
-                <tr key={session.id} className="align-top border-b last:border-0">
-                  <td className="py-3 pr-3">{session.id}</td>
+          <div className="md:col-span-2 xl:col-span-4">
+            <button className="app-button-primary inline-flex">Legg til okt</button>
+          </div>
+        </form>
 
-                  <td className="py-3 pr-3">
-                    {session.auto_template_id ? (
-                      <div className="space-y-1">
-                        <span className="rounded-full border border-[color:rgba(19,60,67,0.14)] bg-[rgba(19,60,67,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:rgb(24,60,56)]">
-                          Auto
-                        </span>
-                        {session.auto_week_start && (
-                          <div className="text-xs text-muted-foreground">
-                            Uke fra {fmtOsloDate(session.auto_week_start)}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="rounded-full border border-[color:rgba(113,91,83,0.16)] bg-[rgba(113,91,83,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:rgb(113,91,83)]">
-                        Manuell
-                      </span>
-                    )}
-                  </td>
+        <div className="grid gap-4">
+          {sessions.map((session) => (
+            <details
+              key={session.id}
+              className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)]"
+            >
+              <summary className="flex cursor-pointer list-none flex-col gap-3 p-5 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <div className="app-panel-eyebrow">Okt #{session.id}</div>
+                  <div className="mt-2 text-xl font-semibold text-[color:var(--text-strong)]">
+                    {fmtOslo(new Date(session.starts_at))}
+                  </div>
+                  <div className="mt-2 text-sm text-[color:var(--text-muted)]">
+                    Slutter {fmtOslo(new Date(session.ends_at))} · {session.location}
+                  </div>
+                </div>
 
-                  <td className="py-3 pr-3">
-                    <div className="mb-1 text-xs text-muted-foreground">
-                      {fmtOslo(new Date(session.starts_at))}
-                    </div>
+                <div className="flex flex-wrap gap-2 lg:justify-end">
+                  <span className={getSourceBadgeClass(Boolean(session.auto_template_id))}>
+                    {session.auto_template_id ? "Auto" : "Manuell"}
+                  </span>
+                  <span className={getAccessBadgeClass(session.members_only)}>
+                    {getAccessLabel(session.members_only)}
+                  </span>
+                  <span className="app-badge app-badge-accent">{session.capacity} plasser</span>
+                  {session.auto_week_start && (
+                    <span className="app-badge app-badge-neutral">
+                      Uke {fmtOsloDate(session.auto_week_start)}
+                    </span>
+                  )}
+                </div>
+              </summary>
+
+              <div className="border-t border-[color:var(--border-muted)] p-5">
+                <form
+                  id={`session-${session.id}`}
+                  action={updateSession}
+                  className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+                >
+                  <input type="hidden" name="id" value={session.id} />
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-[color:var(--text-soft)]">Start (Oslo)</label>
                     <input
-                      form={`session-${session.id}`}
                       name="starts_at"
                       type="datetime-local"
                       defaultValue={toDatetimeLocalOslo(session.starts_at)}
-                      className="rounded-lg border bg-background px-2 py-1 text-sm"
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                       required
                     />
-                  </td>
+                  </div>
 
-                  <td className="py-3 pr-3">
-                    <div className="mb-1 text-xs text-muted-foreground">
-                      {fmtOslo(new Date(session.ends_at))}
-                    </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-[color:var(--text-soft)]">Slutt (Oslo)</label>
                     <input
-                      form={`session-${session.id}`}
                       name="ends_at"
                       type="datetime-local"
                       defaultValue={toDatetimeLocalOslo(session.ends_at)}
-                      className="rounded-lg border bg-background px-2 py-1 text-sm"
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                       required
                     />
-                  </td>
+                  </div>
 
-                  <td className="py-3 pr-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-[color:var(--text-soft)]">Kapasitet</label>
                     <input
-                      form={`session-${session.id}`}
-                      name="location"
-                      defaultValue={session.location}
-                      maxLength={120}
-                      className="w-64 rounded-lg border bg-background px-2 py-1 text-sm"
-                      required
-                    />
-                  </td>
-
-                  <td className="py-3 pr-3">
-                    <input
-                      form={`session-${session.id}`}
                       name="capacity"
                       type="number"
                       min={1}
                       max={200}
                       defaultValue={session.capacity}
-                      className="w-24 rounded-lg border bg-background px-2 py-1 text-sm"
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                       required
                     />
-                  </td>
+                  </div>
 
-                  <td className="py-3 pr-3">
-                    <label className="flex items-center gap-2 text-sm whitespace-nowrap">
+                  <div className="flex items-end">
+                    <label className="flex items-center gap-2 text-sm">
                       <input
-                        form={`session-${session.id}`}
                         name="members_only"
                         type="checkbox"
                         defaultChecked={session.members_only}
@@ -1338,45 +1359,43 @@ export default async function AdminPage() {
                       />
                       Kun medlemmer
                     </label>
-                  </td>
+                  </div>
 
-                  <td className="py-3 pr-3">
-                    <form id={`session-${session.id}`} action={updateSession} className="flex gap-2">
-                      <input type="hidden" name="id" value={session.id} />
-                      <button className="rounded-lg border bg-primary px-3 py-1 text-primary-foreground hover:opacity-90">
-                        Lagre
-                      </button>
-                    </form>
-                  </td>
+                  <div className="flex flex-col gap-1 md:col-span-2 xl:col-span-4">
+                    <label className="text-xs text-[color:var(--text-soft)]">Sted</label>
+                    <input
+                      name="location"
+                      defaultValue={session.location}
+                      maxLength={120}
+                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
+                      required
+                    />
+                  </div>
+                </form>
 
-                  <td className="py-3">
-                    <form action={deleteSession}>
-                      <input type="hidden" name="id" value={session.id} />
-                      <button className="rounded-lg border px-3 py-1 hover:opacity-90">
-                        Slett
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <button form={`session-${session.id}`} type="submit" className="app-button-primary inline-flex">
+                    Lagre okt
+                  </button>
 
-              {sessions.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="py-6 text-muted-foreground">
-                    Ingen økter i databasen.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  <form action={deleteSession}>
+                    <input type="hidden" name="id" value={session.id} />
+                    <button className="app-button-secondary inline-flex">Slett okt</button>
+                  </form>
+                </div>
+              </div>
+            </details>
+          ))}
         </div>
       </section>
 
-      <section className="rounded-2xl border bg-card p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">Påmeldinger</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Endre navn eller nivå, eller slett en påmelding. Session ID viser hvilken økt de tilhører.
-        </p>
+      <section id="registrations" className="app-surface p-6 sm:p-8">
+        <div className="space-y-3">
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Pameldinger</h2>
+          <p className="max-w-3xl text-[color:var(--text-muted)]">
+            Sok, filtrer og oppdater pameldinger uten a lete i hele listen.
+          </p>
+        </div>
 
         <AdminClient
           registrations={regs}
