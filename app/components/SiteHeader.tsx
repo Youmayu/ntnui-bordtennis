@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ntnuiLogo from "@/app/logo.png";
 import {
   LOCALE_INFO,
   localizePathname,
@@ -50,10 +52,8 @@ export default function SiteHeader() {
         <div className="app-header-frame">
           <div className="app-header-main">
             <Link href={toLocalizedHref("/")} className="app-brand">
-              <span className="app-brand-mark" aria-hidden="true">
-                <span className="app-brand-paddle" />
-                <span className="app-brand-handle" />
-                <span className="app-brand-ball" />
+              <span className="app-brand-mark app-brand-logo-shell" aria-hidden="true">
+                <Image src={ntnuiLogo} alt="" className="app-brand-logo-image" priority />
               </span>
               <span className="app-brand-meta">
                 <span className="app-brand-subtitle">NTNUI</span>
