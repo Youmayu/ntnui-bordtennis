@@ -107,6 +107,18 @@ export default function HomePageContent({
     hour: "2-digit",
     minute: "2-digit",
   });
+  const weekdayFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    weekday: "long",
+  });
+  const dayFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    day: "2-digit",
+  });
+  const monthFormatter = new Intl.DateTimeFormat(intlLocale, {
+    timeZone: "Europe/Oslo",
+    month: "short",
+  });
 
   return (
     <div className="space-y-8 sm:space-y-12">
@@ -158,34 +170,47 @@ export default function HomePageContent({
           </div>
 
           <div className="app-stage-panel">
-            <div className="flex flex-wrap items-center gap-2">
-              {isActive && (
-                <span className="app-badge app-badge-accent">{messages.home.currentStatus}</span>
-              )}
-              <span
-                className={
-                  session.members_only ? "app-badge app-badge-neutral" : "app-badge app-badge-success"
-                }
-              >
-                {getSessionAccessLabel(locale, session.members_only)}
-              </span>
-              <span className="app-stage-date">{dateFormatter.format(new Date(session.starts_at))}</span>
-            </div>
+            <div className="app-stage-session-head">
+              <div className="app-schedule-dateblock">
+                <div className="app-schedule-day">{dayFormatter.format(new Date(session.starts_at))}</div>
+                <div className="app-schedule-month">{monthFormatter.format(new Date(session.starts_at))}</div>
+                <div className="app-schedule-weekday">
+                  {weekdayFormatter.format(new Date(session.starts_at))}
+                </div>
+              </div>
 
-            <div className="app-stage-time">
-              {timeFormatter.format(new Date(session.starts_at))}
-              {" - "}
-              {timeFormatter.format(new Date(session.ends_at))}
-            </div>
+              <div className="app-stage-session-copy">
+                <div className="flex flex-wrap items-center gap-2">
+                  {isActive && (
+                    <span className="app-badge app-badge-accent">{messages.home.currentStatus}</span>
+                  )}
+                  <span
+                    className={
+                      session.members_only
+                        ? "app-badge app-badge-neutral"
+                        : "app-badge app-badge-success"
+                    }
+                  >
+                    {getSessionAccessLabel(locale, session.members_only)}
+                  </span>
+                </div>
 
-            <div className="app-stage-meta">
-              <VenueLink
-                locale={locale}
-                location={session.location}
-                className="font-medium text-[color:var(--accent)] hover:underline"
-                textClassName="font-medium"
-                showMazeMapBadge
-              />
+                <div className="app-stage-time">
+                  {timeFormatter.format(new Date(session.starts_at))}
+                  {" - "}
+                  {timeFormatter.format(new Date(session.ends_at))}
+                </div>
+
+                <div className="app-stage-meta">
+                  <VenueLink
+                    locale={locale}
+                    location={session.location}
+                    className="font-medium text-[color:var(--accent)] hover:underline"
+                    textClassName="font-medium"
+                    showMazeMapBadge
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="app-stage-stats">

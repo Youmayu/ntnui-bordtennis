@@ -709,20 +709,17 @@ a {
   color: var(--text-soft);
 }
 
-.app-stage-date {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2rem;
-  padding: 0.45rem 0.8rem;
-  border: 1px solid var(--border-muted);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.58);
-  color: var(--text-strong);
-  font-size: 0.88rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
-  box-shadow: 0 10px 24px rgba(18, 14, 12, 0.08);
+.app-stage-session-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+.app-stage-session-copy {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
 }
 
 .app-stage-time {
@@ -1115,13 +1112,6 @@ a {
     rgba(255, 255, 255, 0.03);
 }
 
-[data-theme="dark"] .app-stage-date {
-  background: rgba(8, 12, 17, 0.72);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: rgba(248, 251, 255, 0.96);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
-}
-
 [data-theme="dark"] .app-roster-index {
   background: rgba(255, 255, 255, 0.03);
 }
@@ -1488,6 +1478,11 @@ a {
   .app-stage-panel {
     gap: 0.75rem;
     padding: 0.9rem;
+  }
+
+  .app-stage-session-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.85rem;
   }
 
   .app-stage-time {
