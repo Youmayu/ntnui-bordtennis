@@ -21,7 +21,8 @@ async function main() {
       starts_at TIMESTAMPTZ NOT NULL,
       ends_at   TIMESTAMPTZ NOT NULL,
       location  TEXT NOT NULL,
-      capacity  INT NOT NULL DEFAULT 20
+      capacity  INT NOT NULL DEFAULT 20,
+      members_only BOOLEAN NOT NULL DEFAULT TRUE
     );
 
     CREATE TABLE IF NOT EXISTS schedule_settings (
@@ -40,6 +41,7 @@ async function main() {
       ends_at_time TIME NOT NULL,
       location TEXT NOT NULL,
       capacity INT NOT NULL DEFAULT 16 CHECK (capacity BETWEEN 1 AND 200),
+      members_only BOOLEAN NOT NULL DEFAULT TRUE,
       is_active BOOLEAN NOT NULL DEFAULT TRUE,
       CHECK (char_length(location) BETWEEN 3 AND 120)
     );
@@ -57,6 +59,12 @@ async function main() {
 
     ALTER TABLE sessions
       ADD COLUMN IF NOT EXISTS auto_week_start DATE;
+
+    ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS members_only BOOLEAN NOT NULL DEFAULT TRUE;
+
+    ALTER TABLE schedule_templates
+      ADD COLUMN IF NOT EXISTS members_only BOOLEAN NOT NULL DEFAULT TRUE;
 
     CREATE TABLE IF NOT EXISTS registrations (
       id SERIAL PRIMARY KEY,
@@ -246,6 +254,7 @@ async function main() {
             ends_at_time,
             location,
             capacity,
+            members_only,
             is_active
           )
           SELECT
@@ -254,6 +263,7 @@ async function main() {
             (ends_at AT TIME ZONE 'Europe/Oslo')::time,
             location,
             capacity,
+            members_only,
             TRUE
           FROM sessions
           WHERE date_trunc('week', starts_at AT TIME ZONE 'Europe/Oslo') = template_source_week

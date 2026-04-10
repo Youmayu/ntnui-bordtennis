@@ -4,6 +4,7 @@ import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
 import { pool } from "@/lib/db";
 import SchedulePageContent from "@/app/components/SchedulePageContent";
 import { getMessages, getVenueLabel, isLocale, type Locale } from "@/lib/site-content";
+import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import { createPageMetadata } from "@/lib/seo";
 import { REGISTRATION_STATUS } from "@/lib/registrations";
 
@@ -15,6 +16,7 @@ type SessionRow = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   registered_count: number;
   current_time: string;
 };
@@ -57,6 +59,7 @@ export default async function LocalizedSchedulePage({
   }
 
   await ensureAutoScheduledSessions().catch(() => {});
+  const accessSchema = await getSessionAccessSchema(pool);
   const res = await pool.query(
     `SELECT
        s.id,
@@ -64,6 +67,7 @@ export default async function LocalizedSchedulePage({
        s.ends_at,
        s.location,
        s.capacity,
+       ${getMembersOnlySelectSql(accessSchema.hasSessionMembersOnly, "s")} AS members_only,
        COALESCE(reg_counts.registered_count, 0) AS registered_count,
        NOW() AS current_time
      FROM sessions s

@@ -38,6 +38,8 @@ const LEVEL_KEY_BY_VALUE: Record<string, LevelKey> = {
 export const MAZEMAP_URL =
   "https://use.mazemap.com/?utm_medium=qr-code-mobile#v=1&config=ntnu&campusid=18&zlevel=2&center=10.475060,63.406574&zoom=17.8&sharepoitype=identifier&sharepoi=850-B217";
 
+export const NTNUI_MEMBERSHIP_URL = "https://medlem.ntnui.no/groups/bordtennis/";
+
 export const VENUE_LABEL = "Dragvoll Idrettssenter B217";
 
 const VENUE_LABELS: Record<Locale, string> = {
@@ -49,6 +51,91 @@ const VENUE_LABELS: Record<Locale, string> = {
   zh: VENUE_LABEL,
   fr: VENUE_LABEL,
   es: VENUE_LABEL,
+};
+
+type SessionAccessCopy = {
+  membersOnly: string;
+  openTraining: string;
+  membersOnlyHint: string;
+  openTrainingHint: string;
+  membershipConfirmLabel: string;
+  membershipButton: string;
+  membershipConfirmError: string;
+};
+
+const SESSION_ACCESS_COPY: Record<Locale, SessionAccessCopy> = {
+  no: {
+    membersOnly: "Kun medlemmer",
+    openTraining: "\u00C5pen trening",
+    membersOnlyHint: "Denne \u00F8kten er kun for medlemmer av NTNUI Bordtennis.",
+    openTrainingHint: "Denne \u00F8kten er \u00E5pen for alle.",
+    membershipConfirmLabel: "Jeg bekrefter at jeg er medlem av NTNUI Bordtennis.",
+    membershipButton: "Bli medlem her",
+    membershipConfirmError: "Bekreft medlemskap for denne \u00F8kten.",
+  },
+  en: {
+    membersOnly: "Members only",
+    openTraining: "Open training",
+    membersOnlyHint: "This session is only for NTNUI Table Tennis members.",
+    openTrainingHint: "This session is open to everyone.",
+    membershipConfirmLabel: "I confirm that I am a member of NTNUI Table Tennis.",
+    membershipButton: "Sign up here",
+    membershipConfirmError: "Confirm membership for this session.",
+  },
+  da: {
+    membersOnly: "Kun medlemmer",
+    openTraining: "\u00C5ben tr\u00E6ning",
+    membersOnlyHint: "Denne tr\u00E6ning er kun for medlemmer af NTNUI Bordtennis.",
+    openTrainingHint: "Denne tr\u00E6ning er \u00E5ben for alle.",
+    membershipConfirmLabel: "Jeg bekr\u00E6fter, at jeg er medlem af NTNUI Bordtennis.",
+    membershipButton: "Bliv medlem her",
+    membershipConfirmError: "Bekr\u00E6ft medlemskab for denne tr\u00E6ning.",
+  },
+  sv: {
+    membersOnly: "Endast medlemmar",
+    openTraining: "\u00D6ppen tr\u00E4ning",
+    membersOnlyHint: "Detta pass \u00E4r bara f\u00F6r medlemmar i NTNUI Bordtennis.",
+    openTrainingHint: "Detta pass \u00E4r \u00F6ppet f\u00F6r alla.",
+    membershipConfirmLabel: "Jag bekr\u00E4ftar att jag \u00E4r medlem i NTNUI Bordtennis.",
+    membershipButton: "Bli medlem h\u00E4r",
+    membershipConfirmError: "Bekr\u00E4fta medlemskap f\u00F6r detta pass.",
+  },
+  de: {
+    membersOnly: "Nur Mitglieder",
+    openTraining: "Offenes Training",
+    membersOnlyHint: "Diese Einheit ist nur f\u00FCr Mitglieder von NTNUI Tischtennis.",
+    openTrainingHint: "Diese Einheit ist f\u00FCr alle offen.",
+    membershipConfirmLabel: "Ich best\u00E4tige, dass ich Mitglied bei NTNUI Tischtennis bin.",
+    membershipButton: "Hier Mitglied werden",
+    membershipConfirmError: "Best\u00E4tige die Mitgliedschaft f\u00FCr diese Einheit.",
+  },
+  zh: {
+    membersOnly: "\u4EC5\u9650\u4F1A\u5458",
+    openTraining: "\u516C\u5F00\u8BAD\u7EC3",
+    membersOnlyHint: "\u8FD9\u8282\u8BAD\u7EC3\u4EC5\u5BF9 NTNUI \u4E52\u4E53\u7403\u4FF1\u4E50\u90E8\u4F1A\u5458\u5F00\u653E\u3002",
+    openTrainingHint: "\u8FD9\u8282\u8BAD\u7EC3\u5BF9\u6240\u6709\u4EBA\u5F00\u653E\u3002",
+    membershipConfirmLabel: "\u6211\u786E\u8BA4\u6211\u662F NTNUI \u4E52\u4E53\u7403\u4FF1\u4E50\u90E8\u4F1A\u5458\u3002",
+    membershipButton: "\u5728\u8FD9\u91CC\u6CE8\u518C",
+    membershipConfirmError: "\u8BF7\u786E\u8BA4\u4F60\u662F\u672C\u8BAD\u7EC3\u7684\u4F1A\u5458\u3002",
+  },
+  fr: {
+    membersOnly: "Membres uniquement",
+    openTraining: "Entra\u00EEnement ouvert",
+    membersOnlyHint: "Cette s\u00E9ance est r\u00E9serv\u00E9e aux membres de NTNUI Tennis de table.",
+    openTrainingHint: "Cette s\u00E9ance est ouverte \u00E0 tout le monde.",
+    membershipConfirmLabel: "Je confirme que je suis membre de NTNUI Tennis de table.",
+    membershipButton: "S'inscrire ici",
+    membershipConfirmError: "Confirmez l'adh\u00E9sion pour cette s\u00E9ance.",
+  },
+  es: {
+    membersOnly: "Solo miembros",
+    openTraining: "Entrenamiento abierto",
+    membersOnlyHint: "Esta sesi\u00F3n es solo para miembros de NTNUI Tenis de mesa.",
+    openTrainingHint: "Esta sesi\u00F3n est\u00E1 abierta para todo el mundo.",
+    membershipConfirmLabel: "Confirmo que soy miembro de NTNUI Tenis de mesa.",
+    membershipButton: "Inscribirse aqu\u00ED",
+    membershipConfirmError: "Confirma la membres\u00EDa para esta sesi\u00F3n.",
+  },
 };
 
 export const DEFAULT_SESSION_LOCATION = VENUE_LABEL;
@@ -1249,6 +1336,15 @@ export function getMessages(locale: Locale) {
 
 export function getVenueLabel(locale: Locale) {
   return VENUE_LABELS[locale];
+}
+
+export function getSessionAccessCopy(locale: Locale) {
+  return SESSION_ACCESS_COPY[locale];
+}
+
+export function getSessionAccessLabel(locale: Locale, membersOnly: boolean) {
+  const copy = getSessionAccessCopy(locale);
+  return membersOnly ? copy.membersOnly : copy.openTraining;
 }
 
 export function isDefaultVenueLocation(location: string | null | undefined) {

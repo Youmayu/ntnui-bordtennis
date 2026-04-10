@@ -1,6 +1,6 @@
 "use client";
 
-import { getIntlLocale } from "@/lib/site-content";
+import { getIntlLocale, getSessionAccessLabel } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 
@@ -10,6 +10,7 @@ type Session = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   registered_count: number;
   current_time: string;
 };
@@ -91,6 +92,15 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                           <div className="flex flex-wrap gap-2">
                             <span className={isActive ? "app-badge app-badge-success" : "app-badge app-badge-accent"}>
                               {isActive ? messages.schedule.active : messages.schedule.upcoming}
+                            </span>
+                            <span
+                              className={
+                                session.members_only
+                                  ? "app-badge app-badge-neutral"
+                                  : "app-badge app-badge-success"
+                              }
+                            >
+                              {getSessionAccessLabel(locale, session.members_only)}
                             </span>
                             <span
                               className={

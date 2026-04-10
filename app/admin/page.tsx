@@ -30,6 +30,7 @@ type SessionRow = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   auto_template_id: number | null;
   auto_week_start: string | null;
 };
@@ -63,6 +64,7 @@ type ScheduleTemplateRow = {
   ends_at_time: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   is_active: boolean;
 };
 
@@ -79,6 +81,8 @@ type AutoScheduleSchemaStatusRow = {
   has_schedule_templates: boolean;
   has_auto_template_id: boolean;
   has_auto_week_start: boolean;
+  has_session_members_only: boolean;
+  has_template_members_only: boolean;
 };
 
 const WEEKDAY_OPTIONS = [
@@ -183,7 +187,21 @@ export default async function AdminPage() {
          WHERE table_schema = 'public'
            AND table_name = 'sessions'
            AND column_name = 'auto_week_start'
-       ) AS has_auto_week_start`
+       ) AS has_auto_week_start,
+       EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'sessions'
+           AND column_name = 'members_only'
+       ) AS has_session_members_only,
+       EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'schedule_templates'
+           AND column_name = 'members_only'
+       ) AS has_template_members_only`
   );
 
   const autoScheduleSchema =
@@ -193,6 +211,8 @@ export default async function AdminPage() {
       has_schedule_templates: false,
       has_auto_template_id: false,
       has_auto_week_start: false,
+      has_session_members_only: false,
+      has_template_members_only: false,
     } satisfies AutoScheduleSchemaStatusRow);
 
   const autoScheduleAvailable =
@@ -200,6 +220,9 @@ export default async function AdminPage() {
     autoScheduleSchema.has_schedule_templates &&
     autoScheduleSchema.has_auto_template_id &&
     autoScheduleSchema.has_auto_week_start;
+  const sessionAccessAvailable =
+    autoScheduleSchema.has_session_members_only &&
+    autoScheduleSchema.has_template_members_only;
 
   let autoScheduleError: string | null = null;
   let autoScheduleSettings: ScheduleSettingsRow = { auto_enabled: true };
@@ -224,9 +247,29 @@ export default async function AdminPage() {
            WHERE id = 1`
         ),
         pool.query(
-          `SELECT id, weekday, starts_at_time, ends_at_time, location, capacity, is_active
-           FROM schedule_templates
-           ORDER BY weekday ASC, starts_at_time ASC, id ASC`
+          autoScheduleSchema.has_template_members_only
+            ? `SELECT
+                 id,
+                 weekday,
+                 starts_at_time,
+                 ends_at_time,
+                 location,
+                 capacity,
+                 members_only,
+                 is_active
+               FROM schedule_templates
+               ORDER BY weekday ASC, starts_at_time ASC, id ASC`
+            : `SELECT
+                 id,
+                 weekday,
+                 starts_at_time,
+                 ends_at_time,
+                 location,
+                 capacity,
+                 TRUE AS members_only,
+                 is_active
+               FROM schedule_templates
+               ORDER BY weekday ASC, starts_at_time ASC, id ASC`
         ),
         pool.query(
           `WITH context AS (
@@ -285,6 +328,7 @@ export default async function AdminPage() {
            ends_at,
            location,
            capacity,
+           ${autoScheduleSchema.has_session_members_only ? "members_only" : "TRUE AS members_only"},
            auto_template_id,
            auto_week_start::text AS auto_week_start
          FROM sessions
@@ -296,6 +340,7 @@ export default async function AdminPage() {
            ends_at,
            location,
            capacity,
+           ${autoScheduleSchema.has_session_members_only ? "members_only" : "TRUE AS members_only"},
            NULL::int AS auto_template_id,
            NULL::text AS auto_week_start
          FROM sessions
@@ -440,6 +485,7 @@ export default async function AdminPage() {
     const endsAtTime = String(formData.get("ends_at_time") ?? "");
     const location = normalizeAutoScheduleLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity"));
+    const membersOnly = String(formData.get("members_only") ?? "") === "on";
     const isActive = String(formData.get("is_active") ?? "") === "on";
 
     if (!Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
@@ -447,16 +493,29 @@ export default async function AdminPage() {
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
 
     await pool.query(
-      `INSERT INTO schedule_templates (
-         weekday,
-         starts_at_time,
-         ends_at_time,
-         location,
-         capacity,
-         is_active
-       )
-       VALUES ($1, $2::time, $3::time, $4, $5, $6)`,
-      [weekday, startsAtTime, endsAtTime, location, capacity, isActive]
+      autoScheduleSchema.has_template_members_only
+        ? `INSERT INTO schedule_templates (
+             weekday,
+             starts_at_time,
+             ends_at_time,
+             location,
+             capacity,
+             members_only,
+             is_active
+           )
+           VALUES ($1, $2::time, $3::time, $4, $5, $6, $7)`
+        : `INSERT INTO schedule_templates (
+             weekday,
+             starts_at_time,
+             ends_at_time,
+             location,
+             capacity,
+             is_active
+           )
+           VALUES ($1, $2::time, $3::time, $4, $5, $6)`,
+      autoScheduleSchema.has_template_members_only
+        ? [weekday, startsAtTime, endsAtTime, location, capacity, membersOnly, isActive]
+        : [weekday, startsAtTime, endsAtTime, location, capacity, isActive]
     );
   }
 
@@ -468,6 +527,7 @@ export default async function AdminPage() {
     const endsAtTime = String(formData.get("ends_at_time") ?? "");
     const location = normalizeAutoScheduleLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity"));
+    const membersOnly = String(formData.get("members_only") ?? "") === "on";
     const isActive = String(formData.get("is_active") ?? "") === "on";
 
     if (!Number.isFinite(id)) return;
@@ -476,15 +536,27 @@ export default async function AdminPage() {
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
 
     await pool.query(
-      `UPDATE schedule_templates
-       SET weekday = $2,
-           starts_at_time = $3::time,
-           ends_at_time = $4::time,
-           location = $5,
-           capacity = $6,
-           is_active = $7
-       WHERE id = $1`,
-      [id, weekday, startsAtTime, endsAtTime, location, capacity, isActive]
+      autoScheduleSchema.has_template_members_only
+        ? `UPDATE schedule_templates
+           SET weekday = $2,
+               starts_at_time = $3::time,
+               ends_at_time = $4::time,
+               location = $5,
+               capacity = $6,
+               members_only = $7,
+               is_active = $8
+           WHERE id = $1`
+        : `UPDATE schedule_templates
+           SET weekday = $2,
+               starts_at_time = $3::time,
+               ends_at_time = $4::time,
+               location = $5,
+               capacity = $6,
+               is_active = $7
+           WHERE id = $1`,
+      autoScheduleSchema.has_template_members_only
+        ? [id, weekday, startsAtTime, endsAtTime, location, capacity, membersOnly, isActive]
+        : [id, weekday, startsAtTime, endsAtTime, location, capacity, isActive]
     );
   }
 
@@ -508,6 +580,7 @@ export default async function AdminPage() {
     const endsAtLocal = String(formData.get("ends_at") ?? "");
     const location = sanitizeLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity"));
+    const membersOnly = String(formData.get("members_only") ?? "") === "on";
 
     if (!Number.isFinite(id)) return;
     if (!startsAtLocal || !endsAtLocal || !location) return;
@@ -520,19 +593,36 @@ export default async function AdminPage() {
       await client.query("BEGIN");
 
       await client.query(
-        `UPDATE sessions
-         SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
-             ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
-             location  = $4,
-             capacity  = $5
-        WHERE id = $1`,
-        [
-          id,
-          startsAtLocal,
-          endsAtLocal,
-          location,
-          capacity,
-        ]
+        autoScheduleSchema.has_session_members_only
+          ? `UPDATE sessions
+             SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
+                 ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
+                 location  = $4,
+                 capacity  = $5,
+                 members_only = $6
+             WHERE id = $1`
+          : `UPDATE sessions
+             SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
+                 ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
+                 location  = $4,
+                 capacity  = $5
+             WHERE id = $1`,
+        autoScheduleSchema.has_session_members_only
+          ? [
+              id,
+              startsAtLocal,
+              endsAtLocal,
+              location,
+              capacity,
+              membersOnly,
+            ]
+          : [
+              id,
+              startsAtLocal,
+              endsAtLocal,
+              location,
+              capacity,
+            ]
       );
 
       await fillConfirmedSlotsFromWaitlist(client, id);
@@ -551,25 +641,43 @@ export default async function AdminPage() {
     const endsAtLocal = String(formData.get("ends_at") ?? "");
     const location = sanitizeLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity") ?? 20);
+    const membersOnly = String(formData.get("members_only") ?? "") === "on";
 
     if (!startsAtLocal || !endsAtLocal || !location) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
     if (startsAtLocal >= endsAtLocal) return;
 
     await pool.query(
-      `INSERT INTO sessions (starts_at, ends_at, location, capacity)
-       VALUES (
-         ($1::timestamp AT TIME ZONE 'Europe/Oslo'),
-         ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
-         $3,
-         $4
-       )`,
-      [
-        startsAtLocal,
-        endsAtLocal,
-        location,
-        capacity,
-      ]
+      autoScheduleSchema.has_session_members_only
+        ? `INSERT INTO sessions (starts_at, ends_at, location, capacity, members_only)
+           VALUES (
+             ($1::timestamp AT TIME ZONE 'Europe/Oslo'),
+             ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
+             $3,
+             $4,
+             $5
+           )`
+        : `INSERT INTO sessions (starts_at, ends_at, location, capacity)
+           VALUES (
+             ($1::timestamp AT TIME ZONE 'Europe/Oslo'),
+             ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
+             $3,
+             $4
+           )`,
+      autoScheduleSchema.has_session_members_only
+        ? [
+            startsAtLocal,
+            endsAtLocal,
+            location,
+            capacity,
+            membersOnly,
+          ]
+        : [
+            startsAtLocal,
+            endsAtLocal,
+            location,
+            capacity,
+          ]
     );
   }
 
@@ -629,6 +737,16 @@ export default async function AdminPage() {
             Sett opp faste treningsdager én gang, så oppretter nettsiden neste ukes økter
             automatisk når denne ukens siste planlagte trening er ferdig.
           </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Huk av <span className="font-medium">Kun medlemmer</span> for vanlige økter. Fjern
+            haken for å gjøre en trening åpen for alle.
+          </p>
+          {!sessionAccessAvailable && (
+            <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
+              Kjør <code>node scripts/init-db.js</code> for å aktivere tilgangsvalg for
+              medlemmer og åpne treninger.
+            </p>
+          )}
           {autoScheduleError && (
             <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
               Auto-plan kunne ikke lastes helt: {autoScheduleError}
@@ -700,7 +818,7 @@ export default async function AdminPage() {
 
         <div className="rounded-2xl border bg-background p-4">
           <div className="mb-3 text-sm font-medium">Legg til fast treningsdag</div>
-          <form action={addScheduleTemplate} className="grid gap-3 lg:grid-cols-[160px_120px_120px_minmax(0,1fr)_120px_auto_auto]">
+          <form action={addScheduleTemplate} className="grid gap-3 lg:grid-cols-[160px_120px_120px_minmax(0,1fr)_120px_auto_auto_auto]">
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Ukedag</label>
               <select
@@ -764,6 +882,11 @@ export default async function AdminPage() {
             </div>
 
             <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="members_only" defaultChecked />
+              Kun medlemmer
+            </label>
+
+            <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="is_active" defaultChecked />
               Aktiv
             </label>
@@ -785,6 +908,7 @@ export default async function AdminPage() {
                 <th className="py-2 pr-3">Slutt</th>
                 <th className="py-2 pr-3">Sted</th>
                 <th className="py-2 pr-3">Kapasitet</th>
+                <th className="py-2 pr-3">Tilgang</th>
                 <th className="py-2 pr-3">Aktiv</th>
                 <th className="py-2 pr-3">Lagre</th>
                 <th className="py-2">Slett</th>
@@ -817,6 +941,18 @@ export default async function AdminPage() {
                       className="rounded-lg border bg-background px-2 py-1 text-sm"
                       required
                     />
+                  </td>
+
+                  <td className="py-3 pr-3">
+                    <label className="flex items-center gap-2 text-sm whitespace-nowrap">
+                      <input
+                        form={`template-${template.id}`}
+                        name="members_only"
+                        type="checkbox"
+                        defaultChecked={template.members_only}
+                      />
+                      Kun medlemmer
+                    </label>
                   </td>
 
                   <td className="py-3 pr-3">
@@ -885,7 +1021,7 @@ export default async function AdminPage() {
 
               {templates.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-6 text-muted-foreground">
+                  <td colSpan={9} className="py-6 text-muted-foreground">
                     Ingen faste treningsdager er lagt inn enda.
                   </td>
                 </tr>
@@ -1025,7 +1161,8 @@ export default async function AdminPage() {
         <div>
           <h2 className="text-lg font-semibold">Økter</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Rediger tidspunkt, sted og kapasitet. Du kan også legge til nye økter.
+            Rediger tidspunkt, sted, kapasitet og om økten er kun for medlemmer eller åpen
+            trening. Du kan også legge til nye økter.
           </p>
         </div>
 
@@ -1073,6 +1210,11 @@ export default async function AdminPage() {
               />
             </div>
 
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="members_only" defaultChecked />
+              Kun medlemmer
+            </label>
+
             <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
               Legg til
             </button>
@@ -1089,6 +1231,7 @@ export default async function AdminPage() {
                 <th className="py-2 pr-3">Slutt</th>
                 <th className="py-2 pr-3">Sted</th>
                 <th className="py-2 pr-3">Kapasitet</th>
+                <th className="py-2 pr-3">Tilgang</th>
                 <th className="py-2 pr-3">Lagre</th>
                 <th className="py-2">Slett</th>
               </tr>
@@ -1170,6 +1313,18 @@ export default async function AdminPage() {
                   </td>
 
                   <td className="py-3 pr-3">
+                    <label className="flex items-center gap-2 text-sm whitespace-nowrap">
+                      <input
+                        form={`session-${session.id}`}
+                        name="members_only"
+                        type="checkbox"
+                        defaultChecked={session.members_only}
+                      />
+                      Kun medlemmer
+                    </label>
+                  </td>
+
+                  <td className="py-3 pr-3">
                     <form id={`session-${session.id}`} action={updateSession} className="flex gap-2">
                       <input type="hidden" name="id" value={session.id} />
                       <button className="rounded-lg border bg-primary px-3 py-1 text-primary-foreground hover:opacity-90">
@@ -1191,7 +1346,7 @@ export default async function AdminPage() {
 
               {sessions.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-6 text-muted-foreground">
+                  <td colSpan={9} className="py-6 text-muted-foreground">
                     Ingen økter i databasen.
                   </td>
                 </tr>

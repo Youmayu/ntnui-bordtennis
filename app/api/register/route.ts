@@ -8,13 +8,23 @@ import {
   getConfirmedRegistrationCount,
   REGISTRATION_STATUS,
 } from "@/lib/registrations";
+import { getSessionAccessSchema } from "@/lib/session-access";
 
 export async function POST(req: Request) {
   let client: PoolClient | null = null;
 
   try {
     const body = await req.json();
-    const { sessionId, name, level, birthMonth, birthDay, turnstileToken, website } = body ?? {};
+    const {
+      sessionId,
+      name,
+      level,
+      birthMonth,
+      birthDay,
+      memberConfirmed,
+      turnstileToken,
+      website,
+    } = body ?? {};
     const safeName = typeof name === "string" ? sanitizeMemberName(name) : null;
     const safeLevel = typeof level === "string" ? sanitizeLevel(level) : null;
 
@@ -72,6 +82,28 @@ export async function POST(req: Request) {
     }
 
     const confirmedCount = await getConfirmedRegistrationCount(client, sessionId);
+    const accessSchema = await getSessionAccessSchema(client);
+    let membersOnly = true;
+
+    if (accessSchema.hasSessionMembersOnly) {
+      const sessionAccessRes = await client.query<{ members_only: boolean }>(
+        `SELECT members_only
+         FROM sessions
+         WHERE id = $1`,
+        [sessionId]
+      );
+
+      membersOnly = sessionAccessRes.rows[0]?.members_only ?? true;
+    }
+
+    if (membersOnly && memberConfirmed !== true) {
+      await client.query("ROLLBACK");
+      return NextResponse.json(
+        { error: "Bekreft at du er medlem for denne økten." },
+        { status: 400 }
+      );
+    }
+
     const registrationStatus =
       confirmedCount < fillResult.capacity
         ? REGISTRATION_STATUS.CONFIRMED

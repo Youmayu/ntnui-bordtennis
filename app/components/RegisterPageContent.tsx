@@ -8,6 +8,9 @@ import {
   LEVEL_OPTIONS,
   formatVenueLabel,
   getIntlLocale,
+  getSessionAccessCopy,
+  getSessionAccessLabel,
+  NTNUI_MEMBERSHIP_URL,
   type Locale,
 } from "@/lib/site-content";
 import { getDaysInMonth } from "@/lib/birth-month-day";
@@ -18,6 +21,7 @@ type Session = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   confirmed_count: number;
   waitlist_count: number;
 };
@@ -63,10 +67,12 @@ export default function RegisterPageContent() {
   const [level, setLevel] = useState("Nybegynner");
   const [birthMonth, setBirthMonth] = useState<number | null>(null);
   const [birthDay, setBirthDay] = useState<number | null>(null);
+  const [memberConfirmed, setMemberConfirmed] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const selectedSession = sessions.find((session) => session.id === sessionId) ?? null;
+  const accessCopy = getSessionAccessCopy(locale);
   const selectedSessionIsFull = selectedSession
     ? selectedSession.confirmed_count >= selectedSession.capacity
     : false;
@@ -92,8 +98,14 @@ export default function RegisterPageContent() {
   });
 
   const disabled = useMemo(
-    () => name.trim().length < 2 || !sessionId || !birthMonth || !birthDay || !turnstileToken,
-    [birthDay, birthMonth, name, sessionId, turnstileToken]
+    () =>
+      name.trim().length < 2 ||
+      !sessionId ||
+      !birthMonth ||
+      !birthDay ||
+      !turnstileToken ||
+      Boolean(selectedSession?.members_only && !memberConfirmed),
+    [birthDay, birthMonth, memberConfirmed, name, selectedSession?.members_only, sessionId, turnstileToken]
   );
 
   async function loadSessions(preferredSessionId?: number | null) {
@@ -141,6 +153,10 @@ export default function RegisterPageContent() {
       setError(messages.register.errors.birthDate);
       return;
     }
+    if (selectedSession?.members_only && !memberConfirmed) {
+      setError(accessCopy.membershipConfirmError);
+      return;
+    }
 
     const res = await fetch("/api/register", {
       method: "POST",
@@ -151,6 +167,7 @@ export default function RegisterPageContent() {
         level,
         birthMonth,
         birthDay,
+        memberConfirmed,
         turnstileToken: submittedToken,
         website: "",
       }),
@@ -173,6 +190,7 @@ export default function RegisterPageContent() {
     setLevel("Nybegynner");
     setBirthMonth(null);
     setBirthDay(null);
+    setMemberConfirmed(false);
     await loadSessions(sessionId);
   }
 
@@ -206,7 +224,10 @@ export default function RegisterPageContent() {
               <label className="text-sm font-medium">{messages.register.sessionLabel}</label>
               <select
                 value={sessionId ?? ""}
-                onChange={(e) => setSessionId(Number(e.target.value))}
+                onChange={(e) => {
+                  setSessionId(Number(e.target.value));
+                  setMemberConfirmed(false);
+                }}
                 className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
               >
                 {sessions.map((session) => (
@@ -221,6 +242,8 @@ export default function RegisterPageContent() {
                     }).format(new Date(session.starts_at))}
                     {" - "}
                     {formatVenueLabel(session.location, locale)}
+                    {" - "}
+                    {getSessionAccessLabel(locale, session.members_only)}
                   </option>
                 ))}
               </select>
@@ -244,6 +267,51 @@ export default function RegisterPageContent() {
                 </div>
               )}
             </div>
+
+            {selectedSession && (
+              <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-muted)] p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={
+                      selectedSession.members_only
+                        ? "app-badge app-badge-neutral"
+                        : "app-badge app-badge-success"
+                    }
+                  >
+                    {getSessionAccessLabel(locale, selectedSession.members_only)}
+                  </span>
+                </div>
+
+                <div className="mt-3 text-sm text-[color:var(--text-muted)]">
+                  {selectedSession.members_only
+                    ? accessCopy.membersOnlyHint
+                    : accessCopy.openTrainingHint}
+                </div>
+
+                {selectedSession.members_only && (
+                  <div className="mt-4 space-y-3">
+                    <label className="flex items-start gap-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={memberConfirmed}
+                        onChange={(event) => setMemberConfirmed(event.target.checked)}
+                        className="mt-1"
+                      />
+                      <span>{accessCopy.membershipConfirmLabel}</span>
+                    </label>
+
+                    <a
+                      href={NTNUI_MEMBERSHIP_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="app-button-secondary inline-flex"
+                    >
+                      {accessCopy.membershipButton}
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <label className="text-sm font-medium">{messages.register.nameLabel}</label>
@@ -341,6 +409,15 @@ export default function RegisterPageContent() {
                   />
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
+                  <span
+                    className={
+                      selectedSession.members_only
+                        ? "app-badge app-badge-neutral"
+                        : "app-badge app-badge-success"
+                    }
+                  >
+                    {getSessionAccessLabel(locale, selectedSession.members_only)}
+                  </span>
                   <span className="app-badge app-badge-success">
                     {selectedSession.confirmed_count}/{selectedSession.capacity}
                   </span>

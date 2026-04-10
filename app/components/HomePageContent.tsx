@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getIntlLocale, getVenueLabel, localizePathname } from "@/lib/site-content";
+import {
+  getIntlLocale,
+  getSessionAccessLabel,
+  getVenueLabel,
+  localizePathname,
+} from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 
@@ -13,6 +18,7 @@ type Session = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   current_time: string;
 };
 
@@ -157,6 +163,13 @@ export default function HomePageContent({
             <div className="flex flex-wrap items-center gap-2">
               <span className={isActive ? "app-badge app-badge-accent" : "app-badge app-badge-neutral"}>
                 {isActive ? messages.home.currentStatus : messages.home.nextStatus}
+              </span>
+              <span
+                className={
+                  session.members_only ? "app-badge app-badge-neutral" : "app-badge app-badge-success"
+                }
+              >
+                {getSessionAccessLabel(locale, session.members_only)}
               </span>
               <span className="app-stage-kicker">{dateFormatter.format(new Date(session.starts_at))}</span>
             </div>

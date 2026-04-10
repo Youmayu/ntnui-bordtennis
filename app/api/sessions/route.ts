@@ -3,10 +3,12 @@ import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
 import { pool } from "@/lib/db";
 import { sanitizeLocation } from "@/lib/input-safety";
 import { REGISTRATION_STATUS } from "@/lib/registrations";
+import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 
 export async function GET() {
   await ensureAutoScheduledSessions().catch(() => {});
+  const accessSchema = await getSessionAccessSchema(pool);
 
   const res = await pool.query(
     `SELECT
@@ -15,6 +17,7 @@ export async function GET() {
        s.ends_at,
        s.location,
        s.capacity,
+       ${getMembersOnlySelectSql(accessSchema.hasSessionMembersOnly, "s")} AS members_only,
        COALESCE(confirmed.confirmed_count, 0) AS confirmed_count,
        COALESCE(waitlist.waitlist_count, 0) AS waitlist_count
      FROM sessions s
@@ -45,6 +48,7 @@ export async function GET() {
       ends_at: string;
       location: string;
       capacity: number;
+      members_only: boolean;
       confirmed_count: number;
       waitlist_count: number;
     }>

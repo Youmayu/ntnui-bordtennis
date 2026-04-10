@@ -1,6 +1,7 @@
 import type { PoolClient } from "pg";
 import { pool } from "@/lib/db";
 import { sanitizeLocation } from "@/lib/input-safety";
+import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 
 type Queryable = Pick<PoolClient, "query">;
@@ -21,6 +22,7 @@ type ActiveTemplateRow = {
   ends_at_time: string;
   location: string;
   capacity: number;
+  members_only: boolean;
 };
 
 type InsertedRow = {
@@ -103,6 +105,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
     await client.query("BEGIN");
     await client.query(`SELECT pg_advisory_xact_lock($1)`, [AUTO_SCHEDULE_LOCK_KEY]);
     await ensureAutoScheduleScaffoldWithClient(client);
+    const accessSchema = await getSessionAccessSchema(client);
 
     const statusRes = await client.query<GenerationStatusRow>(
       `WITH context AS (
@@ -161,7 +164,14 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
     }
 
     const templatesRes = await client.query<ActiveTemplateRow>(
-      `SELECT id, weekday, starts_at_time::text, ends_at_time::text, location, capacity
+      `SELECT
+         id,
+         weekday,
+         starts_at_time::text,
+         ends_at_time::text,
+         location,
+         capacity,
+         ${getMembersOnlySelectSql(accessSchema.hasTemplateMembersOnly, "schedule_templates")} AS members_only
        FROM schedule_templates
        WHERE is_active = TRUE
        ORDER BY weekday ASC, starts_at_time ASC, id ASC`
@@ -171,62 +181,123 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
 
     for (const template of templatesRes.rows) {
       const insertRes = await client.query<InsertedRow>(
-        `WITH target AS (
-           SELECT
-             (($1::date + make_interval(days => $2 - 1))::timestamp + $3::time) AT TIME ZONE 'Europe/Oslo' AS starts_at,
-             (($1::date + make_interval(days => $2 - 1))::timestamp + $4::time
-               + CASE
-                   WHEN $4::time <= $3::time THEN INTERVAL '1 day'
-                   ELSE INTERVAL '0 day'
-                 END) AT TIME ZONE 'Europe/Oslo' AS ends_at
-         )
-         INSERT INTO sessions (
-           starts_at,
-           ends_at,
-           location,
-           capacity,
-           auto_template_id,
-           auto_week_start
-         )
-         SELECT
-           target.starts_at,
-           target.ends_at,
-           $5,
-           $6,
-           $7,
-           $1::date
-         FROM target
-         WHERE (
-           $8::boolean
-           OR NOT EXISTS (
-             SELECT 1
-             FROM schedule_exceptions e
-             WHERE e.template_id = $7
-               AND e.week_start = $1::date
-           )
-         )
-           AND NOT EXISTS (
-             SELECT 1
-             FROM sessions existing
-             WHERE existing.auto_template_id = $7
-               AND existing.auto_week_start = $1::date
-           )
-           AND NOT EXISTS (
-             SELECT 1
-             FROM sessions existing
-             WHERE existing.starts_at = target.starts_at
-           )
-         RETURNING id`,
-        [
-          status.target_week_start_local,
-          template.weekday,
-          template.starts_at_time,
-          template.ends_at_time,
-          template.location,
-          template.capacity,
-          template.id,
-          force,
-        ]
+        accessSchema.hasSessionMembersOnly
+          ? `WITH target AS (
+               SELECT
+                 (($1::date + make_interval(days => $2 - 1))::timestamp + $3::time) AT TIME ZONE 'Europe/Oslo' AS starts_at,
+                 (($1::date + make_interval(days => $2 - 1))::timestamp + $4::time
+                   + CASE
+                       WHEN $4::time <= $3::time THEN INTERVAL '1 day'
+                       ELSE INTERVAL '0 day'
+                     END) AT TIME ZONE 'Europe/Oslo' AS ends_at
+             )
+             INSERT INTO sessions (
+               starts_at,
+               ends_at,
+               location,
+               capacity,
+               members_only,
+               auto_template_id,
+               auto_week_start
+             )
+             SELECT
+               target.starts_at,
+               target.ends_at,
+               $5,
+               $6,
+               $7,
+               $8,
+               $1::date
+             FROM target
+             WHERE (
+               $9::boolean
+               OR NOT EXISTS (
+                 SELECT 1
+                 FROM schedule_exceptions e
+                 WHERE e.template_id = $8
+                   AND e.week_start = $1::date
+               )
+             )
+               AND NOT EXISTS (
+                 SELECT 1
+                 FROM sessions existing
+                 WHERE existing.auto_template_id = $8
+                   AND existing.auto_week_start = $1::date
+               )
+               AND NOT EXISTS (
+                 SELECT 1
+                 FROM sessions existing
+                 WHERE existing.starts_at = target.starts_at
+               )
+             RETURNING id`
+          : `WITH target AS (
+               SELECT
+                 (($1::date + make_interval(days => $2 - 1))::timestamp + $3::time) AT TIME ZONE 'Europe/Oslo' AS starts_at,
+                 (($1::date + make_interval(days => $2 - 1))::timestamp + $4::time
+                   + CASE
+                       WHEN $4::time <= $3::time THEN INTERVAL '1 day'
+                       ELSE INTERVAL '0 day'
+                     END) AT TIME ZONE 'Europe/Oslo' AS ends_at
+             )
+             INSERT INTO sessions (
+               starts_at,
+               ends_at,
+               location,
+               capacity,
+               auto_template_id,
+               auto_week_start
+             )
+             SELECT
+               target.starts_at,
+               target.ends_at,
+               $5,
+               $6,
+               $7,
+               $1::date
+             FROM target
+             WHERE (
+               $8::boolean
+               OR NOT EXISTS (
+                 SELECT 1
+                 FROM schedule_exceptions e
+                 WHERE e.template_id = $7
+                   AND e.week_start = $1::date
+               )
+             )
+               AND NOT EXISTS (
+                 SELECT 1
+                 FROM sessions existing
+                 WHERE existing.auto_template_id = $7
+                   AND existing.auto_week_start = $1::date
+               )
+               AND NOT EXISTS (
+                 SELECT 1
+                 FROM sessions existing
+                 WHERE existing.starts_at = target.starts_at
+               )
+             RETURNING id`,
+        accessSchema.hasSessionMembersOnly
+          ? [
+              status.target_week_start_local,
+              template.weekday,
+              template.starts_at_time,
+              template.ends_at_time,
+              template.location,
+              template.capacity,
+              template.members_only,
+              template.id,
+              force,
+            ]
+          : [
+              status.target_week_start_local,
+              template.weekday,
+              template.starts_at_time,
+              template.ends_at_time,
+              template.location,
+              template.capacity,
+              template.id,
+              force,
+            ]
       );
 
       createdCount += insertRes.rowCount ?? 0;

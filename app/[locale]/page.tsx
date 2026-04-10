@@ -4,6 +4,7 @@ import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
 import { pool } from "@/lib/db";
 import HomePageContent from "@/app/components/HomePageContent";
 import { normalizeSingleLineDisplay } from "@/lib/input-safety";
+import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import {
   getMessages,
   getVenueLabel,
@@ -25,6 +26,7 @@ type SessionRow = {
   ends_at: string;
   location: string;
   capacity: number;
+  members_only: boolean;
   current_time: string;
 };
 
@@ -67,11 +69,19 @@ export default async function LocalizedHomePage({
 
   const structuredData = getLocalizedHomeStructuredData(locale);
   await ensureAutoScheduledSessions().catch(() => {});
+  const accessSchema = await getSessionAccessSchema(pool);
   const nextSessionRes = await pool.query(
-    `SELECT id, starts_at, ends_at, location, capacity, NOW() AS current_time
-     FROM sessions
-     WHERE ends_at > NOW()
-     ORDER BY starts_at ASC
+    `SELECT
+       s.id,
+       s.starts_at,
+       s.ends_at,
+       s.location,
+       s.capacity,
+       ${getMembersOnlySelectSql(accessSchema.hasSessionMembersOnly, "s")} AS members_only,
+       NOW() AS current_time
+     FROM sessions s
+     WHERE s.ends_at > NOW()
+     ORDER BY s.starts_at ASC
      LIMIT 1`
   );
 
