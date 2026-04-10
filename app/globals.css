@@ -1558,6 +1558,24 @@ a {
     align-items: end;
   }
 
+  .app-stage-session-head {
+    grid-template-columns: 6.25rem minmax(0, 1fr);
+    align-items: center;
+    gap: 1.15rem;
+  }
+
+  .app-stage-session-head .app-schedule-dateblock {
+    min-width: 0;
+    height: 100%;
+    align-content: center;
+    justify-items: start;
+  }
+
+  .app-stage-session-copy {
+    align-content: center;
+    gap: 0.7rem;
+  }
+
   .app-home-board-grid {
     grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
   }
