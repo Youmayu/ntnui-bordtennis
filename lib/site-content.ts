@@ -138,8 +138,8 @@ type Messages = {
     levelBody: string;
     bringLabel: string;
     bringBody: string;
-    showMoreRegistrations: (count: number) => string;
-    showFewerRegistrations: string;
+    showRegistrations: (count: number) => string;
+    hideRegistrations: string;
   };
   schedule: {
     badge: string;
@@ -262,8 +262,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Alle nivåer er velkommen, fra nybegynner til erfaren.",
       bringLabel: "Ta med",
       bringBody: "Innesko, treningstøy og gjerne egen racket hvis du har.",
-      showMoreRegistrations: (count) => `Vis ${count} til`,
-      showFewerRegistrations: "Vis mindre",
+      showRegistrations: (count) => `Vis alle ${count} påmeldte`,
+      hideRegistrations: "Skjul listen",
     },
     schedule: {
       badge: "Timeplan",
@@ -388,8 +388,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "All levels are welcome, from beginner to experienced.",
       bringLabel: "Bring",
       bringBody: "Indoor shoes, sportswear, and your own racket if you have one.",
-      showMoreRegistrations: (count) => `Show ${count} more`,
-      showFewerRegistrations: "Show less",
+      showRegistrations: (count) => `Show all ${count} registered`,
+      hideRegistrations: "Hide list",
     },
     schedule: {
       badge: "Schedule",
@@ -514,8 +514,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Alle niveauer er velkomne, fra begynder til erfaren.",
       bringLabel: "Medbring",
       bringBody: "Indendørssko, træningstøj og gerne dit eget bat, hvis du har et.",
-      showMoreRegistrations: (count) => `Vis ${count} mere`,
-      showFewerRegistrations: "Vis mindre",
+      showRegistrations: (count) => `Vis alle ${count} tilmeldte`,
+      hideRegistrations: "Skjul listen",
     },
     schedule: {
       badge: "Tidsplan",
@@ -640,8 +640,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Alla nivåer är välkomna, från nybörjare till erfaren.",
       bringLabel: "Ta med",
       bringBody: "Inneskor, träningskläder och gärna eget racket om du har.",
-      showMoreRegistrations: (count) => `Visa ${count} till`,
-      showFewerRegistrations: "Visa mindre",
+      showRegistrations: (count) => `Visa alla ${count} anmälda`,
+      hideRegistrations: "Dölj listan",
     },
     schedule: {
       badge: "Schema",
@@ -766,8 +766,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "欢迎所有水平的成员参加，从初学者到有经验的球员都可以。",
       bringLabel: "请携带",
       bringBody: "室内运动鞋、运动服，以及如果有的话请自带球拍。",
-      showMoreRegistrations: (count) => `再显示 ${count} 人`,
-      showFewerRegistrations: "显示更少",
+      showRegistrations: (count) => `显示全部 ${count} 位报名者`,
+      hideRegistrations: "隐藏名单",
     },
     schedule: {
       badge: "时间表",
@@ -892,8 +892,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Tous les niveaux sont les bienvenus, du débutant au joueur confirmé.",
       bringLabel: "À apporter",
       bringBody: "Chaussures d’intérieur, tenue de sport et votre propre raquette si vous en avez une.",
-      showMoreRegistrations: (count) => `Afficher ${count} de plus`,
-      showFewerRegistrations: "Afficher moins",
+      showRegistrations: (count) => `Afficher les ${count} inscrits`,
+      hideRegistrations: "Masquer la liste",
     },
     schedule: {
       badge: "Planning",
@@ -1018,8 +1018,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Todos los niveles son bienvenidos, desde principiantes hasta jugadores con experiencia.",
       bringLabel: "Trae",
       bringBody: "Zapatillas de interior, ropa deportiva y tu propia pala si tienes una.",
-      showMoreRegistrations: (count) => `Mostrar ${count} más`,
-      showFewerRegistrations: "Mostrar menos",
+      showRegistrations: (count) => `Mostrar los ${count} inscritos`,
+      hideRegistrations: "Ocultar lista",
     },
     schedule: {
       badge: "Horario",
@@ -1144,8 +1144,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Alle Niveaus sind willkommen, vom Anfänger bis zum erfahrenen Spieler.",
       bringLabel: "Mitbringen",
       bringBody: "Hallenschuhe, Sportkleidung und gern einen eigenen Schläger, falls vorhanden.",
-      showMoreRegistrations: (count) => `Weitere ${count} anzeigen`,
-      showFewerRegistrations: "Weniger anzeigen",
+      showRegistrations: (count) => `Alle ${count} Anmeldungen anzeigen`,
+      hideRegistrations: "Liste ausblenden",
     },
     schedule: {
       badge: "Zeitplan",

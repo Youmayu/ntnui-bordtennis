@@ -30,7 +30,6 @@ export default function HomePageContent({
   const scheduleHref = localizePathname("/schedule", locale);
   const registerHref = localizePathname("/register", locale);
   const unregisterHref = localizePathname("/unregister", locale);
-  const registrationPreviewCount = 8;
 
   if (!session) {
     return (
@@ -89,11 +88,6 @@ export default function HomePageContent({
     new Date(session.starts_at).getTime() <= now &&
     new Date(session.ends_at).getTime() > now;
   const spotsLeft = Math.max(0, session.capacity - registeredNames.length);
-  const hiddenRegistrationCount = Math.max(0, registeredNames.length - registrationPreviewCount);
-  const hasCollapsedRoster = hiddenRegistrationCount > 0;
-  const visibleRegistrations = showAllRegistrations
-    ? registeredNames
-    : registeredNames.slice(0, registrationPreviewCount);
 
   const dateFormatter = new Intl.DateTimeFormat(intlLocale, {
     timeZone: "Europe/Oslo",
@@ -223,33 +217,43 @@ export default function HomePageContent({
               </div>
             </div>
 
-            <div className="mt-6 pt-6">
-              {registeredNames.length === 0 ? (
+            {registeredNames.length === 0 ? (
+              <div className="mt-5">
                 <span className="text-sm text-[color:var(--text-soft)]">
                   {messages.home.nobodyRegistered}
                 </span>
-              ) : (
-                <div className="app-roster-grid">
-                  {visibleRegistrations.map((name, index) => (
-                    <div key={`${name}-${index}`} className="app-roster-row">
-                      <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
-                      <span className="app-roster-name">{name}</span>
-                    </div>
-                  ))}
+              </div>
+            ) : showAllRegistrations ? (
+              <>
+                <div className="mt-6 pt-6">
+                  <div className="app-roster-grid">
+                    {registeredNames.map((name, index) => (
+                      <div key={`${name}-${index}`} className="app-roster-row">
+                        <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
+                        <span className="app-roster-name">{name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </div>
 
-            {hasCollapsedRoster && (
-              <div className="mt-5">
+                <div className="mt-5">
+                  <button
+                    type="button"
+                    className="app-roster-toggle"
+                    onClick={() => setShowAllRegistrations(false)}
+                  >
+                    {messages.home.hideRegistrations}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="mt-6">
                 <button
                   type="button"
                   className="app-roster-toggle"
-                  onClick={() => setShowAllRegistrations((value) => !value)}
+                  onClick={() => setShowAllRegistrations(true)}
                 >
-                  {showAllRegistrations
-                    ? messages.home.showFewerRegistrations
-                    : messages.home.showMoreRegistrations(hiddenRegistrationCount)}
+                  {messages.home.showRegistrations(registeredNames.length)}
                 </button>
               </div>
             )}
