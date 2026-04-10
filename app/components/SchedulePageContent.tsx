@@ -90,9 +90,11 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                           </div>
 
                           <div className="flex flex-wrap gap-2">
-                            <span className={isActive ? "app-badge app-badge-success" : "app-badge app-badge-accent"}>
-                              {isActive ? messages.schedule.active : messages.schedule.upcoming}
-                            </span>
+                            {isActive && (
+                              <span className="app-badge app-badge-success">
+                                {messages.schedule.active}
+                              </span>
+                            )}
                             <span
                               className={
                                 session.members_only

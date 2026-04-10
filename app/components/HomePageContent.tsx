@@ -161,9 +161,9 @@ export default function HomePageContent({
 
           <div className="app-stage-panel">
             <div className="flex flex-wrap items-center gap-2">
-              <span className={isActive ? "app-badge app-badge-accent" : "app-badge app-badge-neutral"}>
-                {isActive ? messages.home.currentStatus : messages.home.nextStatus}
-              </span>
+              {isActive && (
+                <span className="app-badge app-badge-accent">{messages.home.currentStatus}</span>
+              )}
               <span
                 className={
                   session.members_only ? "app-badge app-badge-neutral" : "app-badge app-badge-success"
@@ -224,9 +224,9 @@ export default function HomePageContent({
 
               <div className="app-stat-card min-w-[170px] px-5 py-4 text-sm">
                 <div className="font-semibold text-white">{messages.home.spotsLeft(spotsLeft)}</div>
-                <div className="mt-1 text-white/78">
-                  {isActive ? messages.home.currentStatus : messages.home.nextStatus}
-                </div>
+                {isActive && (
+                  <div className="mt-1 text-white/78">{messages.home.currentStatus}</div>
+                )}
               </div>
             </div>
 
