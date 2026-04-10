@@ -841,6 +841,29 @@ a {
   word-break: break-word;
 }
 
+.app-roster-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--neutral-border);
+  border-radius: 0.85rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 58%),
+    rgba(255, 255, 255, 0.08);
+  color: var(--text-body);
+  font-size: 0.84rem;
+  font-weight: 700;
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-roster-toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-border);
+  color: var(--accent-strong);
+}
+
 .app-badge {
   display: inline-flex;
   align-items: center;
@@ -1081,6 +1104,12 @@ a {
 
 [data-theme="dark"] .app-button-secondary,
 [data-theme="dark"] .app-nav-link {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 58%),
+    rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .app-roster-toggle {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 58%),
     rgba(255, 255, 255, 0.03);

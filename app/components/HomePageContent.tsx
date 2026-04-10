@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getIntlLocale, getVenueLabel, localizePathname } from "@/lib/site-content";
@@ -23,11 +24,13 @@ export default function HomePageContent({
   registeredNames: string[];
 }) {
   const { locale, messages } = useSitePreferences();
+  const [showAllRegistrations, setShowAllRegistrations] = useState(false);
   const intlLocale = getIntlLocale(locale);
   const venueLabel = getVenueLabel(locale);
   const scheduleHref = localizePathname("/schedule", locale);
   const registerHref = localizePathname("/register", locale);
   const unregisterHref = localizePathname("/unregister", locale);
+  const registrationPreviewCount = 8;
 
   if (!session) {
     return (
@@ -86,6 +89,11 @@ export default function HomePageContent({
     new Date(session.starts_at).getTime() <= now &&
     new Date(session.ends_at).getTime() > now;
   const spotsLeft = Math.max(0, session.capacity - registeredNames.length);
+  const hiddenRegistrationCount = Math.max(0, registeredNames.length - registrationPreviewCount);
+  const hasCollapsedRoster = hiddenRegistrationCount > 0;
+  const visibleRegistrations = showAllRegistrations
+    ? registeredNames
+    : registeredNames.slice(0, registrationPreviewCount);
 
   const dateFormatter = new Intl.DateTimeFormat(intlLocale, {
     timeZone: "Europe/Oslo",
@@ -222,7 +230,7 @@ export default function HomePageContent({
                 </span>
               ) : (
                 <div className="app-roster-grid">
-                  {registeredNames.slice(0, 20).map((name, index) => (
+                  {visibleRegistrations.map((name, index) => (
                     <div key={`${name}-${index}`} className="app-roster-row">
                       <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
                       <span className="app-roster-name">{name}</span>
@@ -231,6 +239,20 @@ export default function HomePageContent({
                 </div>
               )}
             </div>
+
+            {hasCollapsedRoster && (
+              <div className="mt-5">
+                <button
+                  type="button"
+                  className="app-roster-toggle"
+                  onClick={() => setShowAllRegistrations((value) => !value)}
+                >
+                  {showAllRegistrations
+                    ? messages.home.showFewerRegistrations
+                    : messages.home.showMoreRegistrations(hiddenRegistrationCount)}
+                </button>
+              </div>
+            )}
 
             <div className="mt-8 hidden flex-wrap gap-3 sm:flex">
               <Link href={registerHref} className="app-button-success inline-flex">
