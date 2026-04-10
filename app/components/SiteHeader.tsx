@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -35,6 +36,7 @@ export default function SiteHeader() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { locale, messages, theme, setLocale, setTheme } = useSitePreferences();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const isAdminPath = pathname.startsWith("/admin");
   const currentPublicPath = stripLocaleFromPathname(pathname);
 
@@ -46,12 +48,16 @@ export default function SiteHeader() {
     return currentPublicPath === path;
   }
 
+  function closeMobileNav() {
+    setMobileNavOpen(false);
+  }
+
   return (
     <header className="app-header z-50 md:sticky md:top-0 md:backdrop-blur-xl">
       <div className="mx-auto max-w-6xl px-4 py-3 sm:py-4">
         <div className="app-header-frame">
           <div className="app-header-main">
-            <Link href={toLocalizedHref("/")} className="app-brand">
+            <Link href={toLocalizedHref("/")} className="app-brand" onClick={closeMobileNav}>
               <span className="app-brand-mark app-brand-logo-shell" aria-hidden="true">
                 <Image src={ttLogo} alt="" className="app-brand-logo-image" priority />
               </span>
@@ -70,6 +76,7 @@ export default function SiteHeader() {
                   onChange={(event) => {
                     const nextLocale = event.target.value as Locale;
                     setLocale(nextLocale);
+                    closeMobileNav();
 
                     if (!isAdminPath) {
                       const query = searchParams.toString();
@@ -92,33 +99,66 @@ export default function SiteHeader() {
                 aria-label={`${messages.shell.themeLabel}: ${
                   theme === "light" ? messages.shell.themeDark : messages.shell.themeLight
                 }`}
-                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                onClick={() => {
+                  setTheme(theme === "light" ? "dark" : "light");
+                  closeMobileNav();
+                }}
               >
                 {theme === "light" ? messages.shell.themeDark : messages.shell.themeLight}
               </button>
             </div>
           </div>
 
-          <nav className="app-nav-strip text-sm">
-            <Link className={navItemClass(isActive("/schedule"))} href={toLocalizedHref("/schedule")}>
+          <button
+            type="button"
+            className="app-mobile-nav-toggle"
+            aria-expanded={mobileNavOpen}
+            aria-controls="site-mobile-nav"
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            <span>{mobileNavOpen ? "Close menu" : "Menu"}</span>
+            <span className="app-mobile-nav-toggle-icon" aria-hidden="true">
+              {mobileNavOpen ? "-" : "+"}
+            </span>
+          </button>
+
+          <nav
+            id="site-mobile-nav"
+            className={`app-nav-strip text-sm${mobileNavOpen ? " app-nav-strip-open" : ""}`}
+          >
+            <Link
+              className={navItemClass(isActive("/schedule"))}
+              href={toLocalizedHref("/schedule")}
+              onClick={closeMobileNav}
+            >
               {messages.shell.nav.schedule}
             </Link>
-            <Link className={navItemClass(isActive("/faq"))} href={toLocalizedHref("/faq")}>
+            <Link
+              className={navItemClass(isActive("/faq"))}
+              href={toLocalizedHref("/faq")}
+              onClick={closeMobileNav}
+            >
               FAQ
             </Link>
             <Link
               className={navItemClass(isActive("/register"), "register")}
               href={toLocalizedHref("/register")}
+              onClick={closeMobileNav}
             >
               {messages.shell.nav.register}
             </Link>
             <Link
               className={navItemClass(isActive("/unregister"), "unregister")}
               href={toLocalizedHref("/unregister")}
+              onClick={closeMobileNav}
             >
               {messages.shell.nav.unregister}
             </Link>
-            <Link className={navItemClass(isActive("/about"))} href={toLocalizedHref("/about")}>
+            <Link
+              className={navItemClass(isActive("/about"))}
+              href={toLocalizedHref("/about")}
+              onClick={closeMobileNav}
+            >
               {messages.shell.nav.about}
             </Link>
           </nav>
