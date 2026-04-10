@@ -320,6 +320,15 @@ a {
   gap: 1rem;
 }
 
+.app-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  width: 100%;
+  min-width: 0;
+}
+
 .app-brand {
   display: inline-flex;
   align-items: center;
@@ -468,6 +477,10 @@ a {
   gap: 0.5rem;
   padding: 0.9rem 0 0.05rem;
   border-top: 1px solid var(--border-muted);
+}
+
+.app-nav-theme-button {
+  margin-left: auto;
 }
 
 .app-mobile-nav-toggle {
@@ -1389,6 +1402,11 @@ a {
     gap: 0.75rem;
   }
 
+  .app-brand-row {
+    gap: 0.65rem;
+    align-items: center;
+  }
+
   .app-brand-mark {
     width: 3.45rem;
     height: 3.45rem;
@@ -1415,11 +1433,8 @@ a {
   }
 
   .app-control-select {
-    min-width: 6.5rem;
-  }
-
-  .app-toolbar {
-    justify-content: flex-end;
+    min-width: 5.25rem;
+    max-width: 5.9rem;
   }
 
   .app-mobile-nav-toggle {
@@ -1460,8 +1475,9 @@ a {
     grid-column: 1 / -1;
   }
 
-  .app-theme-toggle {
-    padding-inline: 0.8rem;
+  .app-nav-theme-button {
+    margin-left: 0;
+    grid-column: 1 / -1;
   }
 
   .app-mobile-hero-actions {

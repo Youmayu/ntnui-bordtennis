@@ -52,38 +52,39 @@ export default function SiteHeader() {
     setMobileNavOpen(false);
   }
 
+  function handleLocaleChange(nextLocale: Locale) {
+    setLocale(nextLocale);
+    closeMobileNav();
+
+    if (!isAdminPath) {
+      const query = searchParams.toString();
+      const nextPath = localizePathname(currentPublicPath, nextLocale);
+      router.replace(query ? `${nextPath}?${query}` : nextPath);
+    }
+  }
+
   return (
     <header className="app-header z-50 md:sticky md:top-0 md:backdrop-blur-xl">
       <div className="mx-auto max-w-6xl px-4 py-3 sm:py-4">
         <div className="app-header-frame">
           <div className="app-header-main">
-            <Link href={toLocalizedHref("/")} className="app-brand" onClick={closeMobileNav}>
-              <span className="app-brand-mark app-brand-logo-shell" aria-hidden="true">
-                <Image src={ttLogo} alt="" className="app-brand-logo-image" priority />
-              </span>
-              <span className="app-brand-meta">
-                <span className="app-brand-title">{messages.shell.brand}</span>
-              </span>
-            </Link>
+            <div className="app-brand-row">
+              <Link href={toLocalizedHref("/")} className="app-brand" onClick={closeMobileNav}>
+                <span className="app-brand-mark app-brand-logo-shell" aria-hidden="true">
+                  <Image src={ttLogo} alt="" className="app-brand-logo-image" priority />
+                </span>
+                <span className="app-brand-meta">
+                  <span className="app-brand-title">{messages.shell.brand}</span>
+                </span>
+              </Link>
 
-            <div className="app-toolbar">
               <label className="app-control-label">
                 <span className="sr-only">{messages.shell.languageLabel}</span>
                 <select
                   className="app-control-select"
                   aria-label={messages.shell.languageLabel}
                   value={locale}
-                  onChange={(event) => {
-                    const nextLocale = event.target.value as Locale;
-                    setLocale(nextLocale);
-                    closeMobileNav();
-
-                    if (!isAdminPath) {
-                      const query = searchParams.toString();
-                      const nextPath = localizePathname(currentPublicPath, nextLocale);
-                      router.replace(query ? `${nextPath}?${query}` : nextPath);
-                    }
-                  }}
+                  onChange={(event) => handleLocaleChange(event.target.value as Locale)}
                 >
                   {Object.entries(LOCALE_INFO).map(([key, info]) => (
                     <option key={key} value={key}>
@@ -92,20 +93,6 @@ export default function SiteHeader() {
                   ))}
                 </select>
               </label>
-
-              <button
-                type="button"
-                className="app-theme-toggle"
-                aria-label={`${messages.shell.themeLabel}: ${
-                  theme === "light" ? messages.shell.themeDark : messages.shell.themeLight
-                }`}
-                onClick={() => {
-                  setTheme(theme === "light" ? "dark" : "light");
-                  closeMobileNav();
-                }}
-              >
-                {theme === "light" ? messages.shell.themeDark : messages.shell.themeLight}
-              </button>
             </div>
           </div>
 
@@ -161,6 +148,19 @@ export default function SiteHeader() {
             >
               {messages.shell.nav.about}
             </Link>
+            <button
+              type="button"
+              className="app-nav-link app-nav-theme-button"
+              aria-label={`${messages.shell.themeLabel}: ${
+                theme === "light" ? messages.shell.themeDark : messages.shell.themeLight
+              }`}
+              onClick={() => {
+                setTheme(theme === "light" ? "dark" : "light");
+                closeMobileNav();
+              }}
+            >
+              {theme === "light" ? messages.shell.themeDark : messages.shell.themeLight}
+            </button>
           </nav>
         </div>
       </div>
