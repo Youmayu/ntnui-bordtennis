@@ -101,8 +101,11 @@ type Messages = {
     themeLabel: string;
     themeLight: string;
     themeDark: string;
+    menuOpen: string;
+    menuClose: string;
     nav: {
       schedule: string;
+      faq: string;
       register: string;
       unregister: string;
       about: string;
@@ -220,8 +223,11 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeLabel: "Tema",
       themeLight: "Lys",
       themeDark: "Mørk",
+      menuOpen: "Meny",
+      menuClose: "Lukk meny",
       nav: {
         schedule: "Timeplan",
+        faq: "Spørsmål",
         register: "Påmelding",
         unregister: "Avmelding",
         about: "Om oss",
@@ -341,8 +347,11 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeLabel: "Theme",
       themeLight: "Light",
       themeDark: "Dark",
+      menuOpen: "Menu",
+      menuClose: "Close menu",
       nav: {
         schedule: "Schedule",
+        faq: "FAQ",
         register: "Register",
         unregister: "Unregister",
         about: "About",
@@ -462,8 +471,11 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeLabel: "Tema",
       themeLight: "Lys",
       themeDark: "Mørk",
+      menuOpen: "Menu",
+      menuClose: "Luk menu",
       nav: {
         schedule: "Tidsplan",
+        faq: "Spørgsmål",
         register: "Tilmelding",
         unregister: "Afmelding",
         about: "Om os",
@@ -583,8 +595,11 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeLabel: "Tema",
       themeLight: "Ljust",
       themeDark: "Mörkt",
+      menuOpen: "Meny",
+      menuClose: "Stäng meny",
       nav: {
         schedule: "Schema",
+        faq: "Frågor",
         register: "Anmälan",
         unregister: "Avanmälan",
         about: "Om oss",
@@ -704,8 +719,11 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeLabel: "主题",
       themeLight: "浅色",
       themeDark: "深色",
+      menuOpen: "菜单",
+      menuClose: "关闭菜单",
       nav: {
         schedule: "时间表",
+        faq: "问答",
         register: "报名",
         unregister: "取消报名",
         about: "关于我们",
@@ -825,8 +843,11 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeLabel: "Thème",
       themeLight: "Clair",
       themeDark: "Sombre",
+      menuOpen: "Menu",
+      menuClose: "Fermer le menu",
       nav: {
         schedule: "Planning",
+        faq: "Questions",
         register: "Inscription",
         unregister: "Désinscription",
         about: "À propos",
@@ -946,8 +967,11 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeLabel: "Tema",
       themeLight: "Claro",
       themeDark: "Oscuro",
+      menuOpen: "Menú",
+      menuClose: "Cerrar menú",
       nav: {
         schedule: "Horario",
+        faq: "Preguntas",
         register: "Inscripción",
         unregister: "Baja",
         about: "Sobre nosotros",
@@ -1067,8 +1091,11 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeLabel: "Thema",
       themeLight: "Hell",
       themeDark: "Dunkel",
+      menuOpen: "Menü",
+      menuClose: "Menü schließen",
       nav: {
         schedule: "Zeitplan",
+        faq: "Fragen",
         register: "Anmeldung",
         unregister: "Abmeldung",
         about: "Über uns",

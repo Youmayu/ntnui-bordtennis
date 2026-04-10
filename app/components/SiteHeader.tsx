@@ -116,7 +116,7 @@ export default function SiteHeader() {
             aria-controls="site-mobile-nav"
             onClick={() => setMobileNavOpen((open) => !open)}
           >
-            <span>{mobileNavOpen ? "Close menu" : "Menu"}</span>
+            <span>{mobileNavOpen ? messages.shell.menuClose : messages.shell.menuOpen}</span>
             <span className="app-mobile-nav-toggle-icon" aria-hidden="true">
               {mobileNavOpen ? "-" : "+"}
             </span>
@@ -138,7 +138,7 @@ export default function SiteHeader() {
               href={toLocalizedHref("/faq")}
               onClick={closeMobileNav}
             >
-              FAQ
+              {messages.shell.nav.faq}
             </Link>
             <Link
               className={navItemClass(isActive("/register"), "register")}

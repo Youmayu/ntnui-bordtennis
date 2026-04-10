@@ -26,7 +26,7 @@ const NTNUI_URL = "https://ntnui.no/";
 
 export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   no: {
-    badge: "FAQ",
+    badge: "Spørsmål",
     title: "Ofte stilte spørsmål",
     intro:
       "Her finner du korte svar på vanlige spørsmål om medlemskap, utstyr og hvordan treningene fungerer.",
@@ -200,7 +200,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
     ],
   },
   da: {
-    badge: "FAQ",
+    badge: "Spørgsmål",
     title: "Ofte stillede spørgsmål",
     intro:
       "Korte svar på almindelige spørgsmål om medlemskab, udstyr og hvordan træningerne fungerer.",
@@ -287,7 +287,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
     ],
   },
   sv: {
-    badge: "FAQ",
+    badge: "Frågor",
     title: "Vanliga frågor",
     intro:
       "Korta svar på vanliga frågor om medlemskap, utrustning och hur träningarna fungerar.",
@@ -374,7 +374,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
     ],
   },
   de: {
-    badge: "FAQ",
+    badge: "Fragen",
     title: "Häufige Fragen",
     intro:
       "Kurze Antworten auf häufige Fragen zu Mitgliedschaft, Ausrüstung und dem Ablauf der Trainings.",
@@ -461,7 +461,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
     ],
   },
   zh: {
-    badge: "FAQ",
+    badge: "问答",
     title: "常见问题",
     intro: "这里有关于会员、装备和训练安排的简短说明，方便你快速找到答案。",
     quickLinksTitle: "跳转到主题",
@@ -547,7 +547,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
     ],
   },
   fr: {
-    badge: "FAQ",
+    badge: "Questions",
     title: "Questions fréquentes",
     intro:
       "Des réponses rapides aux questions fréquentes sur l’adhésion, le matériel et le fonctionnement des entraînements.",
@@ -634,7 +634,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
     ],
   },
   es: {
-    badge: "FAQ",
+    badge: "Preguntas frecuentes",
     title: "Preguntas frecuentes",
     intro:
       "Respuestas rápidas a preguntas comunes sobre membresía, material y cómo funcionan los entrenamientos.",

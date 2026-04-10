@@ -11,7 +11,7 @@ function getMetadata(locale: Locale): Metadata {
 
   return createPageMetadata({
     locale,
-    title: `FAQ | ${messages.shell.brand}`,
+    title: `${faq.title} | ${messages.shell.brand}`,
     description: `${faq.intro} ${VENUE_LABEL}.`,
     path: "/faq",
     keywords: ["NTNUI bordtennis FAQ", "NTNUI table tennis FAQ", "NTNUI bordtennis medlemskap"],
