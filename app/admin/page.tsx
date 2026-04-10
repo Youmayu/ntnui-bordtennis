@@ -220,9 +220,8 @@ export default async function AdminPage() {
     autoScheduleSchema.has_schedule_templates &&
     autoScheduleSchema.has_auto_template_id &&
     autoScheduleSchema.has_auto_week_start;
-  const sessionAccessAvailable =
-    autoScheduleSchema.has_session_members_only &&
-    autoScheduleSchema.has_template_members_only;
+  const sessionMembersOnlyAvailable = autoScheduleSchema.has_session_members_only;
+  const templateMembersOnlyAvailable = autoScheduleSchema.has_template_members_only;
 
   let autoScheduleError: string | null = null;
   let autoScheduleSettings: ScheduleSettingsRow = { auto_enabled: true };
@@ -741,10 +740,10 @@ export default async function AdminPage() {
             Huk av <span className="font-medium">Kun medlemmer</span> for vanlige økter. Fjern
             haken for å gjøre en trening åpen for alle.
           </p>
-          {!sessionAccessAvailable && (
+          {!templateMembersOnlyAvailable && (
             <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
-              Kjør <code>node scripts/init-db.js</code> for å aktivere tilgangsvalg for
-              medlemmer og åpne treninger.
+              Kjør <code>node scripts/init-db.js</code> for å aktivere tilgangsvalg for faste
+              treningsdager.
             </p>
           )}
           {autoScheduleError && (
@@ -882,7 +881,12 @@ export default async function AdminPage() {
             </div>
 
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="members_only" defaultChecked />
+              <input
+                type="checkbox"
+                name="members_only"
+                defaultChecked
+                disabled={!templateMembersOnlyAvailable}
+              />
               Kun medlemmer
             </label>
 
@@ -950,6 +954,7 @@ export default async function AdminPage() {
                         name="members_only"
                         type="checkbox"
                         defaultChecked={template.members_only}
+                        disabled={!templateMembersOnlyAvailable}
                       />
                       Kun medlemmer
                     </label>
@@ -1164,6 +1169,11 @@ export default async function AdminPage() {
             Rediger tidspunkt, sted, kapasitet og om økten er kun for medlemmer eller åpen
             trening. Du kan også legge til nye økter.
           </p>
+          {!sessionMembersOnlyAvailable && (
+            <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
+              Kjør <code>node scripts/init-db.js</code> for å aktivere tilgangsvalg for økter.
+            </p>
+          )}
         </div>
 
         <div className="rounded-2xl border bg-background p-4">
@@ -1211,7 +1221,12 @@ export default async function AdminPage() {
             </div>
 
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="members_only" defaultChecked />
+              <input
+                type="checkbox"
+                name="members_only"
+                defaultChecked
+                disabled={!sessionMembersOnlyAvailable}
+              />
               Kun medlemmer
             </label>
 
@@ -1319,6 +1334,7 @@ export default async function AdminPage() {
                         name="members_only"
                         type="checkbox"
                         defaultChecked={session.members_only}
+                        disabled={!sessionMembersOnlyAvailable}
                       />
                       Kun medlemmer
                     </label>
