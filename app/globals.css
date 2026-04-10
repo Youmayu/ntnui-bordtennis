@@ -462,6 +462,10 @@ a {
 
 .app-nav-strip {
   position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.9rem 0 0.05rem;
   border-top: 1px solid var(--border-muted);
 }
@@ -1331,15 +1335,10 @@ a {
   }
 
   .app-nav-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
     padding-top: 0.7rem;
-  }
-
-  .app-header nav {
-    scrollbar-width: none;
-  }
-
-  .app-header nav::-webkit-scrollbar {
-    display: none;
   }
 
   .app-control-select {
@@ -1356,6 +1355,15 @@ a {
     min-height: 2.25rem;
     padding: 0.5rem 0.75rem;
     font-size: 0.84rem;
+  }
+
+  .app-nav-link {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .app-nav-strip .app-nav-link:last-child {
+    grid-column: 1 / -1;
   }
 
   .app-theme-toggle {

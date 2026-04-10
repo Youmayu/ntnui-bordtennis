@@ -99,7 +99,7 @@ export default function SiteHeader() {
             </div>
           </div>
 
-          <nav className="app-nav-strip flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
+          <nav className="app-nav-strip text-sm">
             <Link className={navItemClass(isActive("/schedule"))} href={toLocalizedHref("/schedule")}>
               {messages.shell.nav.schedule}
             </Link>
