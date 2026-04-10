@@ -3,10 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import TurnstileWidget from "@/app/components/TurnstileWidget";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
-import VenueLink from "@/app/components/VenueLink";
 import { getDaysInMonth } from "@/lib/birth-month-day";
 import {
-  formatVenueLabel,
   getIntlLocale,
   type Locale,
 } from "@/lib/site-content";
@@ -222,20 +220,9 @@ export default function UnregisterPageContent() {
                       hour: "2-digit",
                       minute: "2-digit",
                     }).format(new Date(session.starts_at))}
-                    {" - "}
-                    {formatVenueLabel(session.location, locale)}
                   </option>
                 ))}
               </select>
-              {selectedSession && (
-                <VenueLink
-                  locale={locale}
-                  location={selectedSession.location}
-                  className="text-xs text-[color:var(--accent)] hover:underline"
-                  textClassName="font-medium"
-                  showMazeMapBadge
-                />
-              )}
             </div>
 
             <div className="space-y-2">
@@ -316,15 +303,6 @@ export default function UnregisterPageContent() {
                   {sessionTimeFormatter.format(new Date(selectedSession.starts_at))}
                   {" - "}
                   {sessionTimeFormatter.format(new Date(selectedSession.ends_at))}
-                </div>
-                <div className="mt-4">
-                  <VenueLink
-                    locale={locale}
-                    location={selectedSession.location}
-                    className="font-medium text-[color:var(--accent)] hover:underline"
-                    textClassName="font-medium"
-                    showMazeMapBadge
-                  />
                 </div>
               </div>
             )}
