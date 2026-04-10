@@ -31,8 +31,8 @@ export default function HomePageContent({
 
   if (!session) {
     return (
-      <div className="space-y-12">
-        <section className="app-hero app-hero-photo app-stage-shell overflow-hidden p-8 sm:p-10">
+      <div className="space-y-8 sm:space-y-12">
+        <section className="app-hero app-hero-photo app-stage-shell overflow-hidden p-6 sm:p-10">
           <div className="app-hero-photo-shell" aria-hidden="true">
             <Image
               src="/images/website/treningshall.jpg"
@@ -50,14 +50,14 @@ export default function HomePageContent({
                 <span className="app-badge app-badge-neutral">{venueLabel}</span>
               </div>
 
-              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
+              <h1 className="mt-5 text-3xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:mt-6 sm:text-5xl">
                 {messages.home.emptyTitle}
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--text-muted)]">
                 {messages.home.emptyBody}
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
                 <Link className="app-button-secondary inline-flex" href={scheduleHref}>
                   {messages.home.ctaSchedule}
                 </Link>
@@ -103,8 +103,8 @@ export default function HomePageContent({
   });
 
   return (
-    <div className="space-y-12">
-      <section className="app-hero app-hero-photo app-stage-shell overflow-hidden p-8 sm:p-10">
+    <div className="space-y-8 sm:space-y-12">
+      <section className="app-hero app-hero-photo app-stage-shell overflow-hidden p-6 sm:p-10">
         <div className="app-hero-photo-shell" aria-hidden="true">
           <Image
             src="/images/website/treningshall.jpg"
@@ -122,14 +122,23 @@ export default function HomePageContent({
               <span className="app-badge app-badge-neutral">{venueLabel}</span>
             </div>
 
-            <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
+            <h1 className="mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:mt-6 sm:text-5xl">
               {messages.home.heroTitle}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--text-muted)]">
               {messages.home.heroBody}
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="app-mobile-hero-actions mt-5 grid gap-3 sm:hidden">
+              <Link href={registerHref} className="app-button-success inline-flex items-center justify-center">
+                {messages.home.ctaRegister}
+              </Link>
+              <Link href={unregisterHref} className="app-button-danger inline-flex items-center justify-center">
+                {messages.shell.nav.unregister}
+              </Link>
+            </div>
+
+            <div className="mt-8 hidden flex-wrap gap-3 sm:flex">
               <Link href={registerHref} className="app-button-success inline-flex items-center">
                 {messages.home.ctaRegister}
               </Link>
@@ -166,7 +175,7 @@ export default function HomePageContent({
               />
             </div>
 
-            <div className="space-y-3">
+            <div className="app-stage-stats">
               <div className="app-stage-stat">
                 <span className="app-stage-stat-value">{spotsLeft}</span>
                 <span className="app-stage-stat-label">{messages.home.spotsLeft(spotsLeft)}</span>
@@ -223,7 +232,7 @@ export default function HomePageContent({
               )}
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 hidden flex-wrap gap-3 sm:flex">
               <Link href={registerHref} className="app-button-success inline-flex">
                 {messages.home.ctaRegister}
               </Link>
