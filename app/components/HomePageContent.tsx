@@ -100,8 +100,6 @@ export default function HomePageContent({
     weekday: "long",
     day: "2-digit",
     month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 
   const timeFormatter = new Intl.DateTimeFormat(intlLocale, {
@@ -171,7 +169,7 @@ export default function HomePageContent({
               >
                 {getSessionAccessLabel(locale, session.members_only)}
               </span>
-              <span className="app-stage-kicker">{dateFormatter.format(new Date(session.starts_at))}</span>
+              <span className="app-stage-date">{dateFormatter.format(new Date(session.starts_at))}</span>
             </div>
 
             <div className="app-stage-time">
