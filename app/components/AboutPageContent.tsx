@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import ntnuiLogo from "@/app/ntnuilogo.png";
+import ttLogo from "@/app/ttlogo.png";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import { normalizeVenueText } from "@/lib/site-content";
@@ -61,7 +61,7 @@ export default function AboutPageContent() {
           </div>
 
           <div className="app-about-orgmark" aria-hidden="true">
-            <Image src={ntnuiLogo} alt="" className="app-about-orgmark-image" />
+            <Image src={ttLogo} alt="" className="app-about-orgmark-image" />
           </div>
         </div>
       </section>
