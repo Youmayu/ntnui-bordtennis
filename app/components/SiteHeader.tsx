@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import ntnuiLogo from "@/app/logo.png";
+import ttLogo from "@/app/ttlogo.png";
 import {
   LOCALE_INFO,
   localizePathname,
@@ -53,7 +53,7 @@ export default function SiteHeader() {
           <div className="app-header-main">
             <Link href={toLocalizedHref("/")} className="app-brand">
               <span className="app-brand-mark app-brand-logo-shell" aria-hidden="true">
-                <Image src={ntnuiLogo} alt="" className="app-brand-logo-image" priority />
+                <Image src={ttLogo} alt="" className="app-brand-logo-image" priority />
               </span>
               <span className="app-brand-meta">
                 <span className="app-brand-title">{messages.shell.brand}</span>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import ntnuiLogo from "@/app/ntnuilogo.png";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import { normalizeVenueText } from "@/lib/site-content";
@@ -48,13 +49,21 @@ export default function AboutPageContent() {
   return (
     <div className="space-y-10">
       <section className="app-hero overflow-hidden p-8 sm:p-10">
-        <span className="app-badge app-badge-accent">{messages.about.badge}</span>
-        <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
-          {messages.about.title}
-        </h1>
-        <p className="mt-4 max-w-2xl text-[color:var(--text-muted)]">
-          {normalizeVenueText(messages.about.body)}
-        </p>
+        <div className="app-about-hero-grid">
+          <div>
+            <span className="app-badge app-badge-accent">{messages.about.badge}</span>
+            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)]">
+              {messages.about.title}
+            </h1>
+            <p className="mt-4 max-w-2xl text-[color:var(--text-muted)]">
+              {normalizeVenueText(messages.about.body)}
+            </p>
+          </div>
+
+          <div className="app-about-orgmark" aria-hidden="true">
+            <Image src={ntnuiLogo} alt="" className="app-about-orgmark-image" />
+          </div>
+        </div>
       </section>
 
       <section className="app-surface app-people-board overflow-hidden p-0 md:grid-cols-3">

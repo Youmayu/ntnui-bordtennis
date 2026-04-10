@@ -334,8 +334,8 @@ a {
 
 .app-brand-mark {
   position: relative;
-  width: 4.75rem;
-  height: 2.45rem;
+  width: 3.4rem;
+  height: 3.4rem;
   flex: 0 0 auto;
 }
 
@@ -538,6 +538,31 @@ a {
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.12));
+}
+
+.app-about-hero-grid {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.app-about-orgmark {
+  justify-self: start;
+  width: min(100%, 17rem);
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 56%),
+    rgba(255, 255, 255, 0.16);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-about-orgmark-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .app-footer-location {
@@ -1298,8 +1323,8 @@ a {
   }
 
   .app-brand-mark {
-    width: 4rem;
-    height: 2.05rem;
+    width: 3rem;
+    height: 3rem;
   }
 
   .app-brand-title {
@@ -1430,5 +1455,13 @@ a {
   .app-people-board .app-person-card + .app-person-card {
     border-top: 0;
     border-left: 1px solid var(--border-muted);
+  }
+
+  .app-about-hero-grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .app-about-orgmark {
+    justify-self: end;
   }
 }

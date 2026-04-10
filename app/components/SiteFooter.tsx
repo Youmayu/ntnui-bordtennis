@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import ntnuiLogo from "@/app/logo.png";
+import ntnuiLogo from "@/app/ntnuilogo.png";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 
