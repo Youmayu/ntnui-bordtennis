@@ -326,22 +326,6 @@ export default function UnregisterPageContent() {
                     showMazeMapBadge
                   />
                 </div>
-                <div className="mt-5">
-                  {registrations.length === 0 ? (
-                    <span className="text-sm text-[color:var(--text-soft)]">
-                      {messages.unregister.noRegistrations}
-                    </span>
-                  ) : (
-                    <div className="space-y-3">
-                      {registrations.slice(0, 5).map((registration, index) => (
-                        <div key={registration.id} className="app-roster-row">
-                          <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
-                          <span className="app-roster-name">{registration.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </aside>
