@@ -16,7 +16,6 @@ export default function SiteFooter() {
             <div className="app-footer-logo-shell" aria-hidden="true">
               <Image src={ntnuiLogo} alt="" className="app-footer-logo-image" />
             </div>
-            <div className="app-footer-kicker">NTNUI</div>
             <div className="app-footer-title">{messages.shell.brand}</div>
           </div>
 

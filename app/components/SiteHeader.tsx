@@ -56,7 +56,6 @@ export default function SiteHeader() {
                 <Image src={ntnuiLogo} alt="" className="app-brand-logo-image" priority />
               </span>
               <span className="app-brand-meta">
-                <span className="app-brand-subtitle">NTNUI</span>
                 <span className="app-brand-title">{messages.shell.brand}</span>
               </span>
             </Link>
