@@ -980,9 +980,9 @@ export default async function AdminPage() {
           {templates.map((template) => (
             <details
               key={template.id}
-              className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)]"
+              className="app-admin-details rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)]"
             >
-              <summary className="flex cursor-pointer list-none flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between">
+              <summary className="app-admin-details-summary flex cursor-pointer list-none flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="app-panel-eyebrow">{getWeekdayLabel(template.weekday)}</div>
                   <div className="mt-2 text-xl font-semibold text-[color:var(--text-strong)]">
@@ -1000,6 +1000,12 @@ export default async function AdminPage() {
                   <span className="app-badge app-badge-accent">{template.capacity} plasser</span>
                   <span className={getStatusBadgeClass(template.is_active)}>
                     {template.is_active ? "Aktiv" : "Av"}
+                  </span>
+                  <span className="app-admin-details-action">
+                    Vis/rediger
+                    <span className="app-admin-details-icon" aria-hidden="true">
+                      +
+                    </span>
                   </span>
                 </div>
               </summary>
@@ -1274,9 +1280,9 @@ export default async function AdminPage() {
           {sessions.map((session) => (
             <details
               key={session.id}
-              className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)]"
+              className="app-admin-details rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)]"
             >
-              <summary className="flex cursor-pointer list-none flex-col gap-3 p-5 lg:flex-row lg:items-start lg:justify-between">
+              <summary className="app-admin-details-summary flex cursor-pointer list-none flex-col gap-3 p-5 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="app-panel-eyebrow">Økt #{session.id}</div>
                   <div className="mt-2 text-xl font-semibold text-[color:var(--text-strong)]">
@@ -1300,6 +1306,12 @@ export default async function AdminPage() {
                       Uke {fmtOsloDate(session.auto_week_start)}
                     </span>
                   )}
+                  <span className="app-admin-details-action">
+                    Vis/rediger
+                    <span className="app-admin-details-icon" aria-hidden="true">
+                      +
+                    </span>
+                  </span>
                 </div>
               </summary>
 

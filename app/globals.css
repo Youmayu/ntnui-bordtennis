@@ -928,6 +928,68 @@ a {
   color: var(--danger-strong);
 }
 
+.app-admin-details {
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.app-admin-details:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-border);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-admin-details[open] {
+  border-color: var(--accent-border);
+}
+
+.app-admin-details-summary {
+  border-radius: 1rem;
+  outline: none;
+}
+
+.app-admin-details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.app-admin-details-summary:focus-visible {
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+.app-admin-details-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 9999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  padding: 0.48rem 0.62rem 0.48rem 0.82rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.app-admin-details-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 9999px;
+  background: var(--accent);
+  color: white;
+  line-height: 1;
+  transition: transform 180ms ease;
+}
+
+.app-admin-details[open] .app-admin-details-icon {
+  transform: rotate(45deg);
+}
+
 .app-button-primary,
 .app-button-secondary,
 .app-button-success,
