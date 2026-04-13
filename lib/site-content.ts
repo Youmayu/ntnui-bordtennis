@@ -355,7 +355,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     schedule: {
       badge: "Timeplan",
       title: "Planlagte og aktive økter",
-      body: "Aktive økter blir stående til sluttidspunktet er passert.",
+      body: "Se kommende treninger og ledige plasser.",
       tableTitle: "Aktive og kommende økter",
       when: "Når",
       status: "Status",
@@ -481,7 +481,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     schedule: {
       badge: "Schedule",
       title: "Planned and active sessions",
-      body: "Active sessions stay visible until the end time has passed.",
+      body: "See upcoming sessions and available spots.",
       tableTitle: "Active and upcoming sessions",
       when: "When",
       status: "Status",
@@ -607,7 +607,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     schedule: {
       badge: "Tidsplan",
       title: "Planlagte og aktive træninger",
-      body: "Aktive træninger bliver stående, indtil sluttidspunktet er passeret.",
+      body: "Se kommende træninger og ledige pladser.",
       tableTitle: "Aktive og kommende træninger",
       when: "Hvornår",
       status: "Status",
@@ -733,7 +733,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     schedule: {
       badge: "Schema",
       title: "Planerade och aktiva pass",
-      body: "Aktiva pass visas tills sluttiden har passerat.",
+      body: "Se kommande pass och lediga platser.",
       tableTitle: "Aktiva och kommande pass",
       when: "När",
       status: "Status",
@@ -859,7 +859,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     schedule: {
       badge: "时间表",
       title: "已安排和正在进行的训练",
-      body: "训练会一直显示到结束时间过去为止。",
+      body: "查看即将开始的训练和剩余名额。",
       tableTitle: "正在进行和即将开始的训练",
       when: "时间",
       status: "状态",
@@ -985,7 +985,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     schedule: {
       badge: "Planning",
       title: "Séances prévues et en cours",
-      body: "Les séances en cours restent visibles jusqu’à leur heure de fin.",
+      body: "Consultez les séances à venir et les places disponibles.",
       tableTitle: "Séances en cours et à venir",
       when: "Quand",
       status: "Statut",
@@ -1111,7 +1111,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     schedule: {
       badge: "Horario",
       title: "Entrenamientos programados y activos",
-      body: "Los entrenamientos activos permanecen visibles hasta que pasa la hora de finalización.",
+      body: "Consulta los entrenamientos próximos y las plazas disponibles.",
       tableTitle: "Entrenamientos activos y próximos",
       when: "Cuándo",
       status: "Estado",
@@ -1237,7 +1237,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     schedule: {
       badge: "Zeitplan",
       title: "Geplante und laufende Einheiten",
-      body: "Laufende Einheiten bleiben sichtbar, bis die Endzeit vorbei ist.",
+      body: "Sieh kommende Einheiten und freie Plätze.",
       tableTitle: "Laufende und kommende Einheiten",
       when: "Wann",
       status: "Status",

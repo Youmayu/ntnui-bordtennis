@@ -91,8 +91,8 @@ const WEEKDAY_OPTIONS = [
   { value: 3, label: "Onsdag" },
   { value: 4, label: "Torsdag" },
   { value: 5, label: "Fredag" },
-  { value: 6, label: "Lordag" },
-  { value: 7, label: "Sondag" },
+  { value: 6, label: "Lørdag" },
+  { value: 7, label: "Søndag" },
 ] as const;
 
 function getWeekdayLabel(weekday: number) {
@@ -100,7 +100,7 @@ function getWeekdayLabel(weekday: number) {
 }
 
 function getAccessLabel(membersOnly: boolean) {
-  return membersOnly ? "Kun medlemmer" : "Apen trening";
+  return membersOnly ? "Kun medlemmer" : "Åpen trening";
 }
 
 function getAccessBadgeClass(membersOnly: boolean) {
@@ -741,8 +741,7 @@ export default async function AdminPage() {
               Kontrollpanel
             </h1>
             <p className="max-w-3xl text-[color:var(--text-muted)]">
-              Hold ukeplan, okter, beskjeder og pameldinger oppdatert fra ett sted. De tyngste
-              seksjonene er samlet i kort og detaljer i stedet for brede tabeller.
+              Administrer ukeplan, økter, beskjeder og påmeldinger.
             </p>
           </div>
 
@@ -754,10 +753,10 @@ export default async function AdminPage() {
               Beskjeder
             </a>
             <a href="#sessions" className="app-button-secondary inline-flex">
-              Okter
+              Økter
             </a>
             <a href="#registrations" className="app-button-secondary inline-flex">
-              Pameldinger
+              Påmeldinger
             </a>
           </nav>
         </div>
@@ -769,7 +768,7 @@ export default async function AdminPage() {
               {autoScheduleOverview.next_week_session_count}
             </div>
             <div className="mt-2 text-sm text-[color:var(--text-muted)]">
-              Okter klare for{" "}
+              Økter klare for{" "}
               {autoScheduleOverview.next_week_start_local
                 ? fmtOsloDate(autoScheduleOverview.next_week_start_local)
                 : "neste uke"}
@@ -787,7 +786,7 @@ export default async function AdminPage() {
           </div>
 
           <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
-            <div className="app-panel-eyebrow">Okter</div>
+            <div className="app-panel-eyebrow">Økter</div>
             <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
               {sessions.length}
             </div>
@@ -797,7 +796,7 @@ export default async function AdminPage() {
           </div>
 
           <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
-            <div className="app-panel-eyebrow">Pameldinger</div>
+            <div className="app-panel-eyebrow">Påmeldinger</div>
             <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
               {confirmedRegistrationCount + waitlistRegistrationCount}
             </div>
@@ -815,12 +814,11 @@ export default async function AdminPage() {
               Automatisk ukeplan
             </h2>
             <p className="mt-2 max-w-3xl text-[color:var(--text-muted)]">
-              Sett opp faste treningsdager en gang, sa fylles neste uke inn automatisk. Klikk pa
-              et kort for a redigere en mal.
+              Faste treningsdager og automatisk oppsett.
             </p>
             {!templateMembersOnlyAvailable && (
               <p className="mt-3 text-sm text-[color:var(--danger-ink)]">
-                Kjor <code>node scripts/init-db.js</code> for a aktivere tilgangsvalg for faste
+                Kjør <code>node scripts/init-db.js</code> for å aktivere tilgangsvalg for faste
                 treningsdager.
               </p>
             )}
@@ -840,7 +838,7 @@ export default async function AdminPage() {
                   defaultValue={autoScheduleSettings.auto_enabled ? "true" : "false"}
                   className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                 >
-                  <option value="true">Pa</option>
+                  <option value="true">På</option>
                   <option value="false">Av</option>
                 </select>
               </div>
@@ -849,7 +847,7 @@ export default async function AdminPage() {
             </form>
 
             <form action={generateNextWeek}>
-              <button className="app-button-secondary inline-flex">Opprett neste uke na</button>
+              <button className="app-button-secondary inline-flex">Opprett neste uke nå</button>
             </form>
           </div>
         </div>
@@ -859,7 +857,7 @@ export default async function AdminPage() {
             <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
               <div className="app-panel-eyebrow">Auto-plan</div>
               <div className="mt-3 text-xl font-semibold text-[color:var(--text-strong)]">
-                {autoScheduleSettings.auto_enabled ? "Pa" : "Av"}
+                {autoScheduleSettings.auto_enabled ? "På" : "Av"}
               </div>
             </div>
 
@@ -871,7 +869,7 @@ export default async function AdminPage() {
             </div>
 
             <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4">
-              <div className="app-panel-eyebrow">Siste okt denne uken</div>
+              <div className="app-panel-eyebrow">Siste økt denne uken</div>
               <div className="mt-3 text-sm font-medium text-[color:var(--text-strong)]">
                 {autoScheduleOverview.current_week_last_end_local
                   ? fmtOslo(new Date(autoScheduleOverview.current_week_last_end_local))
@@ -883,11 +881,11 @@ export default async function AdminPage() {
           <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-strong)] p-4 text-sm text-[color:var(--text-muted)]">
             {autoScheduleOverview.current_week_last_end_local ? (
               <p>
-                Neste uke opprettes nar siste aktive mal for denne uken er ferdig:{" "}
+                Neste uke opprettes etter:{" "}
                 {fmtOslo(new Date(autoScheduleOverview.current_week_last_end_local))}.
               </p>
             ) : (
-              <p>Legg inn minst en aktiv mal for at automatisk oppsett skal kunne opprette nye okter.</p>
+              <p>Legg inn minst én aktiv mal.</p>
             )}
           </div>
         </div>
@@ -1112,7 +1110,7 @@ export default async function AdminPage() {
           <div>
             <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Beskjeder</h2>
             <p className="mt-2 max-w-3xl text-[color:var(--text-muted)]">
-              Publisering og oversikt er samlet i ett roligere oppsett.
+              Publiser og slett beskjeder.
             </p>
           </div>
 
@@ -1176,7 +1174,7 @@ export default async function AdminPage() {
                 </div>
 
                 <span className={getStatusBadgeClass(announcement.is_active)}>
-                  {announcement.is_active ? "Aktiv" : "Utlopt"}
+                  {announcement.is_active ? "Aktiv" : "Utløpt"}
                 </span>
               </div>
 
@@ -1204,10 +1202,9 @@ export default async function AdminPage() {
 
       <section id="sessions" className="app-surface space-y-6 p-6 sm:p-8">
         <div>
-          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Okter</h2>
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Økter</h2>
           <p className="mt-2 max-w-3xl text-[color:var(--text-muted)]">
-            Rediger tidspunkt, sted, kapasitet og tilgangsniva uten brede tabeller. Klikk pa en
-            okt for a apne redigeringen.
+            Legg til, rediger og slett treningsøkter.
           </p>
         </div>
 
@@ -1269,7 +1266,7 @@ export default async function AdminPage() {
           </div>
 
           <div className="md:col-span-2 xl:col-span-4">
-            <button className="app-button-primary inline-flex">Legg til okt</button>
+            <button className="app-button-primary inline-flex">Legg til økt</button>
           </div>
         </form>
 
@@ -1281,7 +1278,7 @@ export default async function AdminPage() {
             >
               <summary className="flex cursor-pointer list-none flex-col gap-3 p-5 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <div className="app-panel-eyebrow">Okt #{session.id}</div>
+                  <div className="app-panel-eyebrow">Økt #{session.id}</div>
                   <div className="mt-2 text-xl font-semibold text-[color:var(--text-strong)]">
                     {fmtOslo(new Date(session.starts_at))}
                   </div>
@@ -1375,12 +1372,12 @@ export default async function AdminPage() {
 
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button form={`session-${session.id}`} type="submit" className="app-button-primary inline-flex">
-                    Lagre okt
+                    Lagre økt
                   </button>
 
                   <form action={deleteSession}>
                     <input type="hidden" name="id" value={session.id} />
-                    <button className="app-button-secondary inline-flex">Slett okt</button>
+                    <button className="app-button-secondary inline-flex">Slett økt</button>
                   </form>
                 </div>
               </div>
@@ -1391,9 +1388,9 @@ export default async function AdminPage() {
 
       <section id="registrations" className="app-surface p-6 sm:p-8">
         <div className="space-y-3">
-          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Pameldinger</h2>
+          <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Påmeldinger</h2>
           <p className="max-w-3xl text-[color:var(--text-muted)]">
-            Sok, filtrer og oppdater pameldinger uten a lete i hele listen.
+            Søk, filtrer og oppdater påmeldinger.
           </p>
         </div>
 

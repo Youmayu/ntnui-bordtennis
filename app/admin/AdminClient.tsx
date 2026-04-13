@@ -77,7 +77,7 @@ export default function AdminClient({
     <div className="mt-6 space-y-5">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_160px]">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[color:var(--text-soft)]">Sok pa navn</label>
+          <label className="text-xs text-[color:var(--text-soft)]">Søk på navn</label>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -87,7 +87,7 @@ export default function AdminClient({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-[color:var(--text-soft)]">Session</label>
+          <label className="text-xs text-[color:var(--text-soft)]">Økt</label>
           <select
             value={sessionFilter}
             onChange={(event) => setSessionFilter(event.target.value)}
@@ -96,7 +96,7 @@ export default function AdminClient({
             <option value="all">Alle</option>
             {sessionOptions.map((sessionId) => (
               <option key={sessionId} value={String(sessionId)}>
-                Session {sessionId}
+                Økt {sessionId}
               </option>
             ))}
           </select>
@@ -129,9 +129,9 @@ export default function AdminClient({
           <thead className="text-left text-[color:var(--text-soft)]">
             <tr className="border-b border-[color:var(--border-muted)]">
               <th className="px-4 py-3 pr-3">Tid</th>
-              <th className="px-4 py-3 pr-3">Session</th>
+              <th className="px-4 py-3 pr-3">Økt</th>
               <th className="px-4 py-3 pr-3">Navn</th>
-              <th className="px-4 py-3 pr-3">Niva</th>
+              <th className="px-4 py-3 pr-3">Nivå</th>
               <th className="px-4 py-3 pr-3">Status</th>
               <th className="px-4 py-3 pr-3">Lagre</th>
               <th className="px-4 py-3">Slett</th>
@@ -224,7 +224,7 @@ export default function AdminClient({
             {filteredRegistrations.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-8 text-center text-[color:var(--text-muted)]">
-                  Ingen pameldinger matcher filtrene.
+                  Ingen påmeldinger matcher filtrene.
                 </td>
               </tr>
             )}
