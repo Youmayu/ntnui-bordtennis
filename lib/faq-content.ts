@@ -28,14 +28,13 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   no: {
     badge: "Spørsmål",
     title: "Ofte stilte spørsmål",
-    intro:
-      "Her finner du korte svar på vanlige spørsmål om medlemskap, utstyr og hvordan treningene fungerer.",
-    quickLinksTitle: "Hopp til tema",
+    intro: "Korte svar om medlemskap, utstyr og trening.",
+    quickLinksTitle: "Tema",
     sections: [
       {
         id: "membership",
         title: "Medlemskap og adgang",
-        description: "Hvem som kan møte opp, og hva som kreves for å delta.",
+        description: "Hvem som kan delta.",
         items: [
           {
             question: "Hvem kan delta på trening?",
@@ -48,7 +47,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
             question: "Koster det noe å spille bordtennis i NTNUI?",
             answer: [
               "NTNUI Bordtennis har ingen egen treningsavgift.",
-              "Det koster derimot å være NTNUI-medlem. Se ntnui.no for oppdatert informasjon om medlemskap og priser.",
+              "NTNUI-medlemskap koster penger. Se ntnui.no for oppdatert informasjon om medlemskap og priser.",
             ],
             linkLabel: "Les mer på ntnui.no",
             linkHref: NTNUI_URL,
@@ -65,7 +64,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "equipment",
         title: "Utstyr",
-        description: "Hva du bør ta med deg før trening.",
+        description: "Hva du bør ta med.",
         items: [
           {
             question: "Må jeg ha egen racket?",
@@ -86,10 +85,10 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "training",
         title: "Trening og påmelding",
-        description: "Praktisk informasjon om nivå, venteliste og avmelding.",
+        description: "Nivå, venteliste og avmelding.",
         items: [
           {
-            question: "Kan nybegynnere møte opp?",
+            question: "Kan nybegynnere delta?",
             answer: [
               "Ja. Alle nivåer er velkomne, fra nybegynner til erfaren spiller.",
             ],
@@ -105,7 +104,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
             question: "Hvordan melder jeg meg av?",
             answer: [
               "Gå til avmeldingssiden, velg økten og velg navnet ditt fra listen.",
-              "For å bekrefte avmeldingen må fødselsmåned og fødselsdag stemme.",
+              "For å bekrefte avmeldingen må fødselsmåned og dag stemme.",
             ],
           },
         ],
@@ -115,27 +114,26 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   en: {
     badge: "FAQ",
     title: "Frequently asked questions",
-    intro:
-      "Quick answers to common questions about membership, equipment, and how training sessions work.",
-    quickLinksTitle: "Jump to section",
+    intro: "Short answers about membership, equipment, and training.",
+    quickLinksTitle: "Sections",
     sections: [
       {
         id: "membership",
         title: "Membership and access",
-        description: "Who can attend, and what is required before showing up.",
+        description: "Who can attend.",
         items: [
           {
             question: "Who can attend training?",
             answer: [
               "To train, you must be an NTNUI member and register as an NTNUI Table Tennis member.",
-              'The only exception is sessions marked "åpen trening", where anyone can attend.',
+              'The only exception is sessions marked "open training", where anyone can attend.',
             ],
           },
           {
             question: "Does table tennis cost anything?",
             answer: [
               "NTNUI Table Tennis does not have its own training fee.",
-              "Being an NTNUI member does cost money. See ntnui.no for updated membership information and prices.",
+              "NTNUI membership has a fee. See ntnui.no for updated membership information and prices.",
             ],
             linkLabel: "More information at ntnui.no",
             linkHref: NTNUI_URL,
@@ -152,13 +150,13 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "equipment",
         title: "Equipment",
-        description: "What to bring before training starts.",
+        description: "What to bring.",
         items: [
           {
             question: "Do I need my own racket?",
             answer: [
               "The club has a limited number of rackets available to borrow.",
-              "Bring your own racket if you can, since that makes it easier to ensure everyone gets to play.",
+              "Bring your own racket if you can.",
             ],
           },
           {
@@ -173,7 +171,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "training",
         title: "Training and registration",
-        description: "Practical information about level, waiting list, and unregistering.",
+        description: "Levels, waiting list, and unregistering.",
         items: [
           {
             question: "Can beginners join?",
@@ -192,7 +190,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
             question: "How do I unregister?",
             answer: [
               "Go to the unregister page, choose the session, and select your name from the list.",
-              "To confirm the unregister action, your birth month and birth day must match.",
+              "To confirm, your birth month and birth day must match.",
             ],
           },
         ],
@@ -202,27 +200,26 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   da: {
     badge: "Spørgsmål",
     title: "Ofte stillede spørgsmål",
-    intro:
-      "Korte svar på almindelige spørgsmål om medlemskab, udstyr og hvordan træningerne fungerer.",
-    quickLinksTitle: "Gå til emne",
+    intro: "Korte svar om medlemskab, udstyr og træning.",
+    quickLinksTitle: "Emner",
     sections: [
       {
         id: "membership",
         title: "Medlemskab og adgang",
-        description: "Hvem der kan møde op, og hvad der kræves for at deltage.",
+        description: "Hvem der kan deltage.",
         items: [
           {
             question: "Hvem kan deltage i træning?",
             answer: [
               "For at træne skal du være NTNUI-medlem og melde dig ind i NTNUI Bordtennis.",
-              'Den eneste undtagelse er træninger mærket "åpen trening", hvor alle kan deltage.',
+              'Den eneste undtagelse er træninger mærket "åben træning", hvor alle kan deltage.',
             ],
           },
           {
             question: "Koster bordtennis noget?",
             answer: [
               "NTNUI Bordtennis har ingen egen træningsafgift.",
-              "Det koster derimod at være NTNUI-medlem. Se ntnui.no for opdateret information om medlemskab og priser.",
+              "NTNUI-medlemskab koster penge. Se ntnui.no for opdateret information om medlemskab og priser.",
             ],
             linkLabel: "Læs mere på ntnui.no",
             linkHref: NTNUI_URL,
@@ -239,10 +236,10 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "equipment",
         title: "Udstyr",
-        description: "Hvad du bør tage med til træning.",
+        description: "Hvad du bør tage med.",
         items: [
           {
-            question: "Skal jeg have min egen bat med?",
+            question: "Skal jeg have mit eget bat med?",
             answer: [
               "Klubben har et begrænset antal bat til udlån.",
               "Tag gerne dit eget bat med, hvis du kan.",
@@ -252,7 +249,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
             question: "Hvad bør jeg tage med?",
             answer: [
               "Gode indendørssko anbefales stærkt.",
-              "Tag også gerne træningstøj, vandflaske og dit eget bat med, hvis du har et.",
+              "Tag også træningstøj, vandflaske og dit eget bat med, hvis du har et.",
             ],
           },
         ],
@@ -260,7 +257,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "training",
         title: "Træning og tilmelding",
-        description: "Praktisk information om niveau, venteliste og afmelding.",
+        description: "Niveau, venteliste og afmelding.",
         items: [
           {
             question: "Kan begyndere være med?",
@@ -289,27 +286,26 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   sv: {
     badge: "Frågor",
     title: "Vanliga frågor",
-    intro:
-      "Korta svar på vanliga frågor om medlemskap, utrustning och hur träningarna fungerar.",
-    quickLinksTitle: "Hoppa till ämne",
+    intro: "Korta svar om medlemskap, utrustning och träning.",
+    quickLinksTitle: "Ämnen",
     sections: [
       {
         id: "membership",
         title: "Medlemskap och tillträde",
-        description: "Vem som kan komma och vad som krävs för att delta.",
+        description: "Vem som kan delta.",
         items: [
           {
             question: "Vem kan delta på träning?",
             answer: [
               "För att träna måste du vara medlem i NTNUI och anmäld i NTNUI Bordtennis.",
-              'Det enda undantaget är träningar märkta "åpen trening", där alla kan delta.',
+              'Det enda undantaget är pass märkta "öppen träning", där alla kan delta.',
             ],
           },
           {
             question: "Kostar bordtennis något?",
             answer: [
               "NTNUI Bordtennis har ingen egen träningsavgift.",
-              "Det kostar däremot att vara medlem i NTNUI. Se ntnui.no för uppdaterad information om medlemskap och priser.",
+              "NTNUI-medlemskap kostar pengar. Se ntnui.no för uppdaterad information om medlemskap och priser.",
             ],
             linkLabel: "Läs mer på ntnui.no",
             linkHref: NTNUI_URL,
@@ -326,7 +322,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "equipment",
         title: "Utrustning",
-        description: "Vad du bör ta med dig till träningen.",
+        description: "Vad du bör ta med.",
         items: [
           {
             question: "Måste jag ha eget racket?",
@@ -339,7 +335,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
             question: "Vad bör jag ta med mig?",
             answer: [
               "Bra inomhusskor rekommenderas starkt.",
-              "Ta också gärna med träningskläder, vattenflaska och eget racket om du har.",
+              "Ta också med träningskläder, vattenflaska och eget racket om du har.",
             ],
           },
         ],
@@ -347,7 +343,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "training",
         title: "Träning och anmälan",
-        description: "Praktisk information om nivå, väntelista och avanmälan.",
+        description: "Nivå, väntelista och avanmälan.",
         items: [
           {
             question: "Kan nybörjare vara med?",
@@ -376,20 +372,19 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   de: {
     badge: "Fragen",
     title: "Häufige Fragen",
-    intro:
-      "Kurze Antworten auf häufige Fragen zu Mitgliedschaft, Ausrüstung und dem Ablauf der Trainings.",
-    quickLinksTitle: "Direkt zum Thema",
+    intro: "Kurze Antworten zu Mitgliedschaft, Ausrüstung und Training.",
+    quickLinksTitle: "Themen",
     sections: [
       {
         id: "membership",
         title: "Mitgliedschaft und Zugang",
-        description: "Wer teilnehmen kann und was dafür nötig ist.",
+        description: "Wer teilnehmen kann.",
         items: [
           {
             question: "Wer kann am Training teilnehmen?",
             answer: [
               "Um zu trainieren, musst du NTNUI-Mitglied sein und dich bei NTNUI Tischtennis anmelden.",
-              'Die einzige Ausnahme sind Einheiten mit der Markierung "åpen trening", an denen alle teilnehmen können.',
+              'Die einzige Ausnahme sind Einheiten mit der Markierung "offenes Training", an denen alle teilnehmen können.',
             ],
           },
           {
@@ -413,7 +408,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "equipment",
         title: "Ausrüstung",
-        description: "Was du zum Training mitbringen solltest.",
+        description: "Was du mitbringen solltest.",
         items: [
           {
             question: "Brauche ich einen eigenen Schläger?",
@@ -434,7 +429,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "training",
         title: "Training und Anmeldung",
-        description: "Praktische Informationen zu Niveau, Warteliste und Abmeldung.",
+        description: "Niveau, Warteliste und Abmeldung.",
         items: [
           {
             question: "Können Anfänger mitmachen?",
@@ -463,26 +458,26 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   zh: {
     badge: "问答",
     title: "常见问题",
-    intro: "这里有关于会员、装备和训练安排的简短说明，方便你快速找到答案。",
-    quickLinksTitle: "跳转到主题",
+    intro: "关于会员、装备和训练的简短说明。",
+    quickLinksTitle: "主题",
     sections: [
       {
         id: "membership",
         title: "会员和参加资格",
-        description: "谁可以参加训练，以及参加前需要满足什么条件。",
+        description: "谁可以参加训练。",
         items: [
           {
             question: "谁可以参加训练？",
             answer: [
               "要参加训练，你必须先成为 NTNUI 会员，并加入 NTNUI 乒乓球。",
-              '唯一的例外是标记为 "åpen trening" 的训练，这类训练任何人都可以参加。',
+              '唯一的例外是标记为“公开训练”的训练，这类训练任何人都可以参加。',
             ],
           },
           {
             question: "乒乓球训练需要额外收费吗？",
             answer: [
               "NTNUI 乒乓球本身不收取额外训练费用。",
-              "但是成为 NTNUI 会员需要付费。最新的会员信息和价格请查看 ntnui.no。",
+              "NTNUI 会员需要付费。最新的会员信息和价格请查看 ntnui.no。",
             ],
             linkLabel: "更多信息请见 ntnui.no",
             linkHref: NTNUI_URL,
@@ -499,7 +494,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "equipment",
         title: "装备",
-        description: "训练前建议准备好的物品。",
+        description: "训练时建议携带的物品。",
         items: [
           {
             question: "我必须自带球拍吗？",
@@ -520,7 +515,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "training",
         title: "训练和报名",
-        description: "关于水平、候补名单和取消报名的实用信息。",
+        description: "水平、候补名单和取消报名。",
         items: [
           {
             question: "初学者可以参加吗？",
@@ -549,27 +544,26 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   fr: {
     badge: "Questions",
     title: "Questions fréquentes",
-    intro:
-      "Des réponses rapides aux questions fréquentes sur l’adhésion, le matériel et le fonctionnement des entraînements.",
-    quickLinksTitle: "Aller à la section",
+    intro: "Réponses courtes sur l’adhésion, le matériel et les entraînements.",
+    quickLinksTitle: "Sections",
     sections: [
       {
         id: "membership",
         title: "Adhésion et accès",
-        description: "Qui peut participer et ce qu’il faut avant de venir.",
+        description: "Qui peut participer.",
         items: [
           {
             question: "Qui peut participer à l’entraînement ?",
             answer: [
               "Pour participer, il faut être membre de NTNUI et s’inscrire à NTNUI Tennis de table.",
-              'La seule exception concerne les séances marquées "åpen trening", auxquelles tout le monde peut participer.',
+              "La seule exception concerne les séances marquées « entraînement ouvert », auxquelles tout le monde peut participer.",
             ],
           },
           {
             question: "Le tennis de table coûte-t-il quelque chose ?",
             answer: [
-              "NTNUI Tennis de table n’a pas de frais d’entraînement propres.",
-              "En revanche, l’adhésion à NTNUI est payante. Voir ntnui.no pour les informations et tarifs à jour.",
+              "NTNUI Tennis de table ne facture pas de frais d’entraînement supplémentaires.",
+              "L’adhésion à NTNUI est payante. Voir ntnui.no pour les informations et tarifs à jour.",
             ],
             linkLabel: "Plus d’informations sur ntnui.no",
             linkHref: NTNUI_URL,
@@ -586,7 +580,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "equipment",
         title: "Matériel",
-        description: "Ce qu’il vaut mieux apporter avec soi.",
+        description: "Ce qu’il vaut mieux apporter.",
         items: [
           {
             question: "Dois-je avoir ma propre raquette ?",
@@ -607,7 +601,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "training",
         title: "Entraînement et inscription",
-        description: "Informations pratiques sur le niveau, la liste d’attente et la désinscription.",
+        description: "Niveau, liste d’attente et désinscription.",
         items: [
           {
             question: "Les débutants peuvent-ils venir ?",
@@ -619,7 +613,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
             question: "Que se passe-t-il si une séance est complète ?",
             answer: [
               "Si toutes les places sont prises, vous serez ajouté à la liste d’attente.",
-              "Si quelqu’un se désinscrit, la personne suivante sur la liste d’attente est promue automatiquement.",
+              "Si quelqu’un se désinscrit, la personne suivante sur la liste d’attente obtient automatiquement la place.",
             ],
           },
           {
@@ -636,27 +630,26 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
   es: {
     badge: "Preguntas frecuentes",
     title: "Preguntas frecuentes",
-    intro:
-      "Respuestas rápidas a preguntas comunes sobre membresía, material y cómo funcionan los entrenamientos.",
-    quickLinksTitle: "Ir a la sección",
+    intro: "Respuestas breves sobre miembros, material y entrenamientos.",
+    quickLinksTitle: "Secciones",
     sections: [
       {
         id: "membership",
-        title: "Membresía y acceso",
-        description: "Quién puede participar y qué se necesita antes de asistir.",
+        title: "Miembros y acceso",
+        description: "Quién puede participar.",
         items: [
           {
             question: "¿Quién puede participar en los entrenamientos?",
             answer: [
               "Para entrenar, debes ser miembro de NTNUI y registrarte en NTNUI Tenis de mesa.",
-              'La única excepción son los entrenamientos marcados como "åpen trening", donde puede asistir cualquier persona.',
+              'La única excepción son los entrenamientos marcados como "entrenamiento abierto", donde puede asistir cualquier persona.',
             ],
           },
           {
             question: "¿El tenis de mesa cuesta algo?",
             answer: [
               "NTNUI Tenis de mesa no tiene una cuota propia de entrenamiento.",
-              "Sin embargo, ser miembro de NTNUI sí cuesta dinero. Consulta ntnui.no para ver la información y los precios actualizados.",
+              "Ser miembro de NTNUI tiene coste. Consulta ntnui.no para ver la información y los precios actualizados.",
             ],
             linkLabel: "Más información en ntnui.no",
             linkHref: NTNUI_URL,
@@ -673,7 +666,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "equipment",
         title: "Material",
-        description: "Qué conviene llevar antes del entrenamiento.",
+        description: "Qué conviene llevar.",
         items: [
           {
             question: "¿Necesito llevar mi propia pala?",
@@ -685,7 +678,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "¿Qué debería llevar al entrenamiento?",
             answer: [
-              "Se recomiendan mucho unas buenas zapatillas de interior.",
+              "Se recomiendan buenas zapatillas de interior.",
               "También conviene llevar ropa deportiva, botella de agua y tu propia pala si tienes una.",
             ],
           },
@@ -694,7 +687,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
       {
         id: "training",
         title: "Entrenamiento e inscripción",
-        description: "Información práctica sobre nivel, lista de espera y baja.",
+        description: "Nivel, lista de espera y baja.",
         items: [
           {
             question: "¿Pueden participar los principiantes?",
