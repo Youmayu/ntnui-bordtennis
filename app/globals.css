@@ -162,11 +162,10 @@ body::before {
   border-radius: 9999px;
   background:
     radial-gradient(circle, rgba(255, 173, 112, 0.24) 0%, rgba(255, 173, 112, 0.08) 38%, transparent 72%);
-  filter: blur(10px);
+  filter: blur(8px);
   opacity: 0.9;
   pointer-events: none;
   z-index: -2;
-  animation: app-float 18s ease-in-out infinite;
 }
 
 body::after {
@@ -239,7 +238,7 @@ a {
   inset: auto;
   border-radius: 9999px;
   pointer-events: none;
-  filter: blur(22px);
+  filter: blur(16px);
   z-index: -2;
   opacity: 0.7;
 }
@@ -250,7 +249,6 @@ a {
   width: 24rem;
   height: 24rem;
   background: radial-gradient(circle, rgba(22, 146, 112, 0.18), transparent 70%);
-  animation: app-float 20s ease-in-out infinite reverse;
 }
 
 .app-site-orb-two {
@@ -259,7 +257,6 @@ a {
   width: 18rem;
   height: 18rem;
   background: radial-gradient(circle, rgba(255, 210, 112, 0.15), transparent 70%);
-  animation: app-float 16s ease-in-out infinite;
 }
 
 .app-main-shell {
@@ -282,17 +279,6 @@ a {
   }
 }
 
-@keyframes app-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  50% {
-    transform: translate3d(0, 1rem, 0);
-  }
-}
-
 .app-header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   background: linear-gradient(180deg, var(--header-bg), transparent);
@@ -309,7 +295,7 @@ a {
     linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 44%),
     var(--surface);
   box-shadow: var(--surface-shadow-soft);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(10px);
 }
 
 .app-header-main {
@@ -547,7 +533,7 @@ a {
     linear-gradient(135deg, rgba(255, 255, 255, 0.26), transparent 60%),
     var(--surface);
   box-shadow: var(--surface-shadow-soft);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(10px);
 }
 
 .app-footer-brand {
@@ -659,7 +645,7 @@ a {
     linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 55%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 34%),
     var(--surface);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(12px);
 }
 
 .app-stat-card {
@@ -700,7 +686,7 @@ a {
     linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 42%),
     rgba(255, 255, 255, 0.18);
   box-shadow: var(--surface-shadow-soft);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(10px);
 }
 
 .app-stage-panel-muted {
