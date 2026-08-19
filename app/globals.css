@@ -953,9 +953,36 @@ a {
     var(--danger-soft);
   color: var(--danger-ink);
   font-size: 0.92rem;
-  font-weight: 750;
+  font-weight: 600;
   line-height: 1.45;
   box-shadow: var(--surface-shadow-soft);
+}
+
+.app-board-warning-compact {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 0.45rem;
+  padding: 0.48rem 0.68rem;
+  border: 1px solid var(--danger-border);
+  border-radius: 0.75rem;
+  background: var(--danger-soft);
+  color: var(--danger-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.app-board-warning-compact-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 9999px;
+  background: var(--surface-strong);
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .app-board-warning:hover {

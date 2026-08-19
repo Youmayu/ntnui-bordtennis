@@ -228,6 +228,7 @@ type Messages = {
     showRegistrations: (count: number) => string;
     hideRegistrations: string;
     boardMembersAttending: string;
+    noBoardMembersShort: string;
     noBoardMembersWarning: string;
   };
   schedule: {
@@ -354,6 +355,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       showRegistrations: (count) => `Vis alle ${count} påmeldte`,
       hideRegistrations: "Skjul listen",
       boardMembersAttending: "Styremedlemmer som kommer",
+      noBoardMembersShort: "Ingen fra styret",
       noBoardMembersWarning:
         "Ingen styremedlemmer deltar, klikk her for informasjon om klargjøring av salen og rydding.",
     },
@@ -483,6 +485,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       showRegistrations: (count) => `Show all ${count} registered`,
       hideRegistrations: "Hide list",
       boardMembersAttending: "Board members attending",
+      noBoardMembersShort: "No board members",
       noBoardMembersWarning:
         "No board members attending, click here for information about setting up the room and cleaning",
     },
@@ -612,6 +615,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       showRegistrations: (count) => `Vis alle ${count} tilmeldte`,
       hideRegistrations: "Skjul listen",
       boardMembersAttending: "Deltagende bestyrelsesmedlemmer",
+      noBoardMembersShort: "Ingen fra bestyrelsen",
       noBoardMembersWarning:
         "Ingen bestyrelsesmedlemmer deltager, klik her for information om klargøring af salen og oprydning.",
     },
@@ -741,6 +745,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       showRegistrations: (count) => `Visa alla ${count} anmälda`,
       hideRegistrations: "Dölj listan",
       boardMembersAttending: "Deltagande styrelsemedlemmar",
+      noBoardMembersShort: "Ingen från styrelsen",
       noBoardMembersWarning:
         "Inga styrelsemedlemmar deltar, klicka här för information om att ställa i ordning lokalen och städa.",
     },
@@ -870,6 +875,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       showRegistrations: (count) => `显示全部 ${count} 位报名者`,
       hideRegistrations: "隐藏名单",
       boardMembersAttending: "出席的理事会成员",
+      noBoardMembersShort: "无理事会成员参加",
       noBoardMembersWarning: "没有理事会成员参加，点击此处查看场地布置与清洁说明。",
     },
     schedule: {
@@ -998,6 +1004,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       showRegistrations: (count) => `Afficher les ${count} inscrits`,
       hideRegistrations: "Masquer la liste",
       boardMembersAttending: "Membres du bureau présents",
+      noBoardMembersShort: "Aucun membre du bureau",
       noBoardMembersWarning:
         "Aucun membre du bureau ne sera présent, cliquez ici pour obtenir des informations sur l’installation de la salle et le nettoyage.",
     },
@@ -1127,6 +1134,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       showRegistrations: (count) => `Mostrar los ${count} inscritos`,
       hideRegistrations: "Ocultar lista",
       boardMembersAttending: "Miembros de la junta que asistirán",
+      noBoardMembersShort: "Ningún miembro de la junta",
       noBoardMembersWarning:
         "No asistirá ningún miembro de la junta, haz clic aquí para obtener información sobre cómo preparar la sala y limpiarla.",
     },
@@ -1256,6 +1264,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       showRegistrations: (count) => `Alle ${count} Anmeldungen anzeigen`,
       hideRegistrations: "Liste ausblenden",
       boardMembersAttending: "Teilnehmende Vorstandsmitglieder",
+      noBoardMembersShort: "Niemand vom Vorstand",
       noBoardMembersWarning:
         "Es nimmt kein Vorstandsmitglied teil, klicke hier für Informationen zum Aufbau des Raums und zur Reinigung.",
     },
