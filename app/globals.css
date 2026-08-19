@@ -971,6 +971,11 @@ a {
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.25;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .app-board-warning-compact-icon {
@@ -983,6 +988,23 @@ a {
   background: var(--surface-strong);
   font-size: 0.72rem;
   font-weight: 800;
+}
+
+.app-board-warning-compact-arrow {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.app-board-warning-compact:hover {
+  transform: translateY(-1px);
+  border-color: var(--danger);
+  color: var(--danger-ink);
+  box-shadow: 0 10px 22px rgba(142, 37, 55, 0.12);
+}
+
+.app-board-warning-compact:focus-visible {
+  outline: 3px solid var(--danger-border);
+  outline-offset: 3px;
 }
 
 .app-board-warning:hover {

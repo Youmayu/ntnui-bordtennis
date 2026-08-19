@@ -226,12 +226,15 @@ export default function HomePageContent({
             </div>
 
             {boardAttendanceAvailable && attendingBoardMembers.length === 0 && (
-              <div className="app-board-warning-compact">
+              <Link href={roomGuideHref} className="app-board-warning-compact">
                 <span className="app-board-warning-compact-icon" aria-hidden="true">
                   !
                 </span>
                 <span>{messages.home.noBoardMembersShort}</span>
-              </div>
+                <span className="app-board-warning-compact-arrow" aria-hidden="true">
+                  →
+                </span>
+              </Link>
             )}
 
             <div className="app-stage-stats">
