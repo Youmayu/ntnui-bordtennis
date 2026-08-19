@@ -227,6 +227,8 @@ type Messages = {
     bringBody: string;
     showRegistrations: (count: number) => string;
     hideRegistrations: string;
+    boardMembersAttending: string;
+    noBoardMembersWarning: string;
   };
   schedule: {
     badge: string;
@@ -351,6 +353,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       bringBody: "Innesko, treningstøy og gjerne egen racket hvis du har.",
       showRegistrations: (count) => `Vis alle ${count} påmeldte`,
       hideRegistrations: "Skjul listen",
+      boardMembersAttending: "Styremedlemmer som kommer",
+      noBoardMembersWarning:
+        "Ingen styremedlemmer deltar, klikk her for informasjon om klargjøring av salen og rydding.",
     },
     schedule: {
       badge: "Timeplan",
@@ -477,6 +482,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       bringBody: "Indoor shoes, sportswear, and a racket if you have one.",
       showRegistrations: (count) => `Show all ${count} registered`,
       hideRegistrations: "Hide list",
+      boardMembersAttending: "Board members attending",
+      noBoardMembersWarning:
+        "No board members attending, click here for information about setting up the room and cleaning",
     },
     schedule: {
       badge: "Schedule",
@@ -603,6 +611,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       bringBody: "Indendørssko, træningstøj og et bat, hvis du har et.",
       showRegistrations: (count) => `Vis alle ${count} tilmeldte`,
       hideRegistrations: "Skjul listen",
+      boardMembersAttending: "Deltagende bestyrelsesmedlemmer",
+      noBoardMembersWarning:
+        "Ingen bestyrelsesmedlemmer deltager, klik her for information om klargøring af salen og oprydning.",
     },
     schedule: {
       badge: "Tidsplan",
@@ -729,6 +740,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       bringBody: "Inneskor, träningskläder och racket om du har.",
       showRegistrations: (count) => `Visa alla ${count} anmälda`,
       hideRegistrations: "Dölj listan",
+      boardMembersAttending: "Deltagande styrelsemedlemmar",
+      noBoardMembersWarning:
+        "Inga styrelsemedlemmar deltar, klicka här för information om att ställa i ordning lokalen och städa.",
     },
     schedule: {
       badge: "Schema",
@@ -855,6 +869,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       bringBody: "室内运动鞋、运动服，以及如果有的话请带球拍。",
       showRegistrations: (count) => `显示全部 ${count} 位报名者`,
       hideRegistrations: "隐藏名单",
+      boardMembersAttending: "出席的理事会成员",
+      noBoardMembersWarning: "没有理事会成员参加，点击此处查看场地布置与清洁说明。",
     },
     schedule: {
       badge: "时间表",
@@ -981,6 +997,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       bringBody: "Chaussures d’intérieur, tenue de sport et une raquette si vous en avez une.",
       showRegistrations: (count) => `Afficher les ${count} inscrits`,
       hideRegistrations: "Masquer la liste",
+      boardMembersAttending: "Membres du bureau présents",
+      noBoardMembersWarning:
+        "Aucun membre du bureau ne sera présent, cliquez ici pour obtenir des informations sur l’installation de la salle et le nettoyage.",
     },
     schedule: {
       badge: "Planning",
@@ -1107,6 +1126,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       bringBody: "Zapatillas de interior, ropa deportiva y una pala si tienes una.",
       showRegistrations: (count) => `Mostrar los ${count} inscritos`,
       hideRegistrations: "Ocultar lista",
+      boardMembersAttending: "Miembros de la junta que asistirán",
+      noBoardMembersWarning:
+        "No asistirá ningún miembro de la junta, haz clic aquí para obtener información sobre cómo preparar la sala y limpiarla.",
     },
     schedule: {
       badge: "Horario",
@@ -1233,6 +1255,9 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       bringBody: "Hallenschuhe, Sportkleidung und gern einen eigenen Schläger, falls vorhanden.",
       showRegistrations: (count) => `Alle ${count} Anmeldungen anzeigen`,
       hideRegistrations: "Liste ausblenden",
+      boardMembersAttending: "Teilnehmende Vorstandsmitglieder",
+      noBoardMembersWarning:
+        "Es nimmt kein Vorstandsmitglied teil, klicke hier für Informationen zum Aufbau des Raums und zur Reinigung.",
     },
     schedule: {
       badge: "Zeitplan",

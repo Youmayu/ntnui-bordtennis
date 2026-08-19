@@ -3,6 +3,11 @@ import { notFound } from "next/navigation";
 import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
 import { pool } from "@/lib/db";
 import HomePageContent from "@/app/components/HomePageContent";
+import {
+  getBoardAttendanceSelectSql,
+  hasBoardAttendanceColumn,
+} from "@/lib/board-attendance";
+import { normalizeBoardMemberIds, type BoardMemberId } from "@/lib/board-members";
 import { normalizeSingleLineDisplay } from "@/lib/input-safety";
 import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import {
@@ -27,6 +32,7 @@ type SessionRow = {
   location: string;
   capacity: number;
   members_only: boolean;
+  attending_board_member_ids: BoardMemberId[];
   current_time: string;
 };
 
@@ -69,7 +75,10 @@ export default async function LocalizedHomePage({
 
   const structuredData = getLocalizedHomeStructuredData(locale);
   await ensureAutoScheduledSessions().catch(() => {});
-  const accessSchema = await getSessionAccessSchema(pool);
+  const [accessSchema, boardAttendanceAvailable] = await Promise.all([
+    getSessionAccessSchema(pool),
+    hasBoardAttendanceColumn(pool),
+  ]);
   const nextSessionRes = await pool.query(
     `SELECT
        s.id,
@@ -78,6 +87,7 @@ export default async function LocalizedHomePage({
        s.location,
        s.capacity,
        ${getMembersOnlySelectSql(accessSchema.hasSessionMembersOnly, "s")} AS members_only,
+       ${getBoardAttendanceSelectSql(boardAttendanceAvailable, "s")} AS attending_board_member_ids,
        NOW() AS current_time
      FROM sessions s
      WHERE s.ends_at > NOW()
@@ -85,7 +95,15 @@ export default async function LocalizedHomePage({
      LIMIT 1`
   );
 
-  const session = (nextSessionRes.rows[0] as SessionRow | undefined) ?? null;
+  const sessionRow = (nextSessionRes.rows[0] as SessionRow | undefined) ?? null;
+  const session = sessionRow
+    ? {
+        ...sessionRow,
+        attending_board_member_ids: normalizeBoardMemberIds(
+          sessionRow.attending_board_member_ids
+        ),
+      }
+    : null;
 
   if (!session) {
     return (
@@ -94,7 +112,11 @@ export default async function LocalizedHomePage({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
         />
-        <HomePageContent session={null} registeredNames={[]} />
+        <HomePageContent
+          session={null}
+          registeredNames={[]}
+          boardAttendanceAvailable={boardAttendanceAvailable}
+        />
       </>
     );
   }
@@ -116,6 +138,7 @@ export default async function LocalizedHomePage({
       />
       <HomePageContent
         session={session}
+        boardAttendanceAvailable={boardAttendanceAvailable}
         registeredNames={(regsRes.rows as { name: string }[]).map((row) =>
           normalizeSingleLineDisplay(row.name)
         )}

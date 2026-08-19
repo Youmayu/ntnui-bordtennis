@@ -4,6 +4,7 @@ import Image from "next/image";
 import ttLogo from "@/app/ttlogo.png";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
+import { BOARD_MEMBERS } from "@/lib/board-members";
 import { normalizeVenueText } from "@/lib/site-content";
 
 type PersonCardProps = {
@@ -67,13 +68,14 @@ export default function AboutPageContent() {
       </section>
 
       <section className="app-surface app-people-board overflow-hidden p-0 md:grid-cols-3">
-        <PersonCard role={messages.about.roles.leader} name={"Maja B\u00F6"} email="maja.bockenkamp@ntnui.no" />
-        <PersonCard role={messages.about.roles.deputy} name="He You Ma" email="he.ma@ntnui.no" />
-        <PersonCard
-          role={messages.about.roles.treasurer}
-          name="Karl Andre Thomassen"
-          email="karl.thomassen@ntnui.no"
-        />
+        {BOARD_MEMBERS.map((member) => (
+          <PersonCard
+            key={member.id}
+            role={messages.about.roles[member.roleKey]}
+            name={member.name}
+            email={member.email}
+          />
+        ))}
       </section>
 
       <section className="app-surface app-location-stage overflow-hidden p-0">

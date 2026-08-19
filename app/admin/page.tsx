@@ -16,7 +16,12 @@ import {
   sanitizeMemberName,
 } from "@/lib/input-safety";
 import { createPageMetadata } from "@/lib/seo";
-import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
+import { DEFAULT_SESSION_LOCATION, getMessages } from "@/lib/site-content";
+import {
+  BOARD_MEMBERS,
+  normalizeBoardMemberIds,
+  type BoardMemberId,
+} from "@/lib/board-members";
 import {
   fillConfirmedSlotsFromWaitlist,
   REGISTRATION_STATUS,
@@ -31,6 +36,7 @@ type SessionRow = {
   location: string;
   capacity: number;
   members_only: boolean;
+  attending_board_member_ids: BoardMemberId[];
   auto_template_id: number | null;
   auto_week_start: string | null;
 };
@@ -83,6 +89,7 @@ type AutoScheduleSchemaStatusRow = {
   has_auto_week_start: boolean;
   has_session_members_only: boolean;
   has_template_members_only: boolean;
+  has_attending_board_member_ids: boolean;
 };
 
 const WEEKDAY_OPTIONS = [
@@ -94,6 +101,60 @@ const WEEKDAY_OPTIONS = [
   { value: 6, label: "Lørdag" },
   { value: 7, label: "Søndag" },
 ] as const;
+
+const ADMIN_BOARD_ROLES = getMessages("no").about.roles;
+
+function BoardAttendanceFields({
+  selectedIds = [],
+  disabled = false,
+}: {
+  selectedIds?: BoardMemberId[];
+  disabled?: boolean;
+}) {
+  return (
+    <fieldset
+      disabled={disabled}
+      className="rounded-2xl border border-[color:var(--border-muted)] p-4 md:col-span-2 xl:col-span-4"
+    >
+      <legend className="px-1 text-sm font-semibold text-[color:var(--text-strong)]">
+        Styremedlemmer som kommer
+      </legend>
+      <p className="mb-3 text-xs text-[color:var(--text-soft)]">
+        Kryss av styremedlemmene som kommer på økten. Nye økter starter uten avkrysninger.
+      </p>
+      <div className="grid gap-2 sm:grid-cols-3">
+        {BOARD_MEMBERS.map((member) => (
+          <label
+            key={member.id}
+            className={`flex items-start gap-3 rounded-xl border border-[color:var(--border-muted)] bg-[color:var(--surface)] px-3 py-3 text-sm ${
+              disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+            }`}
+          >
+            <input
+              type="checkbox"
+              name="attending_board_member_ids"
+              value={member.id}
+              defaultChecked={selectedIds.includes(member.id)}
+              disabled={disabled}
+              className="mt-0.5"
+            />
+            <span className="grid gap-0.5">
+              <span className="font-medium text-[color:var(--text-strong)]">{member.name}</span>
+              <span className="text-xs text-[color:var(--text-soft)]">
+                {ADMIN_BOARD_ROLES[member.roleKey]}
+              </span>
+            </span>
+          </label>
+        ))}
+      </div>
+      {disabled && (
+        <p className="mt-3 text-xs text-[color:var(--danger-strong)]">
+          Kjør databasemigreringen for å aktivere styreoppmøte.
+        </p>
+      )}
+    </fieldset>
+  );
+}
 
 function getWeekdayLabel(weekday: number) {
   return WEEKDAY_OPTIONS.find((option) => option.value === weekday)?.label ?? `Dag ${weekday}`;
@@ -221,7 +282,14 @@ export default async function AdminPage() {
          WHERE table_schema = 'public'
            AND table_name = 'schedule_templates'
            AND column_name = 'members_only'
-       ) AS has_template_members_only`
+       ) AS has_template_members_only,
+       EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'sessions'
+           AND column_name = 'attending_board_member_ids'
+       ) AS has_attending_board_member_ids`
   );
 
   const autoScheduleSchema =
@@ -233,6 +301,7 @@ export default async function AdminPage() {
       has_auto_week_start: false,
       has_session_members_only: false,
       has_template_members_only: false,
+      has_attending_board_member_ids: false,
     } satisfies AutoScheduleSchemaStatusRow);
 
   const autoScheduleAvailable =
@@ -242,6 +311,7 @@ export default async function AdminPage() {
     autoScheduleSchema.has_auto_week_start;
   const sessionMembersOnlyAvailable = autoScheduleSchema.has_session_members_only;
   const templateMembersOnlyAvailable = autoScheduleSchema.has_template_members_only;
+  const boardAttendanceAvailable = autoScheduleSchema.has_attending_board_member_ids;
 
   let autoScheduleError: string | null = null;
   let autoScheduleSettings: ScheduleSettingsRow = { auto_enabled: true };
@@ -348,6 +418,11 @@ export default async function AdminPage() {
            location,
            capacity,
            ${autoScheduleSchema.has_session_members_only ? "members_only" : "TRUE AS members_only"},
+           ${
+             boardAttendanceAvailable
+               ? "attending_board_member_ids"
+               : "ARRAY[]::text[] AS attending_board_member_ids"
+           },
            auto_template_id,
            auto_week_start::text AS auto_week_start
          FROM sessions
@@ -360,6 +435,11 @@ export default async function AdminPage() {
            location,
            capacity,
            ${autoScheduleSchema.has_session_members_only ? "members_only" : "TRUE AS members_only"},
+           ${
+             boardAttendanceAvailable
+               ? "attending_board_member_ids"
+               : "ARRAY[]::text[] AS attending_board_member_ids"
+           },
            NULL::int AS auto_template_id,
            NULL::text AS auto_week_start
          FROM sessions
@@ -387,6 +467,7 @@ export default async function AdminPage() {
   const sessions = (sessionsRes.rows as SessionRow[]).map((session) => ({
     ...session,
     location: sanitizeLocation(session.location) ?? DEFAULT_SESSION_LOCATION,
+    attending_board_member_ids: normalizeBoardMemberIds(session.attending_board_member_ids),
   }));
   const regs = (regsRes.rows as RegRow[]).map((registration) => ({
     ...registration,
@@ -600,6 +681,9 @@ export default async function AdminPage() {
     const location = sanitizeLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity"));
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
+    const attendingBoardMemberIds = normalizeBoardMemberIds(
+      formData.getAll("attending_board_member_ids")
+    );
 
     if (!Number.isFinite(id)) return;
     if (!startsAtLocal || !endsAtLocal || !location) return;
@@ -611,24 +695,29 @@ export default async function AdminPage() {
     try {
       await client.query("BEGIN");
 
+      const assignments = [
+        "starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo')",
+        "ends_at = ($3::timestamp AT TIME ZONE 'Europe/Oslo')",
+        "location = $4",
+        "capacity = $5",
+      ];
+      const values: unknown[] = [id, startsAtLocal, endsAtLocal, location, capacity];
+
+      if (sessionMembersOnlyAvailable) {
+        assignments.push(`members_only = $${values.length + 1}`);
+        values.push(membersOnly);
+      }
+
+      if (boardAttendanceAvailable) {
+        assignments.push(`attending_board_member_ids = $${values.length + 1}::text[]`);
+        values.push(attendingBoardMemberIds);
+      }
+
       await client.query(
-        autoScheduleSchema.has_session_members_only
-          ? `UPDATE sessions
-             SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
-                 ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
-                 location  = $4,
-                 capacity  = $5,
-                 members_only = $6
-             WHERE id = $1`
-          : `UPDATE sessions
-             SET starts_at = ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
-                 ends_at   = ($3::timestamp AT TIME ZONE 'Europe/Oslo'),
-                 location  = $4,
-                 capacity  = $5
-             WHERE id = $1`,
-        autoScheduleSchema.has_session_members_only
-          ? [id, startsAtLocal, endsAtLocal, location, capacity, membersOnly]
-          : [id, startsAtLocal, endsAtLocal, location, capacity]
+        `UPDATE sessions
+         SET ${assignments.join(", ")}
+         WHERE id = $1`,
+        values
       );
 
       await fillConfirmedSlotsFromWaitlist(client, id);
@@ -648,31 +737,39 @@ export default async function AdminPage() {
     const location = sanitizeLocation(String(formData.get("location") ?? ""));
     const capacity = Number(formData.get("capacity") ?? 20);
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
+    const attendingBoardMemberIds = normalizeBoardMemberIds(
+      formData.getAll("attending_board_member_ids")
+    );
 
     if (!startsAtLocal || !endsAtLocal || !location) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
     if (startsAtLocal >= endsAtLocal) return;
 
+    const columns = ["starts_at", "ends_at", "location", "capacity"];
+    const placeholders = [
+      "($1::timestamp AT TIME ZONE 'Europe/Oslo')",
+      "($2::timestamp AT TIME ZONE 'Europe/Oslo')",
+      "$3",
+      "$4",
+    ];
+    const values: unknown[] = [startsAtLocal, endsAtLocal, location, capacity];
+
+    if (sessionMembersOnlyAvailable) {
+      columns.push("members_only");
+      placeholders.push(`$${values.length + 1}`);
+      values.push(membersOnly);
+    }
+
+    if (boardAttendanceAvailable) {
+      columns.push("attending_board_member_ids");
+      placeholders.push(`$${values.length + 1}::text[]`);
+      values.push(attendingBoardMemberIds);
+    }
+
     await pool.query(
-      autoScheduleSchema.has_session_members_only
-        ? `INSERT INTO sessions (starts_at, ends_at, location, capacity, members_only)
-           VALUES (
-             ($1::timestamp AT TIME ZONE 'Europe/Oslo'),
-             ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
-             $3,
-             $4,
-             $5
-           )`
-        : `INSERT INTO sessions (starts_at, ends_at, location, capacity)
-           VALUES (
-             ($1::timestamp AT TIME ZONE 'Europe/Oslo'),
-             ($2::timestamp AT TIME ZONE 'Europe/Oslo'),
-             $3,
-             $4
-           )`,
-      autoScheduleSchema.has_session_members_only
-        ? [startsAtLocal, endsAtLocal, location, capacity, membersOnly]
-        : [startsAtLocal, endsAtLocal, location, capacity]
+      `INSERT INTO sessions (${columns.join(", ")})
+       VALUES (${placeholders.join(", ")})`,
+      values
     );
   }
 
@@ -1271,6 +1368,8 @@ export default async function AdminPage() {
             />
           </div>
 
+          <BoardAttendanceFields disabled={!boardAttendanceAvailable} />
+
           <div className="md:col-span-2 xl:col-span-4">
             <button className="app-button-primary inline-flex">Legg til økt</button>
           </div>
@@ -1301,6 +1400,21 @@ export default async function AdminPage() {
                     {getAccessLabel(session.members_only)}
                   </span>
                   <span className="app-badge app-badge-accent">{session.capacity} plasser</span>
+                  <span
+                    className={
+                      !boardAttendanceAvailable
+                        ? "app-badge app-badge-neutral"
+                        : session.attending_board_member_ids.length > 0
+                        ? "app-badge app-badge-success"
+                        : "app-badge app-badge-danger"
+                    }
+                  >
+                    {!boardAttendanceAvailable
+                      ? "Styreoppmøte ikke aktivert"
+                      : session.attending_board_member_ids.length > 0
+                      ? `${session.attending_board_member_ids.length} fra styret`
+                      : "Ingen fra styret"}
+                  </span>
                   {session.auto_week_start && (
                     <span className="app-badge app-badge-neutral">
                       Uke {fmtOsloDate(session.auto_week_start)}
@@ -1380,6 +1494,11 @@ export default async function AdminPage() {
                       required
                     />
                   </div>
+
+                  <BoardAttendanceFields
+                    selectedIds={session.attending_board_member_ids}
+                    disabled={!boardAttendanceAvailable}
+                  />
                 </form>
 
                 <div className="mt-4 flex flex-wrap gap-3">

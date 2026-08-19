@@ -877,6 +877,109 @@ a {
   color: var(--accent-strong);
 }
 
+.app-board-attendance {
+  overflow: hidden;
+  border: 1px solid var(--success-border);
+  border-radius: 1.1rem;
+  background: var(--success-soft);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-board-attendance-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  color: var(--success-ink);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.app-board-attendance-icon,
+.app-board-warning-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  font-weight: 900;
+}
+
+.app-board-attendance-icon {
+  border: 1px solid var(--success-border);
+  background: var(--surface-strong);
+}
+
+.app-board-member-list {
+  display: grid;
+  border-top: 1px solid var(--success-border);
+  background: var(--surface-strong);
+}
+
+.app-board-member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.app-board-member-row + .app-board-member-row {
+  border-top: 1px solid var(--border-muted);
+}
+
+.app-board-member-name {
+  color: var(--text-strong);
+  font-size: 0.98rem;
+  font-weight: 750;
+}
+
+.app-board-warning {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 4.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--danger-border);
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 58%),
+    var(--danger-soft);
+  color: var(--danger-ink);
+  font-size: 0.92rem;
+  font-weight: 750;
+  line-height: 1.45;
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-board-warning:hover {
+  transform: translateY(-1px);
+  border-color: var(--danger);
+  color: var(--danger-ink);
+  box-shadow: 0 14px 30px rgba(142, 37, 55, 0.13);
+}
+
+.app-board-warning:focus-visible {
+  outline: 3px solid var(--danger-border);
+  outline-offset: 3px;
+}
+
+.app-board-warning-icon {
+  border: 1px solid var(--danger-border);
+  background: var(--surface-strong);
+}
+
+.app-board-warning-arrow {
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
 .app-badge {
   display: inline-flex;
   align-items: center;

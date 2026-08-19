@@ -63,6 +63,9 @@ async function main() {
     ALTER TABLE sessions
       ADD COLUMN IF NOT EXISTS members_only BOOLEAN NOT NULL DEFAULT TRUE;
 
+    ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS attending_board_member_ids TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
+
     ALTER TABLE schedule_templates
       ADD COLUMN IF NOT EXISTS members_only BOOLEAN NOT NULL DEFAULT TRUE;
 
@@ -112,6 +115,25 @@ async function main() {
         ALTER TABLE sessions
           ADD CONSTRAINT sessions_capacity_bounds_check
           CHECK (capacity BETWEEN 1 AND 200) NOT VALID;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'sessions_board_member_ids_check'
+      ) THEN
+        ALTER TABLE sessions
+          ADD CONSTRAINT sessions_board_member_ids_check
+          CHECK (
+            attending_board_member_ids <@ ARRAY[
+              'maja-bo',
+              'he-you-ma',
+              'karl-andre-thomassen'
+            ]::TEXT[]
+            AND cardinality(array_positions(attending_board_member_ids, 'maja-bo')) <= 1
+            AND cardinality(array_positions(attending_board_member_ids, 'he-you-ma')) <= 1
+            AND cardinality(
+              array_positions(attending_board_member_ids, 'karl-andre-thomassen')
+            ) <= 1
+          ) NOT VALID;
       END IF;
 
       IF NOT EXISTS (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { BOARD_MEMBERS, type BoardMemberId } from "@/lib/board-members";
 import {
   getIntlLocale,
   getSessionAccessLabel,
@@ -19,15 +20,21 @@ type Session = {
   location: string;
   capacity: number;
   members_only: boolean;
+  attending_board_member_ids: BoardMemberId[];
   current_time: string;
 };
+
+// Reserved for the room setup and cleaning page that will be added later.
+const ROOM_GUIDE_PATH = "/room-guide";
 
 export default function HomePageContent({
   session,
   registeredNames,
+  boardAttendanceAvailable,
 }: {
   session: Session | null;
   registeredNames: string[];
+  boardAttendanceAvailable: boolean;
 }) {
   const { locale, messages } = useSitePreferences();
   const [showAllRegistrations, setShowAllRegistrations] = useState(false);
@@ -36,6 +43,7 @@ export default function HomePageContent({
   const scheduleHref = localizePathname("/schedule", locale);
   const registerHref = localizePathname("/register", locale);
   const unregisterHref = localizePathname("/unregister", locale);
+  const roomGuideHref = localizePathname(ROOM_GUIDE_PATH, locale);
 
   if (!session) {
     return (
@@ -94,6 +102,10 @@ export default function HomePageContent({
     new Date(session.starts_at).getTime() <= now &&
     new Date(session.ends_at).getTime() > now;
   const spotsLeft = Math.max(0, session.capacity - registeredNames.length);
+  const attendingBoardMemberIds = new Set(session.attending_board_member_ids);
+  const attendingBoardMembers = BOARD_MEMBERS.filter((member) =>
+    attendingBoardMemberIds.has(member.id)
+  );
 
   const dateFormatter = new Intl.DateTimeFormat(intlLocale, {
     timeZone: "Europe/Oslo",
@@ -252,6 +264,39 @@ export default function HomePageContent({
                 )}
               </div>
             </div>
+
+            {boardAttendanceAvailable &&
+              (attendingBoardMembers.length > 0 ? (
+                <section className="app-board-attendance mt-6" aria-labelledby="board-attendance-title">
+                  <div className="app-board-attendance-heading">
+                    <span className="app-board-attendance-icon" aria-hidden="true">
+                      ✓
+                    </span>
+                    <h3 id="board-attendance-title">{messages.home.boardMembersAttending}</h3>
+                  </div>
+
+                  <ul className="app-board-member-list">
+                    {attendingBoardMembers.map((member) => (
+                      <li key={member.id} className="app-board-member-row">
+                        <span className="app-board-member-name">{member.name}</span>
+                        <span className="app-badge app-badge-success">
+                          {messages.about.roles[member.roleKey]}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : (
+                <Link href={roomGuideHref} className="app-board-warning mt-6">
+                  <span className="app-board-warning-icon" aria-hidden="true">
+                    !
+                  </span>
+                  <span>{messages.home.noBoardMembersWarning}</span>
+                  <span className="app-board-warning-arrow" aria-hidden="true">
+                    →
+                  </span>
+                </Link>
+              ))}
 
             {registeredNames.length === 0 ? (
               <div className="mt-5">
