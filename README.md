@@ -92,6 +92,7 @@ Old root-level public routes redirect to the default Norwegian pages.
 | `/no/unregister` | Self-unregistration form |
 | `/no/faq` | Frequently asked questions |
 | `/no/about` | Club information and contact details |
+| `/no/room-guide` | Training hall setup and closing checklist |
 | `/admin` | Session, announcement, and registration management |
 
 ## Local setup

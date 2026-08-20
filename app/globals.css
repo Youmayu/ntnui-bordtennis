@@ -1029,6 +1029,218 @@ a {
   font-weight: 900;
 }
 
+.app-room-guide-hero {
+  isolation: isolate;
+}
+
+.app-room-guide-preferred,
+.app-room-guide-fallback,
+.app-room-guide-finish {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  border-radius: 1.15rem;
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-room-guide-preferred {
+  padding: 1.25rem;
+  border: 1px solid var(--success-border);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 58%),
+    var(--success-soft);
+}
+
+.app-room-guide-preferred-icon,
+.app-room-guide-fallback-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.app-room-guide-preferred-icon {
+  border: 1px solid var(--success-border);
+  background: var(--surface-strong);
+  color: var(--success-ink);
+}
+
+.app-room-guide-fallback {
+  padding: 1.25rem;
+  border: 1px solid var(--accent-border);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 58%),
+    var(--accent-soft);
+}
+
+.app-room-guide-fallback-icon {
+  border: 1px solid var(--accent-border);
+  background: var(--surface-strong);
+  color: var(--accent-ink);
+}
+
+.app-room-guide-columns {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.app-room-guide-section {
+  min-width: 0;
+}
+
+.app-room-guide-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.app-room-guide-section-head h2 {
+  color: var(--text-strong);
+  font-family: var(--app-font-display);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.app-room-guide-section-number,
+.app-room-guide-step-number {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-weight: 800;
+}
+
+.app-room-guide-section-number {
+  width: 2.45rem;
+  height: 2.45rem;
+  border-radius: 0.8rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.app-room-guide-steps {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-room-guide-step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  padding: 1.25rem 0;
+  color: var(--text-body);
+  line-height: 1.7;
+}
+
+.app-room-guide-step + .app-room-guide-step {
+  border-top: 1px solid var(--border-muted);
+}
+
+.app-room-guide-step:last-child {
+  padding-bottom: 0;
+}
+
+.app-room-guide-step-number {
+  width: 2rem;
+  height: 2rem;
+  margin-top: 0.1rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+}
+
+.app-room-guide-code {
+  display: inline-grid;
+  gap: 0.15rem;
+  min-width: 10.5rem;
+  margin-top: 1rem;
+  padding: 0.8rem 1.1rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.28), transparent 62%),
+    var(--accent-soft);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+.app-room-guide-code span {
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.app-room-guide-code strong {
+  color: var(--accent-ink);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: clamp(2.25rem, 7vw, 3.5rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  line-height: 1;
+}
+
+.app-room-guide-critical {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--danger-border);
+  border-radius: 0.9rem;
+  background: var(--danger-soft);
+  color: var(--danger-ink);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.app-room-guide-critical > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 9999px;
+  background: var(--surface-strong);
+  font-weight: 900;
+}
+
+.app-room-guide-finish {
+  justify-items: start;
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--success-border);
+  background: var(--success-soft);
+  color: var(--success-ink);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.app-room-guide-finish > span {
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+@media (min-width: 960px) {
+  .app-room-guide-columns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
 .app-badge {
   display: inline-flex;
   align-items: center;
