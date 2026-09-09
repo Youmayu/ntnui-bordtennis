@@ -4,6 +4,7 @@ import Image from "next/image";
 import ntnuiLogo from "@/app/ntnuilogo.png";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
+import DiscordLink from "@/app/components/DiscordLink";
 
 export default function SiteFooter() {
   const { locale, messages } = useSitePreferences();
@@ -26,6 +27,9 @@ export default function SiteFooter() {
               textClassName="font-medium text-[color:var(--accent)]"
               showMazeMapBadge
             />
+            <div className="mt-3">
+              <DiscordLink variant="footer" />
+            </div>
           </div>
 
           <div className="app-footer-copy">{messages.shell.footerCopyright(new Date().getFullYear())}</div>

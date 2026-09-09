@@ -12,6 +12,7 @@ import {
   type Locale,
 } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
+import DiscordLink from "@/app/components/DiscordLink";
 
 function navItemClass(active: boolean, variant: "default" | "register" | "unregister" = "default") {
   const classes = ["app-nav-link"];
@@ -148,6 +149,7 @@ export default function SiteHeader() {
             >
               {messages.shell.nav.about}
             </Link>
+            <DiscordLink variant="nav" onClick={closeMobileNav} />
             <button
               type="button"
               className="app-nav-link app-nav-theme-button"

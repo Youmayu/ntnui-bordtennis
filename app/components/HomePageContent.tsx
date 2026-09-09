@@ -12,6 +12,7 @@ import {
 } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
+import DiscordInvitation from "@/app/components/DiscordInvitation";
 
 type Session = {
   id: number;
@@ -78,6 +79,7 @@ export default function HomePageContent({
                   {messages.home.ctaSchedule}
                 </Link>
               </div>
+              <DiscordInvitation />
             </div>
 
             <div className="app-stage-panel app-stage-panel-muted">
@@ -179,6 +181,7 @@ export default function HomePageContent({
                 {messages.home.ctaSchedule}
               </Link>
             </div>
+            <DiscordInvitation />
           </div>
 
           <div className="app-stage-panel">
