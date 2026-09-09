@@ -1,6 +1,7 @@
-import { permanentRedirect } from "next/navigation";
-import { DEFAULT_LOCALE, localizePathname } from "@/lib/site-content";
+import { redirect } from "next/navigation";
+import { getPreferredLocale } from "@/lib/preferred-locale";
+import { localizePathname } from "@/lib/site-content";
 
-export default function UnregisterPage() {
-  permanentRedirect(localizePathname("/unregister", DEFAULT_LOCALE));
+export default async function UnregisterPage() {
+  redirect(localizePathname("/unregister", await getPreferredLocale()));
 }

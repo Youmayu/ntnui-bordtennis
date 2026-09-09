@@ -1,12 +1,16 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { DEFAULT_LOCALE, getLocaleFromPathname } from "@/lib/site-content";
+import { getLocaleFromPathname } from "@/lib/site-content";
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const locale = getLocaleFromPathname(pathname) ?? DEFAULT_LOCALE;
+  const locale = getLocaleFromPathname(pathname);
   const requestHeaders = new Headers(req.headers);
-  requestHeaders.set("x-site-locale", locale);
+  if (locale) {
+    requestHeaders.set("x-site-locale", locale);
+  } else {
+    requestHeaders.delete("x-site-locale");
+  }
 
   if (!pathname.startsWith("/admin")) {
     return NextResponse.next({

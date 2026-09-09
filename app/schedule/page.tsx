@@ -1,6 +1,7 @@
-import { permanentRedirect } from "next/navigation";
-import { DEFAULT_LOCALE, localizePathname } from "@/lib/site-content";
+import { redirect } from "next/navigation";
+import { getPreferredLocale } from "@/lib/preferred-locale";
+import { localizePathname } from "@/lib/site-content";
 
-export default function SchedulePage() {
-  permanentRedirect(localizePathname("/schedule", DEFAULT_LOCALE));
+export default async function SchedulePage() {
+  redirect(localizePathname("/schedule", await getPreferredLocale()));
 }

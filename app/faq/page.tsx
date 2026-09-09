@@ -1,6 +1,7 @@
-import { permanentRedirect } from "next/navigation";
-import { DEFAULT_LOCALE, localizePathname } from "@/lib/site-content";
+import { redirect } from "next/navigation";
+import { getPreferredLocale } from "@/lib/preferred-locale";
+import { localizePathname } from "@/lib/site-content";
 
-export default function FaqPage() {
-  permanentRedirect(localizePathname("/faq", DEFAULT_LOCALE));
+export default async function FaqPage() {
+  redirect(localizePathname("/faq", await getPreferredLocale()));
 }

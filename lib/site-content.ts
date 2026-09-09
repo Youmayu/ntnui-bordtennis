@@ -1350,8 +1350,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
 };
 
 export function parseLocale(value: string | null | undefined): Locale {
-  if (value && value in LOCALE_INFO) {
-    return value as Locale;
+  if (isLocale(value)) {
+    return value;
   }
   return DEFAULT_LOCALE;
 }
@@ -1421,7 +1421,7 @@ export function getLevelKey(levelValue: string): LevelKey {
 }
 
 export function isLocale(value: string | null | undefined): value is Locale {
-  return Boolean(value && value in LOCALE_INFO);
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(LOCALE_INFO, value);
 }
 
 export function getLocaleFromPathname(pathname: string): Locale | null {

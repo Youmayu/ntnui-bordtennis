@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import "./globals.css";
 import AnnouncementBar from "@/app/components/AnnouncementBar";
+import CookiePreferences from "@/app/components/CookiePreferences";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import SitePreferencesProvider from "@/app/components/SitePreferencesProvider";
 import { getRootMetadata } from "@/lib/seo";
+import { COOKIE_CONSENT_COOKIE, parseCookieConsent } from "@/lib/cookie-preferences";
 import {
   LANGUAGE_COOKIE,
   LOCALE_INFO,
@@ -19,10 +21,14 @@ export const metadata: Metadata = getRootMetadata();
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const requestHeaders = await headers();
+  const cookieConsent = parseCookieConsent(cookieStore.get(COOKIE_CONSENT_COOKIE)?.value);
   const locale = parseLocale(
-    requestHeaders.get("x-site-locale") ?? cookieStore.get(LANGUAGE_COOKIE)?.value
+    requestHeaders.get("x-site-locale") ??
+      (cookieConsent === "accepted" ? cookieStore.get(LANGUAGE_COOKIE)?.value : undefined)
   );
-  const theme = parseTheme(cookieStore.get(THEME_COOKIE)?.value);
+  const theme = parseTheme(
+    cookieConsent === "accepted" ? cookieStore.get(THEME_COOKIE)?.value : undefined
+  );
 
   return (
     <html
@@ -31,7 +37,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background text-foreground">
-        <SitePreferencesProvider initialLocale={locale} initialTheme={theme}>
+        <SitePreferencesProvider
+          initialLocale={locale}
+          initialTheme={theme}
+          initialCookieConsent={cookieConsent}
+        >
           <div className="app-site-shell">
             <div className="app-site-orb app-site-orb-one" aria-hidden="true" />
             <div className="app-site-orb app-site-orb-two" aria-hidden="true" />
@@ -42,6 +52,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </main>
             <SiteFooter />
           </div>
+          <CookiePreferences />
         </SitePreferencesProvider>
       </body>
     </html>

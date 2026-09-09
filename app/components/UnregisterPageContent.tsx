@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import TurnstileWidget from "@/app/components/TurnstileWidget";
+import FormPrivacyNotice from "@/app/components/FormPrivacyNotice";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import { getDaysInMonth } from "@/lib/birth-month-day";
 import {
@@ -279,6 +280,8 @@ export default function UnregisterPageContent() {
                 </select>
               </div>
             </div>
+
+            <FormPrivacyNotice action="unregister" />
 
             <TurnstileWidget
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}

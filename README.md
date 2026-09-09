@@ -40,6 +40,7 @@ The public site uses route-based locales such as `/no`, `/en`, `/de`, and `/zh`,
 | Theme | Supports dark and light mode, with dark mode as the default |
 | Responsive UI | Uses a premium desktop layout and a compact mobile navigation/menu flow |
 | Navigation | Includes direct MazeMap access for Dragvoll Idrettssenter B217 |
+| Privacy | Localized privacy, cookie and website information pages, form notices, and optional preference-cookie controls |
 | Admin | Manage sessions, announcements, registrations, and club operations from `/admin` |
 | Anti-abuse | Uses Cloudflare Turnstile on register and unregister flows |
 
@@ -70,7 +71,7 @@ flowchart LR
 | `fr` | French | `/fr` |
 | `es` | Spanish | `/es` |
 
-Old root-level public routes redirect to the default Norwegian pages.
+Root-level public routes redirect to a saved language when preference cookies are allowed, otherwise to Norwegian. Explicit locale URLs always take precedence.
 
 ## Tech stack
 
@@ -93,6 +94,9 @@ Old root-level public routes redirect to the default Norwegian pages.
 | `/no/faq` | Frequently asked questions |
 | `/no/about` | Club information and contact details |
 | `/no/room-guide` | Training hall setup and closing checklist |
+| `/no/privacy` | Privacy notice and data rights contact |
+| `/no/cookies` | Cookie details and preference controls |
+| `/no/website-info` | Website use, contact and accessibility feedback |
 | `/admin` | Session, announcement, and registration management |
 
 ## Local setup
@@ -161,6 +165,7 @@ heroku run -a <your-app-name> -- node scripts/init-db.js
 
 ## Operational notes
 
+- Before publishing the privacy notices, resolve the controller, retention, provider and transfer details in [the privacy publication review](docs/privacy-review.md).
 - Session capacity counts confirmed registrations only.
 - If a session is full, new signups are stored as `waitlist`.
 - When a confirmed player unregisters, the earliest waitlisted player is promoted automatically.

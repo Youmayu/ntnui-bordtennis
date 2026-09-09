@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import TurnstileWidget from "@/app/components/TurnstileWidget";
+import FormPrivacyNotice from "@/app/components/FormPrivacyNotice";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import {
@@ -374,6 +375,8 @@ export default function RegisterPageContent() {
                 </select>
               </div>
             </div>
+
+            <FormPrivacyNotice action="register" />
 
             <TurnstileWidget
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}

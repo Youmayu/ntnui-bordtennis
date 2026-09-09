@@ -13,6 +13,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/unregister", changeFrequency: "daily" as const, priority: 0.7 },
     { path: "/about", changeFrequency: "weekly" as const, priority: 0.6 },
     { path: "/room-guide", changeFrequency: "monthly" as const, priority: 0.55 },
+    { path: "/privacy", changeFrequency: "monthly" as const, priority: 0.3 },
+    { path: "/cookies", changeFrequency: "monthly" as const, priority: 0.3 },
+    { path: "/website-info", changeFrequency: "monthly" as const, priority: 0.3 },
   ];
 
   return locales.flatMap((locale) =>
