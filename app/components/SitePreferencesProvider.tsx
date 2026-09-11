@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -21,6 +22,7 @@ import {
 import {
   COOKIE_CONSENT_COOKIE,
   COOKIE_MAX_AGE_SECONDS,
+  parseCookieConsent,
   type CookieConsent,
 } from "@/lib/cookie-preferences";
 
@@ -37,6 +39,12 @@ type SitePreferencesContextValue = {
 };
 
 const SitePreferencesContext = createContext<SitePreferencesContextValue | null>(null);
+
+function readStoredCookieConsent() {
+  const prefix = `${COOKIE_CONSENT_COOKIE}=`;
+  const cookie = document.cookie.split(";").map((value) => value.trim()).find((value) => value.startsWith(prefix));
+  return parseCookieConsent(cookie?.slice(prefix.length));
+}
 
 function persistCookie(name: string, value: string) {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
@@ -67,17 +75,47 @@ export default function SitePreferencesProvider({
   const [theme, setThemeState] = useState<Theme>(initialTheme);
   const [cookieConsent, setCookieConsent] = useState<CookieConsent>(initialCookieConsent);
   const [cookieSettingsOpen, setCookieSettingsOpen] = useState(false);
+  const cookieChannelRef = useRef<BroadcastChannel | null>(null);
   const locale = localeFromPath ?? localePreference;
 
   useEffect(() => {
-    if (cookieConsent !== "accepted") {
+    // Read the shared cookie before writing: another tab may have withdrawn
+    // permission, or the saved decision may have expired since this tab opened.
+    if (readStoredCookieConsent() !== "accepted") {
       clearPreferenceCookies();
       return;
     }
 
     persistCookie(LANGUAGE_COOKIE, locale);
     persistCookie(THEME_COOKIE, theme);
-  }, [cookieConsent, locale, theme]);
+  }, [locale, theme]);
+
+  useEffect(() => {
+    function syncConsent() {
+      const savedConsent = readStoredCookieConsent();
+      if (savedConsent !== "accepted") clearPreferenceCookies();
+      setCookieConsent(savedConsent);
+    }
+
+    function onVisibilityChange() {
+      if (document.visibilityState === "visible") syncConsent();
+    }
+
+    const channel = typeof BroadcastChannel === "undefined"
+      ? null
+      : new BroadcastChannel("ntnui-cookie-preferences");
+    cookieChannelRef.current = channel;
+    channel?.addEventListener("message", syncConsent);
+    window.addEventListener("focus", syncConsent);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      channel?.close();
+      cookieChannelRef.current = null;
+      window.removeEventListener("focus", syncConsent);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -91,9 +129,11 @@ export default function SitePreferencesProvider({
       theme,
       messages: getMessages(locale),
       setLocale: (nextLocale) => {
+        setCookieConsent(readStoredCookieConsent());
         setLocalePreference(nextLocale);
       },
       setTheme: (nextTheme) => {
+        setCookieConsent(readStoredCookieConsent());
         setThemeState(nextTheme);
       },
       cookieConsent,
@@ -101,11 +141,15 @@ export default function SitePreferencesProvider({
       openCookieSettings: () => setCookieSettingsOpen(true),
       saveCookieConsent: (nextConsent) => {
         persistCookie(COOKIE_CONSENT_COOKIE, `v1.${nextConsent}`);
-        if (nextConsent === "rejected") {
+        if (nextConsent === "accepted" && readStoredCookieConsent() === "accepted") {
+          persistCookie(LANGUAGE_COOKIE, locale);
+          persistCookie(THEME_COOKIE, theme);
+        } else {
           clearPreferenceCookies();
         }
         setCookieConsent(nextConsent);
         setCookieSettingsOpen(false);
+        cookieChannelRef.current?.postMessage("changed");
       },
     }),
     [cookieConsent, cookieSettingsOpen, locale, theme]

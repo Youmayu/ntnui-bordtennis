@@ -37,6 +37,8 @@ These are separate from adding policy pages and should be considered in the club
 
 Production compilation and TypeScript checks passed with a temporary local database URL; no production database was accessed. Browser checks covered all 24 policy/language routes, metadata, sitemap, consent-aware redirects, invalid paths, existing-cookie migration, acceptance, rejection, reloading, withdrawal, language/theme behavior, and keyboard focus restoration. Policy/form notices and 390px/320px layouts were checked, including the long Norwegian title. Form-layout checks used an empty session fixture and did not test a live signup, database operation or Cloudflare verification.
 
+Final checks on 12 September 2026 also covered withdrawal across two open tabs and removal/expiry of a consent cookie while a tab remains open. Every optional-cookie write checks the current saved decision; tabs synchronize consent changes without overwriting each other's preferences merely on receiving permission. Temporary, machine-specific browser checks and screenshots were moved out of the project after verification.
+
 ## Sources checked
 
 - [Datatilsynet: what information must be provided](https://www.datatilsynet.no/rettigheter-og-plikter/virksomhetenes-plikter/informasjon-og-apenhet/hva-skal-virksomheten-gi-informasjon-om/)

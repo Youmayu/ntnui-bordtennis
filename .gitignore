@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/.tmp-privacy/
 
 # next.js
 /.next/
