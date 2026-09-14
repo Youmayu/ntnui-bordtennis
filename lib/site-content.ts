@@ -190,6 +190,7 @@ type Messages = {
     themeDark: string;
     menuOpen: string;
     menuClose: string;
+    skipToContent: string;
     nav: {
       schedule: string;
       faq: string;
@@ -317,6 +318,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeDark: "Mørk",
       menuOpen: "Meny",
       menuClose: "Lukk meny",
+      skipToContent: "Hopp til innhold",
       nav: {
         schedule: "Timeplan",
         faq: "Spørsmål",
@@ -447,6 +449,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeDark: "Dark",
       menuOpen: "Menu",
       menuClose: "Close menu",
+      skipToContent: "Skip to content",
       nav: {
         schedule: "Schedule",
         faq: "FAQ",
@@ -577,6 +580,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeDark: "Mørk",
       menuOpen: "Menu",
       menuClose: "Luk menu",
+      skipToContent: "Spring til indhold",
       nav: {
         schedule: "Tidsplan",
         faq: "Spørgsmål",
@@ -707,6 +711,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeDark: "Mörkt",
       menuOpen: "Meny",
       menuClose: "Stäng meny",
+      skipToContent: "Hoppa till innehåll",
       nav: {
         schedule: "Schema",
         faq: "Frågor",
@@ -837,6 +842,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeDark: "深色",
       menuOpen: "菜单",
       menuClose: "关闭菜单",
+      skipToContent: "跳至主要内容",
       nav: {
         schedule: "时间表",
         faq: "问答",
@@ -966,6 +972,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeDark: "Sombre",
       menuOpen: "Menu",
       menuClose: "Fermer le menu",
+      skipToContent: "Aller au contenu",
       nav: {
         schedule: "Planning",
         faq: "Questions",
@@ -1096,6 +1103,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeDark: "Oscuro",
       menuOpen: "Menú",
       menuClose: "Cerrar menú",
+      skipToContent: "Saltar al contenido",
       nav: {
         schedule: "Horario",
         faq: "Preguntas",
@@ -1226,6 +1234,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       themeDark: "Dunkel",
       menuOpen: "Menü",
       menuClose: "Menü schließen",
+      skipToContent: "Zum Inhalt springen",
       nav: {
         schedule: "Zeitplan",
         faq: "Fragen",

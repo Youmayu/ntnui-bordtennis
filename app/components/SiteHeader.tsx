@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -38,6 +38,7 @@ export default function SiteHeader() {
   const searchParams = useSearchParams();
   const { locale, messages, theme, setLocale, setTheme } = useSitePreferences();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavToggleRef = useRef<HTMLButtonElement>(null);
   const isAdminPath = pathname.startsWith("/admin");
   const currentPublicPath = stripLocaleFromPathname(pathname);
 
@@ -66,6 +67,9 @@ export default function SiteHeader() {
 
   return (
     <header className="app-header z-50 md:sticky md:top-0 md:backdrop-blur-xl">
+      <a href="#main-content" className="app-skip-link">
+        {messages.shell.skipToContent}
+      </a>
       <div className="mx-auto max-w-6xl px-4 py-3 sm:py-4">
         <div className="app-header-frame">
           <div className="app-header-main">
@@ -98,6 +102,7 @@ export default function SiteHeader() {
           </div>
 
           <button
+            ref={mobileNavToggleRef}
             type="button"
             className="app-mobile-nav-toggle"
             aria-expanded={mobileNavOpen}
@@ -113,9 +118,20 @@ export default function SiteHeader() {
           <nav
             id="site-mobile-nav"
             className={`app-nav-strip text-sm${mobileNavOpen ? " app-nav-strip-open" : ""}`}
+            onKeyDown={(event) => {
+              if (
+                event.key === "Escape" &&
+                mobileNavOpen &&
+                mobileNavToggleRef.current?.getClientRects().length
+              ) {
+                closeMobileNav();
+                mobileNavToggleRef.current.focus();
+              }
+            }}
           >
             <Link
               className={navItemClass(isActive("/schedule"))}
+              aria-current={isActive("/schedule") ? "page" : undefined}
               href={toLocalizedHref("/schedule")}
               onClick={closeMobileNav}
             >
@@ -123,6 +139,7 @@ export default function SiteHeader() {
             </Link>
             <Link
               className={navItemClass(isActive("/faq"))}
+              aria-current={isActive("/faq") ? "page" : undefined}
               href={toLocalizedHref("/faq")}
               onClick={closeMobileNav}
             >
@@ -130,6 +147,7 @@ export default function SiteHeader() {
             </Link>
             <Link
               className={navItemClass(isActive("/register"), "register")}
+              aria-current={isActive("/register") ? "page" : undefined}
               href={toLocalizedHref("/register")}
               onClick={closeMobileNav}
             >
@@ -137,6 +155,7 @@ export default function SiteHeader() {
             </Link>
             <Link
               className={navItemClass(isActive("/unregister"), "unregister")}
+              aria-current={isActive("/unregister") ? "page" : undefined}
               href={toLocalizedHref("/unregister")}
               onClick={closeMobileNav}
             >
@@ -144,6 +163,7 @@ export default function SiteHeader() {
             </Link>
             <Link
               className={navItemClass(isActive("/about"))}
+              aria-current={isActive("/about") ? "page" : undefined}
               href={toLocalizedHref("/about")}
               onClick={closeMobileNav}
             >

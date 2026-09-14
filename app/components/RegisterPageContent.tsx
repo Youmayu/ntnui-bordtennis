@@ -222,8 +222,9 @@ export default function RegisterPageContent() {
         <div className="app-form-board-grid">
           <form onSubmit={onSubmit} className="app-form-shell space-y-5 p-6 sm:p-8">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.register.sessionLabel}</label>
+              <label htmlFor="register-session" className="text-sm font-medium">{messages.register.sessionLabel}</label>
               <select
+                id="register-session"
                 value={sessionId ?? ""}
                 onChange={(e) => {
                   setSessionId(Number(e.target.value));
@@ -315,20 +316,24 @@ export default function RegisterPageContent() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.register.nameLabel}</label>
+              <label htmlFor="register-name" className="text-sm font-medium">{messages.register.nameLabel}</label>
               <input
+                id="register-name"
+                autoComplete="name"
+                aria-describedby="register-name-help"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={messages.register.namePlaceholder}
                 maxLength={80}
                 className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
               />
-              <div className="text-xs text-[color:var(--text-soft)]">{messages.register.nameHelp}</div>
+              <div id="register-name-help" className="text-xs text-[color:var(--text-soft)]">{messages.register.nameHelp}</div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.register.levelLabel}</label>
+              <label htmlFor="register-level" className="text-sm font-medium">{messages.register.levelLabel}</label>
               <select
+                id="register-level"
                 value={level}
                 onChange={(e) => setLevel(e.target.value)}
                 className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
@@ -343,8 +348,9 @@ export default function RegisterPageContent() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">{messages.register.birthMonthLabel}</label>
+                <label htmlFor="register-birth-month" className="text-sm font-medium">{messages.register.birthMonthLabel}</label>
                 <select
+                  id="register-birth-month"
                   value={birthMonth ?? ""}
                   onChange={(e) => handleBirthMonthChange(e.target.value ? Number(e.target.value) : null)}
                   className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
@@ -359,8 +365,9 @@ export default function RegisterPageContent() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">{messages.register.birthDayLabel}</label>
+                <label htmlFor="register-birth-day" className="text-sm font-medium">{messages.register.birthDayLabel}</label>
                 <select
+                  id="register-birth-day"
                   value={birthDay ?? ""}
                   onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
                   disabled={!birthMonth}
@@ -388,8 +395,8 @@ export default function RegisterPageContent() {
               {messages.register.submit}
             </button>
 
-            {error && <div className="app-alert-error">{error}</div>}
-            {message && <div className="app-alert-success">{message}</div>}
+            {error && <div role="alert" className="app-alert-error">{error}</div>}
+            {message && <div role="status" className="app-alert-success">{message}</div>}
           </form>
 
           <aside className="app-form-aside app-form-board-side p-6 sm:p-8">

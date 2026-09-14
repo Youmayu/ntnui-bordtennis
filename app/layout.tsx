@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div className="app-site-orb app-site-orb-two" aria-hidden="true" />
             <SiteHeader />
             <AnnouncementBar />
-            <main className="app-main-shell">
+            <main id="main-content" tabIndex={-1} className="app-main-shell">
               <div className="app-page-stack mx-auto max-w-6xl px-4 py-10 sm:py-14">{children}</div>
             </main>
             <SiteFooter />

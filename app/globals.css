@@ -228,6 +228,29 @@ a {
   color: inherit;
 }
 
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--text-strong);
+  outline-offset: 4px;
+}
+
+.app-skip-link {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.85rem 1.15rem;
+  border-radius: 0.75rem;
+  background: var(--background);
+  color: var(--text-strong);
+  font-weight: 700;
+  box-shadow: var(--surface-shadow-soft);
+  transform: translateY(calc(-100% - 2rem));
+}
+
+.app-skip-link:focus {
+  transform: translateY(0);
+}
+
 .app-site-shell {
   position: relative;
   min-height: 100vh;
@@ -873,6 +896,7 @@ a {
 .app-home-board-grid,
 .app-form-board-grid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .app-home-board-secondary,
@@ -1659,6 +1683,7 @@ a {
 }
 
 .app-field {
+  min-width: 0;
   border: 1px solid var(--border-muted);
   background: var(--surface-strong);
   color: var(--text-body);
@@ -1676,6 +1701,7 @@ a {
 }
 
 .app-form-shell {
+  min-width: 0;
   min-height: 100%;
 }
 
@@ -1949,7 +1975,7 @@ a {
     justify-content: space-between;
     gap: 0.75rem;
     width: 100%;
-    min-height: 2.35rem;
+    min-height: 2.75rem;
     padding: 0.65rem 0.9rem;
     border: 1px solid var(--neutral-border);
     border-radius: 0.9rem;
@@ -1957,7 +1983,7 @@ a {
       linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 58%),
       var(--surface);
     color: var(--text-body);
-    font-size: 0.84rem;
+    font-size: 0.875rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1967,9 +1993,14 @@ a {
   .app-nav-link,
   .app-control-select,
   .app-theme-toggle {
-    min-height: 2.25rem;
+    min-height: 2.75rem;
     padding: 0.5rem 0.75rem;
-    font-size: 0.84rem;
+    font-size: 0.875rem;
+  }
+
+  .app-field,
+  .app-control-select {
+    font-size: 1rem;
   }
 
   .app-nav-link {
@@ -2053,6 +2084,13 @@ a {
   }
 }
 
+@media (min-width: 768px) {
+  .app-main-shell,
+  .app-faq-section {
+    scroll-margin-top: 18rem;
+  }
+}
+
 @media (min-width: 640px) {
   .app-faq-quicklinks {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2132,5 +2170,19 @@ a {
 
   .app-about-orgmark {
     justify-self: end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

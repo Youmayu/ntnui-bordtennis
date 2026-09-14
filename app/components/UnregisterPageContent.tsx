@@ -205,8 +205,9 @@ export default function UnregisterPageContent() {
         <div className="app-form-board-grid">
           <form onSubmit={onSubmit} className="app-form-shell space-y-5 p-6 sm:p-8">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.unregister.sessionLabel}</label>
+              <label htmlFor="unregister-session" className="text-sm font-medium">{messages.unregister.sessionLabel}</label>
               <select
+                id="unregister-session"
                 value={sessionId ?? ""}
                 onChange={(e) => handleSessionChange(e.target.value ? Number(e.target.value) : null)}
                 className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
@@ -227,8 +228,9 @@ export default function UnregisterPageContent() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">{messages.unregister.whoLabel}</label>
+              <label htmlFor="unregister-person" className="text-sm font-medium">{messages.unregister.whoLabel}</label>
               <select
+                id="unregister-person"
                 value={registrationId ?? ""}
                 onChange={(e) => setRegistrationId(e.target.value ? Number(e.target.value) : null)}
                 disabled={registrations.length === 0}
@@ -248,8 +250,9 @@ export default function UnregisterPageContent() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">{messages.unregister.birthMonthLabel}</label>
+                <label htmlFor="unregister-birth-month" className="text-sm font-medium">{messages.unregister.birthMonthLabel}</label>
                 <select
+                  id="unregister-birth-month"
                   value={birthMonth ?? ""}
                   onChange={(e) => handleBirthMonthChange(e.target.value ? Number(e.target.value) : null)}
                   className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
@@ -264,8 +267,9 @@ export default function UnregisterPageContent() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">{messages.unregister.birthDayLabel}</label>
+                <label htmlFor="unregister-birth-day" className="text-sm font-medium">{messages.unregister.birthDayLabel}</label>
                 <select
+                  id="unregister-birth-day"
                   value={birthDay ?? ""}
                   onChange={(e) => setBirthDay(e.target.value ? Number(e.target.value) : null)}
                   disabled={!birthMonth}
@@ -293,8 +297,8 @@ export default function UnregisterPageContent() {
               {messages.unregister.submit}
             </button>
 
-            {error && <div className="app-alert-error">{error}</div>}
-            {message && <div className="app-alert-success">{message}</div>}
+            {error && <div role="alert" className="app-alert-error">{error}</div>}
+            {message && <div role="status" className="app-alert-success">{message}</div>}
           </form>
 
           <aside className="app-form-aside app-form-board-side p-6 sm:p-8">
