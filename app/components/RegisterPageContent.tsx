@@ -239,7 +239,7 @@ export default function RegisterPageContent() {
         </h1>
         <p className="text-[color:var(--text-muted)]">{messages.register.body}</p>
         {selectedSession && (
-          <a href="#session-registrations" className="app-roster-refresh">
+          <a href="#session-registrations" className="app-roster-link">
             {registrationCopy.title} ↓
           </a>
         )}
@@ -434,7 +434,7 @@ export default function RegisterPageContent() {
               </div>
             </div>
 
-            <FormPrivacyNotice action="register" />
+            <FormPrivacyNotice />
 
             <TurnstileWidget
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
@@ -512,7 +512,7 @@ export default function RegisterPageContent() {
             registrations={roster.registrations}
             capacity={selectedSession.capacity}
             error={roster.error}
-            onRefresh={roster.refresh}
+            updatedAt={roster.updatedAt}
           />
         </section>
       )}

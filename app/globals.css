@@ -936,16 +936,7 @@ a {
   margin-top: 1.5rem;
 }
 
-.app-roster-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-bottom: 1rem;
-}
-
-.app-roster-refresh {
+.app-roster-link {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;

@@ -3,18 +3,19 @@
 import { useId } from "react";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import { getRegistrationCopy } from "@/lib/registration-content";
+import { getIntlLocale } from "@/lib/site-content";
 import { REGISTRATION_STATUS, type PublicRegistration } from "@/lib/registrations";
 
 export default function SessionRoster({
   registrations,
   capacity,
   error,
-  onRefresh,
+  updatedAt,
 }: {
   registrations: PublicRegistration[] | null;
   capacity: number;
   error: boolean;
-  onRefresh: () => void;
+  updatedAt: string | null;
 }) {
   const { locale, messages } = useSitePreferences();
   const copy = getRegistrationCopy(locale);
@@ -24,12 +25,18 @@ export default function SessionRoster({
 
   return (
     <div className="app-session-roster">
-      <div className="app-roster-toolbar">
-        <p className="text-xs text-[color:var(--text-soft)]">{copy.automaticUpdates}</p>
-        <button type="button" className="app-roster-refresh" onClick={onRefresh}>
-          <span aria-hidden="true">↻</span> {copy.refresh}
-        </button>
-      </div>
+      {updatedAt && (
+        <p className="mb-4 text-xs text-[color:var(--text-soft)]">
+          {copy.lastUpdated}{" "}
+          <time dateTime={updatedAt}>
+            {new Intl.DateTimeFormat(getIntlLocale(locale), {
+              dateStyle: "short",
+              timeStyle: "medium",
+              timeZone: "Europe/Oslo",
+            }).format(new Date(updatedAt))}
+          </time>
+        </p>
+      )}
       {registrations && (
         <div className="mb-4 flex flex-wrap gap-2 md:hidden">
           <a className="app-badge app-badge-success min-h-11 underline underline-offset-4" href={`#${id}-confirmed-panel`}>

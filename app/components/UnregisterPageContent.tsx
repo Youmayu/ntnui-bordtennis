@@ -284,7 +284,7 @@ export default function UnregisterPageContent() {
               </div>
             </div>
 
-            <FormPrivacyNotice action="unregister" />
+            <FormPrivacyNotice />
 
             <TurnstileWidget
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}

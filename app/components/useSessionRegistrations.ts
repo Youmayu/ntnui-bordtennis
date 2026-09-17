@@ -8,11 +8,11 @@ export function useSessionRegistrations(
   initialRegistrations: PublicRegistration[] | null = null,
   refreshVersion = 0
 ) {
-  const [revision, setRevision] = useState(0);
   const [snapshot, setSnapshot] = useState({
     sessionId,
     registrations: initialRegistrations,
     error: false,
+    updatedAt: null as string | null,
   });
 
   useEffect(() => {
@@ -33,7 +33,12 @@ export function useSessionRegistrations(
         const data = await response.json();
         if (!Array.isArray(data.registrations)) throw new Error("Invalid registrations");
         if (!controller.signal.aborted) {
-          setSnapshot({ sessionId, registrations: data.registrations, error: false });
+          setSnapshot({
+            sessionId,
+            registrations: data.registrations,
+            error: false,
+            updatedAt: new Date().toISOString(),
+          });
         }
       } catch {
         if (!controller.signal.aborted) {
@@ -43,6 +48,7 @@ export function useSessionRegistrations(
               ? previous.registrations
               : initialRegistrations,
             error: true,
+            updatedAt: previous.sessionId === sessionId ? previous.updatedAt : null,
           }));
         }
       } finally {
@@ -60,11 +66,11 @@ export function useSessionRegistrations(
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [sessionId, initialRegistrations, refreshVersion, revision]);
+  }, [sessionId, initialRegistrations, refreshVersion]);
 
   return {
     registrations: snapshot.sessionId === sessionId ? snapshot.registrations : initialRegistrations,
     error: snapshot.sessionId === sessionId && snapshot.error,
-    refresh: () => setRevision((value) => value + 1),
+    updatedAt: snapshot.sessionId === sessionId ? snapshot.updatedAt : null,
   };
 }

@@ -289,7 +289,7 @@ export default function HomePageContent({
               registrations={roster.registrations}
               capacity={session.capacity}
               error={roster.error}
-              onRefresh={roster.refresh}
+              updatedAt={roster.updatedAt}
             />
 
             {boardAttendanceAvailable &&
