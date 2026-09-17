@@ -76,7 +76,7 @@ export default function RegisterPageContent() {
   const [birthDay, setBirthDay] = useState<number | null>(null);
   const [memberConfirmed, setMemberConfirmed] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ text: string; waitlisted: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rosterRevision, setRosterRevision] = useState(0);
   const roster = useSessionRegistrations(sessionId, null, rosterRevision);
@@ -202,11 +202,13 @@ export default function RegisterPageContent() {
       return;
     }
 
-    setMessage(
-      data?.registrationStatus === "waitlist"
+    const waitlisted = data?.registrationStatus === "waitlist";
+    setMessage({
+      text: waitlisted
         ? messages.register.successWaitlist
-        : messages.register.success
-    );
+        : messages.register.success,
+      waitlisted,
+    });
     setFirstName("");
     setLastName("");
     setLevel("Nybegynner");
@@ -252,6 +254,7 @@ export default function RegisterPageContent() {
               <label htmlFor="register-session" className="text-sm font-medium">{messages.register.sessionLabel}</label>
               <select
                 id="register-session"
+                aria-describedby={selectedSessionIsFull ? "register-full-notice" : undefined}
                 value={sessionId ?? ""}
                 onChange={(e) => {
                   setSessionId(Number(e.target.value));
@@ -287,17 +290,27 @@ export default function RegisterPageContent() {
                     textClassName="font-medium"
                     showMazeMapBadge
                   />
-                  {selectedSessionIsFull && (
-                    <div className="text-xs font-medium text-[color:var(--danger-ink)]">
-                      {messages.register.fullNotice}
-                      {selectedSession.waitlist_count > 0
-                        ? ` ${messages.register.waitlistCount(selectedSession.waitlist_count)}`
-                        : ""}
-                    </div>
-                  )}
                 </div>
               )}
             </div>
+
+            {selectedSession && selectedSessionIsFull && (
+              <div id="register-full-notice" className="app-full-notice" role="status">
+                <span className="app-full-notice-icon" aria-hidden="true">!</span>
+                <div className="min-w-0">
+                  <h2 className="app-full-notice-title">{registrationCopy.fullTitle}</h2>
+                  <p className="mt-2 text-sm leading-6">{registrationCopy.waitlistSignup}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="app-badge app-capacity-full">
+                      {selectedSession.confirmed_count}/{selectedSession.capacity}
+                    </span>
+                    <span className="app-badge app-badge-neutral">
+                      {messages.register.waitlistCount(selectedSession.waitlist_count)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {selectedSession && (
               <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-muted)] p-4">
@@ -442,12 +455,21 @@ export default function RegisterPageContent() {
               onTokenChange={setTurnstileToken}
             />
 
-            <button type="submit" disabled={disabled} className="app-button-success w-full justify-center">
-              {messages.register.submit}
+            <button
+              type="submit"
+              disabled={disabled}
+              aria-describedby={selectedSessionIsFull ? "register-full-notice" : undefined}
+              className={`${selectedSessionIsFull ? "app-button-danger" : "app-button-success"} w-full justify-center`}
+            >
+              {selectedSessionIsFull ? registrationCopy.joinWaitlist : messages.register.submit}
             </button>
 
             {error && <div role="alert" className="app-alert-error">{error}</div>}
-            {message && <div role="status" className="app-alert-success">{message}</div>}
+            {message && (
+              <div role="status" className={message.waitlisted ? "app-alert-waitlist" : "app-alert-success"}>
+                {message.text}
+              </div>
+            )}
           </form>
 
           <aside className="app-form-aside app-form-board-side p-6 sm:p-8">
@@ -479,8 +501,9 @@ export default function RegisterPageContent() {
                   >
                     {getSessionAccessLabel(locale, selectedSession.members_only)}
                   </span>
-                  <span className="app-badge app-badge-success">
+                  <span className={`app-badge ${selectedSessionIsFull ? "app-capacity-full" : "app-badge-success"}`}>
                     {selectedSession.confirmed_count}/{selectedSession.capacity}
+                    {selectedSessionIsFull && ` · ${registrationCopy.fullTitle}`}
                   </span>
                   {selectedSession.waitlist_count > 0 && (
                     <span className="app-badge app-badge-accent">

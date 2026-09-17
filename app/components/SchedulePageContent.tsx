@@ -3,6 +3,7 @@
 import { getIntlLocale, getSessionAccessLabel } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
+import { getRegistrationCopy } from "@/lib/registration-content";
 
 type Session = {
   id: number;
@@ -107,11 +108,12 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                             <span
                               className={
                                 session.registered_count >= session.capacity
-                                  ? "app-badge app-badge-danger"
+                                  ? "app-badge app-capacity-full"
                                   : "app-badge app-badge-success"
                               }
                             >
                               {session.registered_count}/{session.capacity}
+                              {session.registered_count >= session.capacity && ` · ${getRegistrationCopy(locale).fullTitle}`}
                             </span>
                           </div>
                         </div>

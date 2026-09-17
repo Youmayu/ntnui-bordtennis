@@ -22,6 +22,7 @@ export default function SessionRoster({
   const id = useId();
   const confirmed = registrations?.filter((entry) => entry.status === REGISTRATION_STATUS.CONFIRMED) ?? [];
   const waitlist = registrations?.filter((entry) => entry.status === REGISTRATION_STATUS.WAITLIST) ?? [];
+  const isFull = confirmed.length >= capacity;
 
   return (
     <div className="app-session-roster">
@@ -39,7 +40,7 @@ export default function SessionRoster({
       )}
       {registrations && (
         <div className="mb-4 flex flex-wrap gap-2 md:hidden">
-          <a className="app-badge app-badge-success min-h-11 underline underline-offset-4" href={`#${id}-confirmed-panel`}>
+          <a className={`app-badge ${isFull ? "app-capacity-full" : "app-badge-success"} min-h-11 underline underline-offset-4`} href={`#${id}-confirmed-panel`}>
             {copy.confirmed} · {confirmed.length}/{capacity} ↓
           </a>
           <a className="app-badge app-badge-accent min-h-11 underline underline-offset-4" href={`#${id}-waitlist-panel`}>
@@ -58,7 +59,10 @@ export default function SessionRoster({
             <section key={group.key} id={`${id}-${group.key}-panel`} className={`app-roster-panel app-roster-${group.key}`} aria-labelledby={`${id}-${group.key}`}>
               <div className="app-roster-panel-heading">
                 <h3 id={`${id}-${group.key}`} className="font-semibold">{group.title}</h3>
-                <span className={`app-badge ${group.key === "confirmed" ? "app-badge-success" : "app-badge-accent"}`}>{group.count}</span>
+                <span className={`app-badge ${group.key === "confirmed" ? (isFull ? "app-capacity-full" : "app-badge-success") : "app-badge-accent"}`}>
+                  {group.count}
+                  {group.key === "confirmed" && isFull && ` · ${copy.fullTitle}`}
+                </span>
               </div>
               <p className="app-roster-help">{group.help}</p>
               {group.entries.length === 0 ? (

@@ -109,6 +109,8 @@ export default function HomePageContent({
     new Date(session.starts_at).getTime() <= now &&
     new Date(session.ends_at).getTime() > now;
   const spotsLeft = Math.max(0, session.capacity - confirmedCount);
+  const isFull = confirmedCount >= session.capacity;
+  const registrationCopy = getRegistrationCopy(locale);
   const attendingBoardMemberIds = new Set(session.attending_board_member_ids);
   const attendingBoardMembers = BOARD_MEMBERS.filter((member) =>
     attendingBoardMemberIds.has(member.id)
@@ -246,11 +248,11 @@ export default function HomePageContent({
             )}
 
             <div className="app-stage-stats">
-              <div className="app-stage-stat">
+              <div className={`app-stage-stat${isFull ? " app-capacity-full" : ""}`}>
                 <span className="app-stage-stat-value">{spotsLeft}</span>
-                <span className="app-stage-stat-label">{messages.home.spotsLeft(spotsLeft)}</span>
+                <span className="app-stage-stat-label">{isFull ? registrationCopy.fullTitle : messages.home.spotsLeft(spotsLeft)}</span>
               </div>
-              <div className="app-stage-stat app-stage-stat-secondary">
+              <div className={`app-stage-stat app-stage-stat-secondary${isFull ? " app-capacity-full" : ""}`}>
                 <span className="app-stage-stat-value">
                   {confirmedCount}/{session.capacity}
                 </span>
@@ -277,10 +279,11 @@ export default function HomePageContent({
                 <p className="app-panel-body mt-2">{dateFormatter.format(new Date(session.starts_at))}</p>
               </div>
 
-              <div className="app-stat-card min-w-[170px] px-5 py-4 text-sm">
-                <div className="font-semibold text-white">{messages.home.spotsLeft(spotsLeft)}</div>
+              <div className={`app-stat-card min-w-[170px] px-5 py-4 text-sm ${isFull ? "app-capacity-full" : "text-white"}`}>
+                {isFull && <div className="mb-1 font-bold">{registrationCopy.fullTitle}</div>}
+                <div className="font-semibold">{messages.home.spotsLeft(spotsLeft)}</div>
                 {isActive && (
-                  <div className="mt-1 text-white/78">{messages.home.currentStatus}</div>
+                  <div className="mt-1 opacity-80">{messages.home.currentStatus}</div>
                 )}
               </div>
             </div>
