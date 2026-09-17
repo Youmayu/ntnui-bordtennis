@@ -37,7 +37,7 @@ export type LegalCopy = {
   pages: Record<LegalPageSlug, LegalPage>;
 };
 
-export const LEGAL_UPDATED = "2026-09-09";
+export const LEGAL_UPDATED = "2026-09-18";
 export const PRIVACY_EMAIL = "he.ma@ntnui.no";
 
 export const LEGAL_EN: LegalCopy = {
@@ -49,7 +49,7 @@ export const LEGAL_EN: LegalCopy = {
   updated: "Last updated",
   contact: "Contact He You Ma",
   registerNotice:
-    "We use your name, playing level and birth month/day to manage your signup. Your name is public in participant and cancellation lists, including when you are on the waiting list. Your birth details are not public. Read how we use and keep your information before signing up.",
+    "We use your first name, surname, playing level and birth month/day to manage your signup. Your name is public in participant and cancellation lists, including when you are on the waiting list. Your birth details are not public. Read how we use and keep your information before signing up.",
   unregisterNotice:
     "We compare your birth month and day with your signup to check your cancellation. A successful cancellation removes that registration from the active database.",
   readPrivacy: "Read the privacy notice",
@@ -71,7 +71,7 @@ export const LEGAL_EN: LegalCopy = {
           id: "signup-data",
           title: "Training signups",
           paragraphs: [
-            "We store your name, selected playing level, birth month and day, chosen session, signup time and confirmed or waiting-list status. Name, playing level and birth month/day are required for online signup. We do not ask for your birth year. Birth details help distinguish registrations and check cancellations; playing level helps organise training.",
+            "We store your first name and surname as a full name, selected playing level, birth month and day, chosen session, signup time and confirmed or waiting-list status. First name, surname, playing level and birth month/day are required for online signup. We do not ask for your birth year. Birth details help distinguish registrations and check cancellations; playing level helps organise training.",
             "For members-only sessions, you must confirm membership. This website does not register or take payment for membership. Older cancellation-request records can contain a submitted name, message and request time.",
           ],
         },
@@ -79,7 +79,7 @@ export const LEGAL_EN: LegalCopy = {
           id: "visibility",
           title: "What other people can see",
           paragraphs: [
-            "Your name is visible to website visitors in participant and cancellation lists. Waiting-list names are also visible in the cancellation list. Birth month/day are not displayed publicly. Authorised administrators can access signup information to organise sessions and resolve requests. Contact us if public name display prevents you from using online signup.",
+            "Your name is visible to website visitors in participant and cancellation lists. Your waiting-list position and confirmed or waiting-list status are also public. Birth month/day are not displayed publicly. Authorised administrators can access signup information to organise sessions and resolve requests. Contact us if public name display prevents you from using online signup.",
           ],
         },
         {
@@ -191,7 +191,7 @@ export const LEGAL_NO: LegalCopy = {
   updated: "Sist oppdatert",
   contact: "Kontakt He You Ma",
   registerNotice:
-    "Vi bruker navn, spillernivå og fødselsmåned/-dag til å administrere påmeldingen din. Navnet ditt vises offentlig i deltaker- og avmeldingslister, også når du står på venteliste. Fødselsopplysningene vises ikke offentlig. Les hvordan vi bruker og lagrer opplysningene før du melder deg på.",
+    "Vi bruker fornavn, etternavn, spillernivå og fødselsmåned/-dag til å administrere påmeldingen din. Navnet ditt vises offentlig i deltaker- og avmeldingslister, også når du står på venteliste. Fødselsopplysningene vises ikke offentlig. Les hvordan vi bruker og lagrer opplysningene før du melder deg på.",
   unregisterNotice:
     "Vi sammenligner fødselsmåned og -dag med påmeldingen for å kontrollere avmeldingen din. Når avmeldingen er gjennomført, slettes denne påmeldingen fra den aktive databasen.",
   readPrivacy: "Les personvernerklæringen",
@@ -213,7 +213,7 @@ export const LEGAL_NO: LegalCopy = {
           id: "signup-data",
           title: "Påmelding til trening",
           paragraphs: [
-            "Vi lagrer navn, valgt spillernivå, fødselsmåned og -dag, valgt økt, påmeldingstidspunkt og status som bekreftet eller på venteliste. Navn, spillernivå og fødselsmåned/-dag er påkrevd for påmelding på nett. Vi spør ikke om fødselsår. Fødselsopplysningene brukes til å skille påmeldinger fra hverandre og kontrollere avmeldinger; spillernivået hjelper oss med å organisere treningen.",
+            "Vi lagrer fornavn og etternavn som fullt navn, valgt spillernivå, fødselsmåned og -dag, valgt økt, påmeldingstidspunkt og status som bekreftet eller på venteliste. Fornavn, etternavn, spillernivå og fødselsmåned/-dag er påkrevd for påmelding på nett. Vi spør ikke om fødselsår. Fødselsopplysningene brukes til å skille påmeldinger fra hverandre og kontrollere avmeldinger; spillernivået hjelper oss med å organisere treningen.",
             "For økter kun for medlemmer må du bekrefte medlemskap. Nettstedet registrerer ikke medlemskap eller tar imot medlemsbetaling. Eldre avmeldingsforespørsler kan inneholde innsendt navn, melding og tidspunkt.",
           ],
         },
@@ -221,7 +221,7 @@ export const LEGAL_NO: LegalCopy = {
           id: "visibility",
           title: "Hva andre kan se",
           paragraphs: [
-            "Navnet ditt er synlig for besøkende i deltaker- og avmeldingslister. Navn på ventelisten vises også i avmeldingslisten. Fødselsmåned/-dag vises ikke offentlig. Autoriserte administratorer har tilgang til påmeldingsopplysninger for å organisere økter og håndtere forespørsler. Kontakt oss hvis offentlig visning av navnet hindrer deg i å melde deg på via nettstedet.",
+            "Navnet ditt er synlig for besøkende i deltaker- og avmeldingslister. Plassen din på ventelisten og status som bekreftet eller på venteliste er også offentlig. Fødselsmåned/-dag vises ikke offentlig. Autoriserte administratorer har tilgang til påmeldingsopplysninger for å organisere økter og håndtere forespørsler. Kontakt oss hvis offentlig visning av navnet hindrer deg i å melde deg på via nettstedet.",
           ],
         },
         {

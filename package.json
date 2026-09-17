@@ -9,7 +9,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p $PORT",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:registrations": "node --test scripts/registrations.test.mjs"
   },
   "dependencies": {
     "next": "^16.2.2",

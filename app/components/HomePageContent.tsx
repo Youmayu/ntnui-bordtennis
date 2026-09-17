@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BOARD_MEMBERS, type BoardMemberId } from "@/lib/board-members";
@@ -13,6 +12,10 @@ import {
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import DiscordInvitation from "@/app/components/DiscordInvitation";
+import SessionRoster from "@/app/components/SessionRoster";
+import { useSessionRegistrations } from "@/app/components/useSessionRegistrations";
+import { REGISTRATION_STATUS, type PublicRegistration } from "@/lib/registrations";
+import { getRegistrationCopy } from "@/lib/registration-content";
 
 type Session = {
   id: number;
@@ -30,15 +33,17 @@ const ROOM_GUIDE_PATH = "/room-guide";
 
 export default function HomePageContent({
   session,
-  registeredNames,
+  initialRegistrations,
   boardAttendanceAvailable,
 }: {
   session: Session | null;
-  registeredNames: string[];
+  initialRegistrations: PublicRegistration[];
   boardAttendanceAvailable: boolean;
 }) {
   const { locale, messages } = useSitePreferences();
-  const [showAllRegistrations, setShowAllRegistrations] = useState(false);
+  const roster = useSessionRegistrations(session?.id ?? null, initialRegistrations);
+  const confirmedCount = (roster.registrations ?? initialRegistrations)
+    .filter((entry) => entry.status === REGISTRATION_STATUS.CONFIRMED).length;
   const intlLocale = getIntlLocale(locale);
   const venueLabel = getVenueLabel(locale);
   const scheduleHref = localizePathname("/schedule", locale);
@@ -103,7 +108,7 @@ export default function HomePageContent({
   const isActive =
     new Date(session.starts_at).getTime() <= now &&
     new Date(session.ends_at).getTime() > now;
-  const spotsLeft = Math.max(0, session.capacity - registeredNames.length);
+  const spotsLeft = Math.max(0, session.capacity - confirmedCount);
   const attendingBoardMemberIds = new Set(session.attending_board_member_ids);
   const attendingBoardMembers = BOARD_MEMBERS.filter((member) =>
     attendingBoardMemberIds.has(member.id)
@@ -247,10 +252,10 @@ export default function HomePageContent({
               </div>
               <div className="app-stage-stat app-stage-stat-secondary">
                 <span className="app-stage-stat-value">
-                  {registeredNames.length}/{session.capacity}
+                  {confirmedCount}/{session.capacity}
                 </span>
                 <span className="app-stage-stat-label">
-                  {messages.home.registeredCount(registeredNames.length, session.capacity)}
+                  {messages.home.registeredCount(confirmedCount, session.capacity)}
                 </span>
               </div>
             </div>
@@ -258,7 +263,7 @@ export default function HomePageContent({
         </div>
       </section>
 
-      <section className="app-surface app-home-board overflow-hidden p-0">
+      <section id="registrations" className="app-surface app-home-board overflow-hidden p-0">
         <div className="app-home-board-grid">
           <div className="app-home-board-primary p-6 sm:p-8">
             <div className="flex flex-wrap items-end justify-between gap-4">
@@ -267,7 +272,7 @@ export default function HomePageContent({
                   {isActive ? messages.home.currentTitle : messages.home.nextTitle}
                 </div>
                 <h2 className="app-panel-title mt-3">
-                  {messages.home.registeredCount(registeredNames.length, session.capacity)}
+                  {getRegistrationCopy(locale).title}
                 </h2>
                 <p className="app-panel-body mt-2">{dateFormatter.format(new Date(session.starts_at))}</p>
               </div>
@@ -279,6 +284,13 @@ export default function HomePageContent({
                 )}
               </div>
             </div>
+
+            <SessionRoster
+              registrations={roster.registrations}
+              capacity={session.capacity}
+              error={roster.error}
+              onRefresh={roster.refresh}
+            />
 
             {boardAttendanceAvailable &&
               (attendingBoardMembers.length > 0 ? (
@@ -312,47 +324,6 @@ export default function HomePageContent({
                   </span>
                 </Link>
               ))}
-
-            {registeredNames.length === 0 ? (
-              <div className="mt-5">
-                <span className="text-sm text-[color:var(--text-soft)]">
-                  {messages.home.nobodyRegistered}
-                </span>
-              </div>
-            ) : showAllRegistrations ? (
-              <>
-                <div className="mt-6 pt-6">
-                  <div className="app-roster-grid">
-                    {registeredNames.map((name, index) => (
-                      <div key={`${name}-${index}`} className="app-roster-row">
-                        <span className="app-roster-index">{String(index + 1).padStart(2, "0")}</span>
-                        <span className="app-roster-name">{name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <button
-                    type="button"
-                    className="app-roster-toggle"
-                    onClick={() => setShowAllRegistrations(false)}
-                  >
-                    {messages.home.hideRegistrations}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="mt-6">
-                <button
-                  type="button"
-                  className="app-roster-toggle"
-                  onClick={() => setShowAllRegistrations(true)}
-                >
-                  {messages.home.showRegistrations(registeredNames.length)}
-                </button>
-              </div>
-            )}
 
             <div className="mt-8 hidden flex-wrap gap-3 sm:flex">
               <Link href={registerHref} className="app-button-success inline-flex">

@@ -8,6 +8,12 @@ export const REGISTRATION_STATUS = {
 export type RegistrationStatus =
   (typeof REGISTRATION_STATUS)[keyof typeof REGISTRATION_STATUS];
 
+export type PublicRegistration = {
+  id: number;
+  name: string;
+  status: RegistrationStatus;
+};
+
 type Queryable = Pick<PoolClient, "query">;
 
 type SessionStateRow = {

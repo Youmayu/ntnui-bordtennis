@@ -932,13 +932,101 @@ a {
   border-top: 1px solid var(--border-muted);
 }
 
+.app-session-roster {
+  margin-top: 1.5rem;
+}
+
+.app-roster-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.app-roster-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  color: var(--accent-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.app-roster-panels {
+  display: grid;
+  align-items: start;
+  gap: 1.25rem;
+}
+
+.app-roster-panel {
+  min-width: 0;
+  scroll-margin-top: 12rem;
+  padding: 1.25rem;
+  border: 1px solid var(--success-border);
+  border-top: 3px solid var(--success);
+  border-radius: 1rem;
+  background: var(--neutral-soft);
+}
+
+.app-roster-waitlist {
+  border-color: var(--accent-border);
+  border-top-color: var(--accent);
+}
+
+.app-roster-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: var(--text-strong);
+}
+
+.app-roster-help {
+  margin: 0.75rem 0 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.app-roster-empty {
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-muted);
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.app-roster-confirmed .app-roster-index {
+  border-color: var(--success-border);
+  background: var(--success-soft);
+  color: var(--success-ink);
+}
+
+@media (min-width: 768px) {
+  .app-roster-panels {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .app-roster-confirmed .app-roster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.25rem;
+  }
+}
+
 .app-roster-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 0.85rem;
   min-height: 3rem;
-  padding: 0.95rem 0;
+  padding: 0.75rem 0;
   border-bottom: 1px solid var(--border-muted);
 }
 
@@ -969,30 +1057,6 @@ a {
   font-weight: 600;
   line-height: 1.35;
   word-break: break-word;
-}
-
-.app-roster-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 2.4rem;
-  padding: 0.7rem 1rem;
-  border: 1px solid var(--accent-border);
-  border-radius: 0.85rem;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 58%),
-    var(--accent-soft);
-  color: var(--accent-strong);
-  font-size: 0.88rem;
-  font-weight: 700;
-  box-shadow: var(--surface-shadow-soft);
-}
-
-.app-roster-toggle:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent-border);
-  color: var(--accent-strong);
 }
 
 .app-board-attendance {
@@ -1666,18 +1730,6 @@ a {
     rgba(255, 255, 255, 0.03);
 }
 
-[data-theme="dark"] .app-roster-toggle {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 58%),
-    rgba(255, 131, 88, 0.1);
-}
-
-@media (min-width: 640px) {
-  .app-roster-toggle {
-    width: auto;
-  }
-}
-
 [data-theme="dark"] .app-faq-link:hover {
   background: rgba(255, 255, 255, 0.03);
 }
@@ -2136,15 +2188,26 @@ a {
     gap: 0.7rem;
   }
 
-  .app-home-board-grid {
-    grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  .app-home-board-secondary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    border-top: 1px solid var(--border-muted);
+  }
+
+  .app-home-board-secondary > .app-panel-eyebrow {
+    grid-column: 1 / -1;
+  }
+
+  .app-home-board-secondary .app-side-block {
+    margin: 0;
+    padding: 0;
+    border: 0;
   }
 
   .app-form-board-grid {
     grid-template-columns: minmax(0, 1.08fr) 320px;
   }
 
-  .app-home-board-secondary,
   .app-form-board-side {
     border-top: 0;
     border-left: 1px solid var(--border-muted);

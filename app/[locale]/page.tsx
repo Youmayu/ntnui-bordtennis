@@ -21,7 +21,7 @@ import {
   getLocalizedHomeStructuredData,
   serializeJsonLd,
 } from "@/lib/seo";
-import { REGISTRATION_STATUS } from "@/lib/registrations";
+import type { PublicRegistration } from "@/lib/registrations";
 
 export const dynamic = "force-dynamic";
 
@@ -114,7 +114,7 @@ export default async function LocalizedHomePage({
         />
         <HomePageContent
           session={null}
-          registeredNames={[]}
+          initialRegistrations={[]}
           boardAttendanceAvailable={boardAttendanceAvailable}
         />
       </>
@@ -122,12 +122,11 @@ export default async function LocalizedHomePage({
   }
 
   const regsRes = await pool.query(
-    `SELECT name
+    `SELECT id, name, status
      FROM registrations
      WHERE session_id = $1
-       AND status = $2
-     ORDER BY created_at ASC`,
-    [session.id, REGISTRATION_STATUS.CONFIRMED]
+     ORDER BY created_at ASC, id ASC`,
+    [session.id]
   );
 
   return (
@@ -139,9 +138,11 @@ export default async function LocalizedHomePage({
       <HomePageContent
         session={session}
         boardAttendanceAvailable={boardAttendanceAvailable}
-        registeredNames={(regsRes.rows as { name: string }[]).map((row) =>
-          normalizeSingleLineDisplay(row.name)
-        )}
+        initialRegistrations={(regsRes.rows as PublicRegistration[]).map((row) => ({
+          id: row.id,
+          name: normalizeSingleLineDisplay(row.name),
+          status: row.status,
+        }))}
       />
     </>
   );

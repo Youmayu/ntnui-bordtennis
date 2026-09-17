@@ -15,6 +15,11 @@ import {
   type Locale,
 } from "@/lib/site-content";
 import { getDaysInMonth } from "@/lib/birth-month-day";
+import { sanitizeRegistrationName } from "@/lib/input-safety";
+import { getRegistrationCopy } from "@/lib/registration-content";
+import { REGISTRATION_STATUS } from "@/lib/registrations";
+import SessionRoster from "@/app/components/SessionRoster";
+import { useSessionRegistrations } from "@/app/components/useSessionRegistrations";
 
 type Session = {
   id: number;
@@ -64,7 +69,8 @@ export default function RegisterPageContent() {
 
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [level, setLevel] = useState("Nybegynner");
   const [birthMonth, setBirthMonth] = useState<number | null>(null);
   const [birthDay, setBirthDay] = useState<number | null>(null);
@@ -72,7 +78,15 @@ export default function RegisterPageContent() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const selectedSession = sessions.find((session) => session.id === sessionId) ?? null;
+  const [rosterRevision, setRosterRevision] = useState(0);
+  const roster = useSessionRegistrations(sessionId, null, rosterRevision);
+  const session = sessions.find((session) => session.id === sessionId) ?? null;
+  const selectedSession = session && roster.registrations ? {
+    ...session,
+    confirmed_count: roster.registrations.filter((entry) => entry.status === REGISTRATION_STATUS.CONFIRMED).length,
+    waitlist_count: roster.registrations.filter((entry) => entry.status === REGISTRATION_STATUS.WAITLIST).length,
+  } : session;
+  const registrationCopy = getRegistrationCopy(locale);
   const accessCopy = getSessionAccessCopy(locale);
   const selectedSessionIsFull = selectedSession
     ? selectedSession.confirmed_count >= selectedSession.capacity
@@ -100,13 +114,13 @@ export default function RegisterPageContent() {
 
   const disabled = useMemo(
     () =>
-      name.trim().length < 2 ||
+      !sanitizeRegistrationName(firstName, lastName) ||
       !sessionId ||
       !birthMonth ||
       !birthDay ||
       !turnstileToken ||
       Boolean(selectedSession?.members_only && !memberConfirmed),
-    [birthDay, birthMonth, memberConfirmed, name, selectedSession?.members_only, sessionId, turnstileToken]
+    [birthDay, birthMonth, memberConfirmed, firstName, lastName, selectedSession?.members_only, sessionId, turnstileToken]
   );
 
   async function loadSessions(preferredSessionId?: number | null) {
@@ -139,6 +153,11 @@ export default function RegisterPageContent() {
     setMessage(null);
     setError(null);
 
+    if (!sanitizeRegistrationName(firstName, lastName)) {
+      setError(registrationCopy.nameError);
+      return;
+    }
+
     const fd = new FormData(e.currentTarget);
     const submittedToken = String(fd.get("cf-turnstile-response") ?? "");
 
@@ -164,7 +183,8 @@ export default function RegisterPageContent() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sessionId,
-        name,
+        firstName,
+        lastName,
         level,
         birthMonth,
         birthDay,
@@ -187,11 +207,13 @@ export default function RegisterPageContent() {
         ? messages.register.successWaitlist
         : messages.register.success
     );
-    setName("");
+    setFirstName("");
+    setLastName("");
     setLevel("Nybegynner");
     setBirthMonth(null);
     setBirthDay(null);
     setMemberConfirmed(false);
+    setRosterRevision((value) => value + 1);
     await loadSessions(sessionId);
   }
 
@@ -216,6 +238,11 @@ export default function RegisterPageContent() {
           {messages.register.title}
         </h1>
         <p className="text-[color:var(--text-muted)]">{messages.register.body}</p>
+        {selectedSession && (
+          <a href="#session-registrations" className="app-roster-refresh">
+            {registrationCopy.title} ↓
+          </a>
+        )}
       </div>
 
       <div className="app-surface app-form-board overflow-hidden p-0">
@@ -229,6 +256,8 @@ export default function RegisterPageContent() {
                 onChange={(e) => {
                   setSessionId(Number(e.target.value));
                   setMemberConfirmed(false);
+                  setMessage(null);
+                  setError(null);
                 }}
                 className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
               >
@@ -316,18 +345,40 @@ export default function RegisterPageContent() {
             )}
 
             <div className="space-y-2">
-              <label htmlFor="register-name" className="text-sm font-medium">{messages.register.nameLabel}</label>
-              <input
-                id="register-name"
-                autoComplete="name"
-                aria-describedby="register-name-help"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={messages.register.namePlaceholder}
-                maxLength={80}
-                className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
-              />
-              <div id="register-name-help" className="text-xs text-[color:var(--text-soft)]">{messages.register.nameHelp}</div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label htmlFor="register-first-name" className="text-sm font-medium">{registrationCopy.firstName}</label>
+                  <input
+                    id="register-first-name"
+                    name="firstName"
+                    autoComplete="given-name"
+                    aria-describedby="register-name-help"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    maxLength={78}
+                    className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="register-last-name" className="text-sm font-medium">{registrationCopy.lastName}</label>
+                  <input
+                    id="register-last-name"
+                    name="lastName"
+                    autoComplete="family-name"
+                    aria-describedby="register-name-help"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    maxLength={78}
+                    className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
+                  />
+                </div>
+              </div>
+              <div id="register-name-help" className="text-xs text-[color:var(--text-soft)]">{registrationCopy.nameHelp}</div>
+              {firstName.trim() && lastName.trim() && !sanitizeRegistrationName(firstName, lastName) && (
+                <p role="alert" className="text-sm text-[color:var(--danger-ink)]">{registrationCopy.nameError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -450,6 +501,21 @@ export default function RegisterPageContent() {
           </aside>
         </div>
       </div>
+      {selectedSession && (
+        <section id="session-registrations" className="app-surface scroll-mt-48 p-6 sm:p-8" aria-labelledby="session-registrations-title">
+          <h2 id="session-registrations-title" className="app-panel-title">{registrationCopy.title}</h2>
+          <p className="app-panel-body mt-2">
+            {sessionDateFormatter.format(new Date(selectedSession.starts_at))}
+            {" · "}{sessionTimeFormatter.format(new Date(selectedSession.starts_at))}
+          </p>
+          <SessionRoster
+            registrations={roster.registrations}
+            capacity={selectedSession.capacity}
+            error={roster.error}
+            onRefresh={roster.refresh}
+          />
+        </section>
+      )}
     </div>
   );
 }

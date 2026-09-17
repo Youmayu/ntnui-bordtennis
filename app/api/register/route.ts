@@ -2,7 +2,7 @@ import type { PoolClient } from "pg";
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { isValidBirthMonthDay } from "@/lib/birth-month-day";
-import { sanitizeLevel, sanitizeMemberName } from "@/lib/input-safety";
+import { sanitizeLevel, sanitizeRegistrationName } from "@/lib/input-safety";
 import {
   fillConfirmedSlotsFromWaitlist,
   getConfirmedRegistrationCount,
@@ -17,7 +17,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       sessionId,
-      name,
+      firstName,
+      lastName,
       level,
       birthMonth,
       birthDay,
@@ -25,14 +26,14 @@ export async function POST(req: Request) {
       turnstileToken,
       website,
     } = body ?? {};
-    const safeName = typeof name === "string" ? sanitizeMemberName(name) : null;
+    const safeName = sanitizeRegistrationName(firstName, lastName);
     const safeLevel = typeof level === "string" ? sanitizeLevel(level) : null;
 
     if (!sessionId || typeof sessionId !== "number") {
       return NextResponse.json({ error: "Ugyldig økt." }, { status: 400 });
     }
     if (!safeName) {
-      return NextResponse.json({ error: "Ugyldig navn." }, { status: 400 });
+      return NextResponse.json({ error: "Oppgi både fornavn og etternavn (maks 80 tegn til sammen)." }, { status: 400 });
     }
     if (!safeLevel) {
       return NextResponse.json({ error: "Ugyldig nivå." }, { status: 400 });

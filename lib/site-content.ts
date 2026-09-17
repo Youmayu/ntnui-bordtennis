@@ -226,8 +226,6 @@ type Messages = {
     levelBody: string;
     bringLabel: string;
     bringBody: string;
-    showRegistrations: (count: number) => string;
-    hideRegistrations: string;
     boardMembersAttending: string;
     noBoardMembersShort: string;
     noBoardMembersWarning: string;
@@ -250,9 +248,6 @@ type Messages = {
     title: string;
     body: string;
     sessionLabel: string;
-    nameLabel: string;
-    namePlaceholder: string;
-    nameHelp: string;
     levelLabel: string;
     birthMonthLabel: string;
     birthDayLabel: string;
@@ -354,8 +349,6 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Alle nivåer er velkomne, fra nybegynner til erfaren.",
       bringLabel: "Ta med",
       bringBody: "Innesko, treningstøy og gjerne egen racket hvis du har.",
-      showRegistrations: (count) => `Vis alle ${count} påmeldte`,
-      hideRegistrations: "Skjul listen",
       boardMembersAttending: "Styremedlemmer som kommer",
       noBoardMembersShort: "Ingen fra styret",
       noBoardMembersWarning:
@@ -377,11 +370,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     register: {
       badge: "Påmelding",
       title: "Påmelding til trening",
-      body: "Velg økt og fyll inn navn, fødselsmåned og dag.",
+      body: "Velg økt og fyll inn fornavn, etternavn, fødselsmåned og dag.",
       sessionLabel: "Økt",
-      nameLabel: "Navn",
-      namePlaceholder: "Skriv navnet ditt",
-      nameHelp: "Minimum 2 tegn.",
       levelLabel: "Nivå",
       birthMonthLabel: "Fødselsmåned",
       birthDayLabel: "Fødselsdag",
@@ -485,8 +475,6 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "All levels are welcome, from beginners to experienced players.",
       bringLabel: "Bring",
       bringBody: "Indoor shoes, sportswear, and a racket if you have one.",
-      showRegistrations: (count) => `Show all ${count} registered`,
-      hideRegistrations: "Hide list",
       boardMembersAttending: "Board members attending",
       noBoardMembersShort: "No board members",
       noBoardMembersWarning:
@@ -508,11 +496,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     register: {
       badge: "Register",
       title: "Register for practice",
-      body: "Choose a session and enter your name, birth month, and birth day.",
+      body: "Choose a session and enter your first name, surname, birth month, and birth day.",
       sessionLabel: "Session",
-      nameLabel: "Name",
-      namePlaceholder: "Enter your name",
-      nameHelp: "Minimum 2 characters.",
       levelLabel: "Level",
       birthMonthLabel: "Birth month",
       birthDayLabel: "Birth day",
@@ -616,8 +601,6 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Alle niveauer er velkomne, fra begynder til erfaren.",
       bringLabel: "Medbring",
       bringBody: "Indendørssko, træningstøj og et bat, hvis du har et.",
-      showRegistrations: (count) => `Vis alle ${count} tilmeldte`,
-      hideRegistrations: "Skjul listen",
       boardMembersAttending: "Deltagende bestyrelsesmedlemmer",
       noBoardMembersShort: "Ingen fra bestyrelsen",
       noBoardMembersWarning:
@@ -639,11 +622,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     register: {
       badge: "Tilmelding",
       title: "Tilmelding til træning",
-      body: "Vælg træning, og udfyld navn, fødselsmåned og fødselsdag.",
+      body: "Vælg træning, og udfyld fornavn, efternavn, fødselsmåned og fødselsdag.",
       sessionLabel: "Træning",
-      nameLabel: "Navn",
-      namePlaceholder: "Skriv dit navn",
-      nameHelp: "Mindst 2 tegn.",
       levelLabel: "Niveau",
       birthMonthLabel: "Fødselsmåned",
       birthDayLabel: "Fødselsdag",
@@ -747,8 +727,6 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Alla nivåer är välkomna, från nybörjare till erfarna spelare.",
       bringLabel: "Ta med",
       bringBody: "Inneskor, träningskläder och racket om du har.",
-      showRegistrations: (count) => `Visa alla ${count} anmälda`,
-      hideRegistrations: "Dölj listan",
       boardMembersAttending: "Deltagande styrelsemedlemmar",
       noBoardMembersShort: "Ingen från styrelsen",
       noBoardMembersWarning:
@@ -770,11 +748,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     register: {
       badge: "Anmälan",
       title: "Anmälan till träning",
-      body: "Välj pass och fyll i namn, födelsemånad och födelsedag.",
+      body: "Välj pass och fyll i förnamn, efternamn, födelsemånad och födelsedag.",
       sessionLabel: "Pass",
-      nameLabel: "Namn",
-      namePlaceholder: "Skriv ditt namn",
-      nameHelp: "Minst 2 tecken.",
       levelLabel: "Nivå",
       birthMonthLabel: "Födelsemånad",
       birthDayLabel: "Födelsedag",
@@ -878,8 +853,6 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "欢迎所有水平的球员参加，从初学者到有经验者都可以。",
       bringLabel: "请携带",
       bringBody: "室内运动鞋、运动服，以及如果有的话请带球拍。",
-      showRegistrations: (count) => `显示全部 ${count} 位报名者`,
-      hideRegistrations: "隐藏名单",
       boardMembersAttending: "出席的理事会成员",
       noBoardMembersShort: "无理事会成员参加",
       noBoardMembersWarning: "没有理事会成员参加，点击此处查看场地布置与清洁说明。",
@@ -900,11 +873,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     register: {
       badge: "报名",
       title: "报名训练",
-      body: "选择训练，并填写姓名、出生月份和出生日期。",
+      body: "选择训练，并分别填写名、姓、出生月份和出生日期。",
       sessionLabel: "训练",
-      nameLabel: "姓名",
-      namePlaceholder: "输入你的姓名",
-      nameHelp: "至少 2 个字符。",
       levelLabel: "水平",
       birthMonthLabel: "出生月份",
       birthDayLabel: "出生日期",
@@ -1008,8 +978,6 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Tous les niveaux sont les bienvenus, du débutant au joueur confirmé.",
       bringLabel: "À apporter",
       bringBody: "Chaussures d’intérieur, tenue de sport et une raquette si vous en avez une.",
-      showRegistrations: (count) => `Afficher les ${count} inscrits`,
-      hideRegistrations: "Masquer la liste",
       boardMembersAttending: "Membres du bureau présents",
       noBoardMembersShort: "Aucun membre du bureau",
       noBoardMembersWarning:
@@ -1031,11 +999,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     register: {
       badge: "Inscription",
       title: "S’inscrire à l’entraînement",
-      body: "Choisissez une séance et indiquez votre nom, votre mois et votre jour de naissance.",
+      body: "Choisissez une séance et indiquez votre prénom, votre nom de famille, votre mois et votre jour de naissance.",
       sessionLabel: "Séance",
-      nameLabel: "Nom",
-      namePlaceholder: "Saisissez votre nom",
-      nameHelp: "Minimum 2 caractères.",
       levelLabel: "Niveau",
       birthMonthLabel: "Mois de naissance",
       birthDayLabel: "Jour de naissance",
@@ -1139,8 +1104,6 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Todos los niveles son bienvenidos, desde principiantes hasta jugadores experimentados.",
       bringLabel: "Trae",
       bringBody: "Zapatillas de interior, ropa deportiva y una pala si tienes una.",
-      showRegistrations: (count) => `Mostrar los ${count} inscritos`,
-      hideRegistrations: "Ocultar lista",
       boardMembersAttending: "Miembros de la junta que asistirán",
       noBoardMembersShort: "Ningún miembro de la junta",
       noBoardMembersWarning:
@@ -1162,11 +1125,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     register: {
       badge: "Inscripción",
       title: "Inscribirse al entrenamiento",
-      body: "Elige un entrenamiento e indica tu nombre, mes y día de nacimiento.",
+      body: "Elige un entrenamiento e indica tu nombre, apellidos, mes y día de nacimiento.",
       sessionLabel: "Entrenamiento",
-      nameLabel: "Nombre",
-      namePlaceholder: "Escribe tu nombre",
-      nameHelp: "Mínimo 2 caracteres.",
       levelLabel: "Nivel",
       birthMonthLabel: "Mes de nacimiento",
       birthDayLabel: "Día de nacimiento",
@@ -1270,8 +1230,6 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       levelBody: "Alle Niveaus sind willkommen, vom Anfänger bis zum erfahrenen Spieler.",
       bringLabel: "Mitbringen",
       bringBody: "Hallenschuhe, Sportkleidung und gern einen eigenen Schläger, falls vorhanden.",
-      showRegistrations: (count) => `Alle ${count} Anmeldungen anzeigen`,
-      hideRegistrations: "Liste ausblenden",
       boardMembersAttending: "Teilnehmende Vorstandsmitglieder",
       noBoardMembersShort: "Niemand vom Vorstand",
       noBoardMembersWarning:
@@ -1293,11 +1251,8 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     register: {
       badge: "Anmeldung",
       title: "Für das Training anmelden",
-      body: "Wähle eine Einheit und gib deinen Namen, Geburtsmonat und Geburtstag ein.",
+      body: "Wähle eine Einheit und gib deinen Vornamen, Nachnamen, Geburtsmonat und Geburtstag ein.",
       sessionLabel: "Einheit",
-      nameLabel: "Name",
-      namePlaceholder: "Deinen Namen eingeben",
-      nameHelp: "Mindestens 2 Zeichen.",
       levelLabel: "Niveau",
       birthMonthLabel: "Geburtsmonat",
       birthDayLabel: "Geburtstag",

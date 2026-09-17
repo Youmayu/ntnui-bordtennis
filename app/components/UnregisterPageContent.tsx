@@ -5,6 +5,8 @@ import TurnstileWidget from "@/app/components/TurnstileWidget";
 import FormPrivacyNotice from "@/app/components/FormPrivacyNotice";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import { getDaysInMonth } from "@/lib/birth-month-day";
+import { getRegistrationCopy } from "@/lib/registration-content";
+import type { PublicRegistration as Registration } from "@/lib/registrations";
 import {
   getIntlLocale,
   type Locale,
@@ -16,11 +18,6 @@ type Session = {
   ends_at: string;
   location: string;
   capacity: number;
-};
-
-type Registration = {
-  id: number;
-  name: string;
 };
 
 function getMonthOptions(locale: Locale) {
@@ -188,7 +185,9 @@ export default function UnregisterPageContent() {
   }
 
   function formatRegistrationLabel(registration: Registration) {
-    return messages.unregister.registrationLabel(registration.name);
+    const copy = getRegistrationCopy(locale);
+    const status = registration.status === "waitlist" ? copy.waitlist : copy.confirmed;
+    return `${messages.unregister.registrationLabel(registration.name)} — ${status}`;
   }
 
   return (

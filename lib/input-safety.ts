@@ -31,12 +31,12 @@ export function normalizeMultilineDisplay(value: string) {
     .trim();
 }
 
-export function sanitizeMemberName(value: string) {
+function sanitizeName(value: string, minimumLength: number) {
   const normalized = normalizeSingleLineDisplay(value)
     .replace(DASH_VARIANTS, "-")
     .replace(APOSTROPHE_VARIANTS, "'");
 
-  if (normalized.length < 2 || normalized.length > 80) {
+  if (normalized.length < minimumLength || normalized.length > 80) {
     return null;
   }
 
@@ -49,6 +49,21 @@ export function sanitizeMemberName(value: string) {
   }
 
   return normalized;
+}
+
+export function sanitizeMemberName(value: string) {
+  return sanitizeName(value, 2);
+}
+
+export function sanitizeRegistrationName(firstName: unknown, lastName: unknown) {
+  if (typeof firstName !== "string" || typeof lastName !== "string") return null;
+
+  const first = sanitizeName(firstName, 1);
+  const last = sanitizeName(lastName, 1);
+  if (!first || !last) return null;
+
+  // Preserve the existing full-name storage and its 80-character limit.
+  return sanitizeMemberName(`${first} ${last}`);
 }
 
 export function sanitizeLevel(value: string) {
