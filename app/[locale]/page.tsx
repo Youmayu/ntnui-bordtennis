@@ -8,7 +8,6 @@ import {
   hasBoardAttendanceColumn,
 } from "@/lib/board-attendance";
 import { normalizeBoardMemberIds, type BoardMemberId } from "@/lib/board-members";
-import { normalizeSingleLineDisplay } from "@/lib/input-safety";
 import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import {
   getMessages,
@@ -21,7 +20,7 @@ import {
   getLocalizedHomeStructuredData,
   serializeJsonLd,
 } from "@/lib/seo";
-import type { PublicRegistration } from "@/lib/registrations";
+import { getSessionRoster } from "@/lib/session-roster";
 
 export const dynamic = "force-dynamic";
 
@@ -121,13 +120,7 @@ export default async function LocalizedHomePage({
     );
   }
 
-  const regsRes = await pool.query(
-    `SELECT id, name, status
-     FROM registrations
-     WHERE session_id = $1
-     ORDER BY created_at ASC, id ASC`,
-    [session.id]
-  );
+  const roster = await getSessionRoster(session.id);
 
   return (
     <>
@@ -138,11 +131,8 @@ export default async function LocalizedHomePage({
       <HomePageContent
         session={session}
         boardAttendanceAvailable={boardAttendanceAvailable}
-        initialRegistrations={(regsRes.rows as PublicRegistration[]).map((row) => ({
-          id: row.id,
-          name: normalizeSingleLineDisplay(row.name),
-          status: row.status,
-        }))}
+        initialRegistrations={roster.registrations}
+        initialAvailability={roster.availability}
       />
     </>
   );

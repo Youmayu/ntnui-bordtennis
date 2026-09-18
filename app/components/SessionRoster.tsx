@@ -5,17 +5,22 @@ import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import { getRegistrationCopy } from "@/lib/registration-content";
 import { getIntlLocale } from "@/lib/site-content";
 import { REGISTRATION_STATUS, type PublicRegistration } from "@/lib/registrations";
+import type { SessionAvailability } from "@/lib/tournament-reservations";
+import { getTournamentCopy } from "@/lib/tournament-content";
+import TournamentReservationNotice from "@/app/components/TournamentReservationNotice";
 
 export default function SessionRoster({
   registrations,
   capacity,
   error,
   updatedAt,
+  availability = null,
 }: {
   registrations: PublicRegistration[] | null;
   capacity: number;
   error: boolean;
   updatedAt: string | null;
+  availability?: SessionAvailability | null;
 }) {
   const { locale, messages } = useSitePreferences();
   const copy = getRegistrationCopy(locale);
@@ -23,9 +28,12 @@ export default function SessionRoster({
   const confirmed = registrations?.filter((entry) => entry.status === REGISTRATION_STATUS.CONFIRMED) ?? [];
   const waitlist = registrations?.filter((entry) => entry.status === REGISTRATION_STATUS.WAITLIST) ?? [];
   const isFull = confirmed.length >= capacity;
+  const tournamentCopy = getTournamentCopy(locale);
+  const reservedCount = availability?.reserved_count ?? 0;
 
   return (
     <div className="app-session-roster">
+      <TournamentReservationNotice availability={availability} />
       {updatedAt && (
         <p className="mb-4 text-xs text-[color:var(--text-soft)]">
           {copy.lastUpdated}{" "}
@@ -65,14 +73,22 @@ export default function SessionRoster({
                 </span>
               </div>
               <p className="app-roster-help">{group.help}</p>
-              {group.entries.length === 0 ? (
+              {group.entries.length === 0 && !(group.key === "confirmed" && reservedCount > 0) ? (
                 <p className="app-roster-empty">{group.empty}</p>
               ) : (
                 <ol className="app-roster-grid" role="list">
                   {group.entries.map((registration, index) => (
-                    <li key={registration.id} className="app-roster-row">
+                    <li key={registration.id} className={`app-roster-row${registration.is_tournament ? " app-roster-tournament" : ""}`}>
                       <span className="app-roster-index" aria-hidden="true">{index + 1}</span>
-                      <span className="app-roster-name">{registration.name}</span>
+                      <span className="app-roster-name">{registration.name}
+                        {registration.is_tournament && <span className="app-roster-team-label">{tournamentCopy.team}</span>}
+                      </span>
+                    </li>
+                  ))}
+                  {group.key === "confirmed" && Array.from({ length: reservedCount }, (_, index) => (
+                    <li key={`reserved-${index}`} className="app-roster-row app-roster-tournament app-roster-reserved">
+                      <span className="app-roster-index" aria-hidden="true">{confirmed.length + index + 1}</span>
+                      <span className="app-roster-name">{tournamentCopy.reserved}</span>
                     </li>
                   ))}
                 </ol>

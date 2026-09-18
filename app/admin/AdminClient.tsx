@@ -7,7 +7,7 @@ type RegistrationRow = {
   id: number;
   session_id: number;
   name: string;
-  level: string;
+  level: string | null;
   status: string;
   created_at: string;
 };
@@ -167,9 +167,10 @@ export default function AdminClient({
                   <select
                     form={`update-${registration.id}`}
                     name={`level-${registration.id}`}
-                    defaultValue={registration.level}
+                    defaultValue={registration.level ?? ""}
                     className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                   >
+                    {registration.level === null && <option value="">Ikke oppgitt (turneringslaget)</option>}
                     <option>Nybegynner</option>
                     <option>Viderekommen</option>
                     <option>Erfaren</option>

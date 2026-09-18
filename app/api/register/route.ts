@@ -5,7 +5,6 @@ import { isValidBirthMonthDay } from "@/lib/birth-month-day";
 import { sanitizeLevel, sanitizeRegistrationName } from "@/lib/input-safety";
 import {
   fillConfirmedSlotsFromWaitlist,
-  getConfirmedRegistrationCount,
   REGISTRATION_STATUS,
 } from "@/lib/registrations";
 import { getSessionAccessSchema } from "@/lib/session-access";
@@ -29,7 +28,7 @@ export async function POST(req: Request) {
     const safeName = sanitizeRegistrationName(firstName, lastName);
     const safeLevel = typeof level === "string" ? sanitizeLevel(level) : null;
 
-    if (!sessionId || typeof sessionId !== "number") {
+    if (!Number.isSafeInteger(sessionId) || sessionId <= 0) {
       return NextResponse.json({ error: "Ugyldig økt." }, { status: 400 });
     }
     if (!safeName) {
@@ -82,7 +81,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Økten finnes ikke." }, { status: 404 });
     }
 
-    const confirmedCount = await getConfirmedRegistrationCount(client, sessionId);
+    const duplicate = await client.query(
+      `SELECT id FROM registrations WHERE session_id = $1
+       AND tournament_player_id IS NOT NULL AND lower(name) = lower($2)`,
+      [sessionId, safeName]
+    );
+    if (duplicate.rowCount) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Du er allerede påmeldt denne økten." }, { status: 409 });
+    }
     const accessSchema = await getSessionAccessSchema(client);
     let membersOnly = true;
 
@@ -106,7 +113,7 @@ export async function POST(req: Request) {
     }
 
     const registrationStatus =
-      confirmedCount < fillResult.capacity
+      fillResult.availableSpots > 0
         ? REGISTRATION_STATUS.CONFIRMED
         : REGISTRATION_STATUS.WAITLIST;
 

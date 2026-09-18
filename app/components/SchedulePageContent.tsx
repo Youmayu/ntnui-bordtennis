@@ -4,19 +4,13 @@ import { getIntlLocale, getSessionAccessLabel } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import { getRegistrationCopy } from "@/lib/registration-content";
+import type { UpcomingSession } from "@/lib/sessions";
+import { useUpcomingSessions } from "@/app/components/useUpcomingSessions";
+import TournamentReservationNotice from "@/app/components/TournamentReservationNotice";
+import { getTournamentCopy } from "@/lib/tournament-content";
 
-type Session = {
-  id: number;
-  starts_at: string;
-  ends_at: string;
-  location: string;
-  capacity: number;
-  members_only: boolean;
-  registered_count: number;
-  current_time: string;
-};
-
-export default function SchedulePageContent({ sessions }: { sessions: Session[] }) {
+export default function SchedulePageContent({ sessions: initialSessions }: { sessions: UpcomingSession[] }) {
+  const { sessions, error } = useUpcomingSessions(initialSessions);
   const { locale, messages } = useSitePreferences();
   const intlLocale = getIntlLocale(locale);
 
@@ -57,6 +51,7 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
       </section>
 
       <section className="space-y-4">
+        {error && <p role="alert" className="app-alert-error">{getRegistrationCopy(locale).loadError}</p>}
         <div className="app-panel-eyebrow">{messages.schedule.tableTitle}</div>
 
         <div className="app-surface app-schedule-board overflow-hidden p-0">
@@ -107,18 +102,19 @@ export default function SchedulePageContent({ sessions }: { sessions: Session[] 
                             </span>
                             <span
                               className={
-                                session.registered_count >= session.capacity
+                                session.available_spots === 0
                                   ? "app-badge app-capacity-full"
                                   : "app-badge app-badge-success"
                               }
                             >
-                              {session.registered_count}/{session.capacity}
-                              {session.registered_count >= session.capacity && ` · ${getRegistrationCopy(locale).fullTitle}`}
+                              {session.confirmed_count}/{session.capacity}
+                              {session.available_spots === 0 && ` · ${session.reserved_count > 0 ? getTournamentCopy(locale).publicFull : getRegistrationCopy(locale).fullTitle}`}
                             </span>
                           </div>
                         </div>
 
                         <div className="mt-4">
+                          <TournamentReservationNotice availability={session} />
                           <VenueLink
                             locale={locale}
                             location={session.location}

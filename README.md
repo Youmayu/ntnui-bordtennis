@@ -98,6 +98,7 @@ Root-level public routes redirect to a saved language when preference cookies ar
 | `/no/cookies` | Cookie details and preference controls |
 | `/no/website-info` | Website use, contact and accessibility feedback |
 | `/admin` | Session, announcement, and registration management |
+| `/tournament` or `/en/tournament` | Unlisted tournament team signup (name dropdown and CAPTCHA) |
 
 ## Local setup
 
@@ -164,6 +165,13 @@ heroku run -a <your-app-name> -- node scripts/init-db.js
 ```
 
 ## Operational notes
+
+- Run `node scripts/init-db.js` against the target database **before deploying** the tournament reservation update. It adds the optional tournament player ID, a per-session unique index, and allows team registrations without a skill level or birth details. Existing registrations remain intact.
+- Each session holds up to five spots for tournament players until 00:00 Europe/Oslo two calendar days before its local training date (Wednesday → Monday 00:00). Existing confirmed players are never displaced. For capacities below five, the reservation is capped at capacity.
+- Unclaimed reserved spots and team registrations appear purple. Only unclaimed reservations expire; confirmed team bookings remain confirmed.
+- Release is calculated from the database clock. Session/roster reads and registration changes reconcile the waitlist under a session lock, so no scheduler is needed. Open pages refresh every 30 seconds and on focus; a new signup always promotes eligible waiting players first.
+- Share `/tournament` directly with the team. It is absent from navigation and the sitemap, and localized pages carry `noindex, nofollow`. It is an unlisted link, not authentication: anyone with the link can choose a listed name and pass CAPTCHA.
+- Edit display names in `lib/tournament-team.ts` when full names arrive, keeping player IDs stable. Repeated team signup reuses the same booking. Players without birth details can ask the board to cancel; admins use the existing registration deletion action.
 
 - Before publishing the privacy notices, resolve the controller, retention, provider and transfer details in [the privacy publication review](docs/privacy-review.md).
 - Session capacity counts confirmed registrations only.

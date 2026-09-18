@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start -p $PORT",
     "lint": "eslint",
-    "test:registrations": "node --test scripts/registrations.test.mjs"
+    "test:registrations": "node --test scripts/registrations.test.mjs scripts/tournament.test.mjs"
   },
   "dependencies": {
     "next": "^16.2.2",
@@ -19,6 +19,7 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.16.0",

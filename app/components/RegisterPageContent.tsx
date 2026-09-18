@@ -20,8 +20,11 @@ import { getRegistrationCopy } from "@/lib/registration-content";
 import { REGISTRATION_STATUS } from "@/lib/registrations";
 import SessionRoster from "@/app/components/SessionRoster";
 import { useSessionRegistrations } from "@/app/components/useSessionRegistrations";
+import type { SessionAvailability } from "@/lib/tournament-reservations";
+import { getTournamentCopy } from "@/lib/tournament-content";
+import TournamentReservationNotice from "@/app/components/TournamentReservationNotice";
 
-type Session = {
+type Session = SessionAvailability & {
   id: number;
   starts_at: string;
   ends_at: string;
@@ -88,9 +91,12 @@ export default function RegisterPageContent() {
   } : session;
   const registrationCopy = getRegistrationCopy(locale);
   const accessCopy = getSessionAccessCopy(locale);
+  const availability = roster.availability ?? selectedSession;
+  const reservedCount = availability?.reserved_count ?? 0;
   const selectedSessionIsFull = selectedSession
-    ? selectedSession.confirmed_count >= selectedSession.capacity
+    ? selectedSession.confirmed_count + reservedCount >= selectedSession.capacity
     : false;
+  const fullTitle = reservedCount > 0 ? getTournamentCopy(locale).publicFull : registrationCopy.fullTitle;
 
   const dayOptions = useMemo(
     () =>
@@ -298,7 +304,7 @@ export default function RegisterPageContent() {
               <div id="register-full-notice" className="app-full-notice" role="status">
                 <span className="app-full-notice-icon" aria-hidden="true">!</span>
                 <div className="min-w-0">
-                  <h2 className="app-full-notice-title">{registrationCopy.fullTitle}</h2>
+                  <h2 className="app-full-notice-title">{fullTitle}</h2>
                   <p className="mt-2 text-sm leading-6">{registrationCopy.waitlistSignup}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span className="app-badge app-capacity-full">
@@ -311,6 +317,8 @@ export default function RegisterPageContent() {
                 </div>
               </div>
             )}
+
+            <TournamentReservationNotice availability={availability} />
 
             {selectedSession && (
               <div className="rounded-2xl border border-[color:var(--border-muted)] bg-[color:var(--surface-muted)] p-4">
@@ -503,7 +511,7 @@ export default function RegisterPageContent() {
                   </span>
                   <span className={`app-badge ${selectedSessionIsFull ? "app-capacity-full" : "app-badge-success"}`}>
                     {selectedSession.confirmed_count}/{selectedSession.capacity}
-                    {selectedSessionIsFull && ` · ${registrationCopy.fullTitle}`}
+                    {selectedSessionIsFull && ` · ${fullTitle}`}
                   </span>
                   {selectedSession.waitlist_count > 0 && (
                     <span className="app-badge app-badge-accent">
@@ -536,6 +544,7 @@ export default function RegisterPageContent() {
             capacity={selectedSession.capacity}
             error={roster.error}
             updatedAt={roster.updatedAt}
+            availability={availability}
           />
         </section>
       )}

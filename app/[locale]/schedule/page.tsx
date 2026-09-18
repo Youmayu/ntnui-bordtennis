@@ -1,25 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
-import { pool } from "@/lib/db";
 import SchedulePageContent from "@/app/components/SchedulePageContent";
 import { getMessages, getVenueLabel, isLocale, type Locale } from "@/lib/site-content";
-import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import { createPageMetadata } from "@/lib/seo";
-import { REGISTRATION_STATUS } from "@/lib/registrations";
+import { getUpcomingSessions } from "@/lib/sessions";
 
 export const dynamic = "force-dynamic";
-
-type SessionRow = {
-  id: number;
-  starts_at: string;
-  ends_at: string;
-  location: string;
-  capacity: number;
-  members_only: boolean;
-  registered_count: number;
-  current_time: string;
-};
 
 function getMetadata(locale: Locale): Metadata {
   const messages = getMessages(locale);
@@ -58,31 +44,5 @@ export default async function LocalizedSchedulePage({
     notFound();
   }
 
-  await ensureAutoScheduledSessions().catch(() => {});
-  const accessSchema = await getSessionAccessSchema(pool);
-  const res = await pool.query(
-    `SELECT
-       s.id,
-       s.starts_at,
-       s.ends_at,
-       s.location,
-       s.capacity,
-       ${getMembersOnlySelectSql(accessSchema.hasSessionMembersOnly, "s")} AS members_only,
-       COALESCE(reg_counts.registered_count, 0) AS registered_count,
-       NOW() AS current_time
-     FROM sessions s
-     LEFT JOIN (
-       SELECT session_id, COUNT(*)::int AS registered_count
-       FROM registrations
-       WHERE status = $1
-       GROUP BY session_id
-     ) reg_counts
-       ON reg_counts.session_id = s.id
-     WHERE s.ends_at > NOW()
-     ORDER BY s.starts_at ASC
-     LIMIT 12`,
-    [REGISTRATION_STATUS.CONFIRMED]
-  );
-
-  return <SchedulePageContent sessions={res.rows as SessionRow[]} />;
+  return <SchedulePageContent sessions={await getUpcomingSessions()} />;
 }

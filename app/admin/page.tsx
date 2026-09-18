@@ -45,7 +45,7 @@ type RegRow = {
   id: number;
   session_id: number;
   name: string;
-  level: string;
+  level: string | null;
   status: RegistrationStatus;
   created_at: string;
 };
@@ -472,7 +472,7 @@ export default async function AdminPage() {
   const regs = (regsRes.rows as RegRow[]).map((registration) => ({
     ...registration,
     name: normalizeSingleLineDisplay(registration.name),
-    level: sanitizeLevel(registration.level) ?? "Nybegynner",
+    level: registration.level === null ? null : sanitizeLevel(registration.level) ?? "Nybegynner",
   }));
   const announcements = (announcementsRes.rows as AnnouncementRow[]).map((announcement) => ({
     ...announcement,
@@ -489,6 +489,12 @@ export default async function AdminPage() {
 
     try {
       await client.query("BEGIN");
+
+      await client.query(
+        `SELECT id FROM sessions WHERE id =
+           (SELECT session_id FROM registrations WHERE id = $1) FOR UPDATE`,
+        [id]
+      );
 
       const regRes = await client.query(
         `SELECT session_id, status
@@ -527,11 +533,13 @@ export default async function AdminPage() {
     "use server";
     const id = Number(formData.get("id"));
     const name = sanitizeMemberName(String(formData.get("name") ?? ""));
-    const level = sanitizeLevel(String(formData.get("level") ?? ""));
-    if (!Number.isFinite(id) || !name || !level) return;
+    const levelInput = String(formData.get("level") ?? "");
+    const level = sanitizeLevel(levelInput);
+    if (!Number.isFinite(id) || !name || (levelInput && !level)) return;
 
     await pool.query(
-      `UPDATE registrations SET name = $2, level = $3 WHERE id = $1`,
+      `UPDATE registrations SET name = $2, level = $3 WHERE id = $1
+       AND ($3::text IS NOT NULL OR tournament_player_id IS NOT NULL)`,
       [id, name, level]
     );
   }

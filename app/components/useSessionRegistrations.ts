@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 import type { PublicRegistration } from "@/lib/registrations";
+import type { SessionAvailability } from "@/lib/tournament-reservations";
 
 export function useSessionRegistrations(
   sessionId: number | null,
   initialRegistrations: PublicRegistration[] | null = null,
-  refreshVersion = 0
+  refreshVersion = 0,
+  initialAvailability: SessionAvailability | null = null
 ) {
   const [snapshot, setSnapshot] = useState({
     sessionId,
     registrations: initialRegistrations,
+    availability: initialAvailability,
     error: false,
     updatedAt: null as string | null,
   });
@@ -36,6 +39,7 @@ export function useSessionRegistrations(
           setSnapshot({
             sessionId,
             registrations: data.registrations,
+            availability: data.availability ?? null,
             error: false,
             updatedAt: new Date().toISOString(),
           });
@@ -47,6 +51,7 @@ export function useSessionRegistrations(
             registrations: previous.sessionId === sessionId
               ? previous.registrations
               : initialRegistrations,
+            availability: previous.sessionId === sessionId ? previous.availability : initialAvailability,
             error: true,
             updatedAt: previous.sessionId === sessionId ? previous.updatedAt : null,
           }));
@@ -66,10 +71,11 @@ export function useSessionRegistrations(
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [sessionId, initialRegistrations, refreshVersion]);
+  }, [sessionId, initialRegistrations, refreshVersion, initialAvailability]);
 
   return {
     registrations: snapshot.sessionId === sessionId ? snapshot.registrations : initialRegistrations,
+    availability: snapshot.sessionId === sessionId ? snapshot.availability : initialAvailability,
     error: snapshot.sessionId === sessionId && snapshot.error,
     updatedAt: snapshot.sessionId === sessionId ? snapshot.updatedAt : null,
   };

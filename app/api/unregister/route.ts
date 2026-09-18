@@ -63,6 +63,13 @@ export async function POST(req: Request) {
     client = await pool.connect();
     await client.query("BEGIN");
 
+    // All registration mutations lock the session before individual players.
+    await client.query(
+      `SELECT id FROM sessions WHERE id =
+         (SELECT session_id FROM registrations WHERE id = $1) FOR UPDATE`,
+      [registrationId]
+    );
+
     const res = await client.query(
       `SELECT r.id, r.session_id, r.status, r.birth_month, r.birth_day
        FROM registrations r

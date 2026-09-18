@@ -16,6 +16,8 @@ import SessionRoster from "@/app/components/SessionRoster";
 import { useSessionRegistrations } from "@/app/components/useSessionRegistrations";
 import { REGISTRATION_STATUS, type PublicRegistration } from "@/lib/registrations";
 import { getRegistrationCopy } from "@/lib/registration-content";
+import type { SessionAvailability } from "@/lib/tournament-reservations";
+import { getTournamentCopy } from "@/lib/tournament-content";
 
 type Session = {
   id: number;
@@ -35,13 +37,15 @@ export default function HomePageContent({
   session,
   initialRegistrations,
   boardAttendanceAvailable,
+  initialAvailability = null,
 }: {
   session: Session | null;
   initialRegistrations: PublicRegistration[];
   boardAttendanceAvailable: boolean;
+  initialAvailability?: SessionAvailability | null;
 }) {
   const { locale, messages } = useSitePreferences();
-  const roster = useSessionRegistrations(session?.id ?? null, initialRegistrations);
+  const roster = useSessionRegistrations(session?.id ?? null, initialRegistrations, 0, initialAvailability);
   const confirmedCount = (roster.registrations ?? initialRegistrations)
     .filter((entry) => entry.status === REGISTRATION_STATUS.CONFIRMED).length;
   const intlLocale = getIntlLocale(locale);
@@ -108,9 +112,11 @@ export default function HomePageContent({
   const isActive =
     new Date(session.starts_at).getTime() <= now &&
     new Date(session.ends_at).getTime() > now;
-  const spotsLeft = Math.max(0, session.capacity - confirmedCount);
-  const isFull = confirmedCount >= session.capacity;
+  const reservedCount = roster.availability?.reserved_count ?? 0;
+  const spotsLeft = Math.max(0, session.capacity - confirmedCount - reservedCount);
+  const isFull = spotsLeft === 0;
   const registrationCopy = getRegistrationCopy(locale);
+  const fullTitle = reservedCount > 0 ? getTournamentCopy(locale).publicFull : registrationCopy.fullTitle;
   const attendingBoardMemberIds = new Set(session.attending_board_member_ids);
   const attendingBoardMembers = BOARD_MEMBERS.filter((member) =>
     attendingBoardMemberIds.has(member.id)
@@ -250,7 +256,7 @@ export default function HomePageContent({
             <div className="app-stage-stats">
               <div className={`app-stage-stat${isFull ? " app-capacity-full" : ""}`}>
                 <span className="app-stage-stat-value">{spotsLeft}</span>
-                <span className="app-stage-stat-label">{isFull ? registrationCopy.fullTitle : messages.home.spotsLeft(spotsLeft)}</span>
+                <span className="app-stage-stat-label">{isFull ? fullTitle : messages.home.spotsLeft(spotsLeft)}</span>
               </div>
               <div className={`app-stage-stat app-stage-stat-secondary${isFull ? " app-capacity-full" : ""}`}>
                 <span className="app-stage-stat-value">
@@ -280,7 +286,7 @@ export default function HomePageContent({
               </div>
 
               <div className={`app-stat-card min-w-[170px] px-5 py-4 text-sm ${isFull ? "app-capacity-full" : "text-white"}`}>
-                {isFull && <div className="mb-1 font-bold">{registrationCopy.fullTitle}</div>}
+                {isFull && <div className="mb-1 font-bold">{fullTitle}</div>}
                 <div className="font-semibold">{messages.home.spotsLeft(spotsLeft)}</div>
                 {isActive && (
                   <div className="mt-1 opacity-80">{messages.home.currentStatus}</div>
@@ -293,6 +299,7 @@ export default function HomePageContent({
               capacity={session.capacity}
               error={roster.error}
               updatedAt={roster.updatedAt}
+              availability={roster.availability}
             />
 
             {boardAttendanceAvailable &&

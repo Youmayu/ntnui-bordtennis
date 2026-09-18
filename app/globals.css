@@ -1,6 +1,62 @@
 @import "tailwindcss";
 
 :root {
+  --tournament-ink: #6528a4;
+  --tournament-soft: #f2e8ff;
+  --tournament-border: #c5a1e8;
+}
+
+[data-theme="dark"] {
+  --tournament-ink: #e2c8ff;
+  --tournament-soft: #30213f;
+  --tournament-border: #8560aa;
+}
+
+.app-badge-tournament,
+.app-tournament-notice,
+.app-roster-row.app-roster-tournament {
+  color: var(--tournament-ink);
+  background: var(--tournament-soft);
+  border: 1px solid var(--tournament-border);
+}
+
+.app-tournament-notice {
+  padding: 0.85rem 1rem;
+  border-radius: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.app-roster-row.app-roster-tournament {
+  padding: 0.75rem;
+  border-radius: 0.8rem;
+  margin-block: 0.3rem;
+}
+
+.app-roster-row.app-roster-reserved { border-style: dashed; }
+.app-roster-tournament .app-roster-name { color: var(--tournament-ink); }
+.app-roster-team-label { display: block; margin-top: 0.25rem; font-size: 0.75rem; font-weight: 400; }
+
+.app-roster-panel .app-roster-tournament .app-roster-index {
+  color: var(--tournament-ink);
+  border-color: var(--tournament-border);
+  background: var(--tournament-soft);
+}
+
+.app-button-tournament {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: 0.95rem;
+  background: #7536b5;
+  color: #fff;
+  font-weight: 600;
+}
+
+.app-button-tournament:hover { background: #642b9d; }
+.app-button-tournament:disabled { cursor: not-allowed; opacity: 0.55; }
+
+:root {
   --background: #f6eee5;
   --foreground: #1e1513;
   --primary: 14 66% 40%;

@@ -1,35 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
-import { resolve } from "node:path";
 import { test } from "node:test";
-import vm from "node:vm";
-import ts from "typescript";
-
-const root = fileURLToPath(new URL("../", import.meta.url));
-const require = createRequire(import.meta.url);
-
-// Run the real TypeScript handlers with an isolated database and CAPTCHA stub.
-function load(file, mocks = {}, globals = {}) {
-  const filename = resolve(root, file);
-  const source = ts.transpileModule(readFileSync(filename, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-  }).outputText;
-  const loadedModule = { exports: {} };
-  const localRequire = (id) => {
-    if (id in mocks) return mocks[id];
-    if (id.startsWith("@/")) return load(`${id.slice(2)}.ts`, mocks, globals);
-    return require(id);
-  };
-  vm.runInNewContext(source, {
-    module: loadedModule, exports: loadedModule.exports, require: localRequire,
-    Request, Response, FormData, URL, console,
-    process: { env: { TURNSTILE_SECRET_KEY: "test-secret" } },
-    ...globals,
-  }, { filename });
-  return loadedModule.exports;
-}
+import { load } from "./test-loader.mjs";
 
 const { sanitizeRegistrationName } = load("lib/input-safety.ts");
 
@@ -68,8 +39,8 @@ for (const confirmedCount of [0, 1]) {
     let committed = false;
     const client = {
       async query(sql, values) {
-        if (sql.includes("SELECT capacity")) return { rows: [{ capacity: 1, session_open: true }], rowCount: 1 };
-        if (sql.includes("COUNT(*)")) return { rows: [{ count: confirmedCount }], rowCount: 1 };
+        if (sql.includes("SELECT capacity")) return { rows: [{ capacity: 1, session_open: true, reservations_active: false, tournament_release_at: new Date("2026-09-21T00:00:00Z") }], rowCount: 1 };
+        if (sql.includes("COUNT(*)")) return { rows: [{ count: confirmedCount, tournament_count: 0 }], rowCount: 1 };
         if (sql.includes("SELECT id")) return { rows: [], rowCount: 0 };
         if (sql.includes("SELECT members_only")) return { rows: [{ members_only: false }], rowCount: 1 };
         if (sql.includes("INSERT INTO registrations")) inserted = values;
@@ -96,25 +67,34 @@ for (const confirmedCount of [0, 1]) {
 }
 
 test("public roster includes both statuses, preserves queue order and exposes no birth details", async () => {
-  const { GET } = load("app/api/registrations/route.ts", {
-    "@/lib/db": { pool: { query: async (sql, values) => {
+  const client = {
+    release() {},
+    async query(sql, values) {
+      if (["BEGIN", "COMMIT"].includes(sql)) return { rows: [] };
       assert.match(sql, /r\.created_at ASC,\s*r\.id ASC/);
-      assert.match(sql, /s\.ends_at > NOW\(\)/);
       assert.equal(values[0], 7);
       return { rows: [
-        { id: 1, name: " Anne\nSmith ", status: "confirmed", birth_month: 1, birth_day: 2 },
-        { id: 2, name: "Bo Li", status: "waitlist", birth_month: 3, birth_day: 4 },
-        { id: 3, name: "Cam Jones", status: "waitlist", birth_month: 5, birth_day: 6 },
+        { id: 1, name: " Anne\nSmith ", status: "confirmed", is_tournament: true, birth_month: 1, birth_day: 2 },
+        { id: 2, name: "Bo Li", status: "waitlist", is_tournament: false, birth_month: 3, birth_day: 4 },
+        { id: 3, name: "Cam Jones", status: "waitlist", is_tournament: false, birth_month: 5, birth_day: 6 },
       ] };
-    } } },
+    },
+  };
+  const { GET } = load("app/api/registrations/route.ts", {
+    "@/lib/db": { pool: { connect: async () => client } },
+    "@/lib/registrations": {
+      REGISTRATION_STATUS: { CONFIRMED: "confirmed" },
+      fillConfirmedSlotsFromWaitlist: async () => ({ sessionExists: true, sessionOpen: true,
+        reservedCount: 4, availableSpots: 0, tournamentReleaseAt: "2026-09-20T22:00:00Z" }),
+    },
   });
   const response = await GET(new Request("http://localhost/api/registrations?sessionId=7"));
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("Cache-Control"), "no-store");
   assert.deepEqual((await response.json()).registrations, [
-    { id: 1, name: "Anne Smith", status: "confirmed" },
-    { id: 2, name: "Bo Li", status: "waitlist" },
-    { id: 3, name: "Cam Jones", status: "waitlist" },
+    { id: 1, name: "Anne Smith", status: "confirmed", is_tournament: true },
+    { id: 2, name: "Bo Li", status: "waitlist", is_tournament: false },
+    { id: 3, name: "Cam Jones", status: "waitlist", is_tournament: false },
   ]);
 });
 
