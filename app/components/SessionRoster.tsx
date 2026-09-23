@@ -15,12 +15,14 @@ export default function SessionRoster({
   error,
   updatedAt,
   availability = null,
+  showReservationNotice = true,
 }: {
   registrations: PublicRegistration[] | null;
   capacity: number;
   error: boolean;
   updatedAt: string | null;
   availability?: SessionAvailability | null;
+  showReservationNotice?: boolean;
 }) {
   const { locale, messages } = useSitePreferences();
   const copy = getRegistrationCopy(locale);
@@ -33,7 +35,7 @@ export default function SessionRoster({
 
   return (
     <div className="app-session-roster">
-      <TournamentReservationNotice availability={availability} />
+      {showReservationNotice && <TournamentReservationNotice availability={availability} />}
       {updatedAt && (
         <p className="mb-4 text-xs text-[color:var(--text-soft)]">
           {copy.lastUpdated}{" "}

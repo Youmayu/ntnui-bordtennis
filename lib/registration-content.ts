@@ -2,6 +2,8 @@ import type { Locale } from "@/lib/site-content";
 
 type RegistrationCopy = {
   title: string;
+  showParticipants: string;
+  hideParticipants: string;
   fullTitle: string;
   waitlistSignup: string;
   joinWaitlist: string;
@@ -22,6 +24,8 @@ type RegistrationCopy = {
 const COPY: Record<Locale, RegistrationCopy> = {
   no: {
     title: "Påmeldinger",
+    showParticipants: "Vis deltakere",
+    hideParticipants: "Skjul deltakere",
     fullTitle: "Økten er full",
     waitlistSignup: "Påmelding setter deg på ventelisten. Du har ikke en bekreftet treningsplass ennå.",
     joinWaitlist: "Meld meg på ventelisten",
@@ -40,6 +44,8 @@ const COPY: Record<Locale, RegistrationCopy> = {
   },
   en: {
     title: "Registrations",
+    showParticipants: "Show participants",
+    hideParticipants: "Hide participants",
     fullTitle: "Session full",
     waitlistSignup: "Signing up joins the waiting list. You do not have a confirmed spot yet.",
     joinWaitlist: "Join waiting list",
@@ -58,6 +64,8 @@ const COPY: Record<Locale, RegistrationCopy> = {
   },
   da: {
     title: "Tilmeldinger",
+    showParticipants: "Vis deltagere",
+    hideParticipants: "Skjul deltagere",
     fullTitle: "Træningen er fuld",
     waitlistSignup: "Tilmelding sætter dig på ventelisten. Du har endnu ikke en bekræftet træningsplads.",
     joinWaitlist: "Skriv mig på ventelisten",
@@ -76,6 +84,8 @@ const COPY: Record<Locale, RegistrationCopy> = {
   },
   sv: {
     title: "Anmälningar",
+    showParticipants: "Visa deltagare",
+    hideParticipants: "Dölj deltagare",
     fullTitle: "Passet är fullt",
     waitlistSignup: "Anmälan placerar dig på väntelistan. Du har ännu ingen bekräftad träningsplats.",
     joinWaitlist: "Ställ mig på väntelistan",
@@ -94,6 +104,8 @@ const COPY: Record<Locale, RegistrationCopy> = {
   },
   de: {
     title: "Anmeldungen",
+    showParticipants: "Teilnehmer anzeigen",
+    hideParticipants: "Teilnehmer ausblenden",
     fullTitle: "Training ausgebucht",
     waitlistSignup: "Mit der Anmeldung kommst du auf die Warteliste. Du hast noch keinen bestätigten Trainingsplatz.",
     joinWaitlist: "Auf die Warteliste",
@@ -112,6 +124,8 @@ const COPY: Record<Locale, RegistrationCopy> = {
   },
   zh: {
     title: "报名名单",
+    showParticipants: "显示参与者",
+    hideParticipants: "隐藏参与者",
     fullTitle: "训练名额已满",
     waitlistSignup: "报名后你将进入候补名单，目前还没有确认的训练名额。",
     joinWaitlist: "加入候补名单",
@@ -130,6 +144,8 @@ const COPY: Record<Locale, RegistrationCopy> = {
   },
   fr: {
     title: "Inscriptions",
+    showParticipants: "Afficher les participants",
+    hideParticipants: "Masquer les participants",
     fullTitle: "Séance complète",
     waitlistSignup: "Votre inscription vous place sur la liste d’attente. Vous n’avez pas encore de place confirmée.",
     joinWaitlist: "Rejoindre la liste d’attente",
@@ -148,6 +164,8 @@ const COPY: Record<Locale, RegistrationCopy> = {
   },
   es: {
     title: "Inscripciones",
+    showParticipants: "Mostrar participantes",
+    hideParticipants: "Ocultar participantes",
     fullTitle: "Entrenamiento completo",
     waitlistSignup: "Al inscribirte, entrarás en la lista de espera. Aún no tienes una plaza confirmada.",
     joinWaitlist: "Unirme a la lista de espera",

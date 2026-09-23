@@ -8,6 +8,7 @@ import type { UpcomingSession } from "@/lib/sessions";
 import { useUpcomingSessions } from "@/app/components/useUpcomingSessions";
 import TournamentReservationNotice from "@/app/components/TournamentReservationNotice";
 import { getTournamentCopy } from "@/lib/tournament-content";
+import ScheduleSessionRoster from "@/app/components/ScheduleSessionRoster";
 
 export default function SchedulePageContent({ sessions: initialSessions }: { sessions: UpcomingSession[] }) {
   const { sessions, error } = useUpcomingSessions(initialSessions);
@@ -125,6 +126,10 @@ export default function SchedulePageContent({ sessions: initialSessions }: { ses
                         </div>
                       </div>
                     </div>
+                    <ScheduleSessionRoster
+                      session={session}
+                      sessionLabel={formatter.format(new Date(session.starts_at))}
+                    />
                   </article>
                 );
               })}
