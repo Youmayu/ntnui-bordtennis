@@ -341,7 +341,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
       currentStatus: "Pågår nå",
       nextStatus: "Neste",
       locationLabel: "Sted",
-      spotsLeft: (count) => `${count} plasser igjen`,
+      spotsLeft: (count) => `${count} ${count === 1 ? "plass" : "plasser"} igjen`,
       registeredCount: (count, capacity) => `${count}/${capacity} påmeldt`,
       nobodyRegistered: "Ingen påmeldte enda.",
       infoTitle: "Info",
