@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import TurnstileWidget from "@/app/components/TurnstileWidget";
 import FormPrivacyNotice from "@/app/components/FormPrivacyNotice";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
@@ -67,6 +68,11 @@ function getPreferredSessionId(
 
 export default function RegisterPageContent() {
   const { locale, messages } = useSitePreferences();
+  const searchParams = useSearchParams();
+  const parsedSessionId = Number(searchParams.get("sessionId"));
+  const requestedSessionId = Number.isSafeInteger(parsedSessionId) && parsedSessionId > 0
+    ? parsedSessionId
+    : null;
   const intlLocale = getIntlLocale(locale);
   const monthOptions = useMemo(() => getMonthOptions(locale), [locale]);
 
@@ -146,13 +152,16 @@ export default function RegisterPageContent() {
       }
 
       setSessions(nextSessions);
-      setSessionId(getPreferredSessionId(nextSessions));
+      setSessionId(getPreferredSessionId(nextSessions, requestedSessionId));
+      setMemberConfirmed(false);
+      setMessage(null);
+      setError(null);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [requestedSessionId]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

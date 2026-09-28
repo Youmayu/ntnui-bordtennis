@@ -12,6 +12,7 @@ import {
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import DiscordInvitation from "@/app/components/DiscordInvitation";
+import FirstTrainingSection from "@/app/components/FirstTrainingSection";
 import SessionRoster from "@/app/components/SessionRoster";
 import { useSessionRegistrations } from "@/app/components/useSessionRegistrations";
 import { REGISTRATION_STATUS, type PublicRegistration } from "@/lib/registrations";
@@ -104,6 +105,7 @@ export default function HomePageContent({
             </div>
           </div>
         </section>
+        <FirstTrainingSection />
       </div>
     );
   }
@@ -270,6 +272,8 @@ export default function HomePageContent({
           </div>
         </div>
       </section>
+
+      <FirstTrainingSection />
 
       <section id="registrations" className="app-surface app-home-board overflow-hidden p-0">
         <div className="app-home-board-grid">

@@ -1,6 +1,7 @@
 "use client";
 
-import { getIntlLocale, getSessionAccessLabel } from "@/lib/site-content";
+import Link from "next/link";
+import { getIntlLocale, getSessionAccessLabel, localizePathname } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import { getRegistrationCopy } from "@/lib/registration-content";
@@ -14,6 +15,7 @@ export default function SchedulePageContent({ sessions: initialSessions }: { ses
   const { sessions, error } = useUpcomingSessions(initialSessions);
   const { locale, messages } = useSitePreferences();
   const intlLocale = getIntlLocale(locale);
+  const registrationCopy = getRegistrationCopy(locale);
 
   const formatter = new Intl.DateTimeFormat(intlLocale, {
     timeZone: "Europe/Oslo",
@@ -65,6 +67,7 @@ export default function SchedulePageContent({ sessions: initialSessions }: { ses
                 const isActive =
                   new Date(session.starts_at).getTime() <= now &&
                   new Date(session.ends_at).getTime() > now;
+                const isFull = session.available_spots === 0;
 
                 return (
                   <article key={session.id} className="app-schedule-row p-5 sm:p-6">
@@ -124,6 +127,16 @@ export default function SchedulePageContent({ sessions: initialSessions }: { ses
                             showMazeMapBadge
                           />
                         </div>
+                        <Link
+                          href={{
+                            pathname: localizePathname("/register", locale),
+                            query: { sessionId: session.id },
+                          }}
+                          className={`${isFull ? "app-button-danger" : "app-button-success"} mt-4 inline-flex items-center justify-center`}
+                        >
+                          {isFull ? registrationCopy.joinWaitlist : messages.shell.nav.register}
+                          <span className="sr-only"> · {formatter.format(new Date(session.starts_at))}</span>
+                        </Link>
                       </div>
                     </div>
                     <ScheduleSessionRoster
