@@ -273,8 +273,6 @@ export default function HomePageContent({
         </div>
       </section>
 
-      <FirstTrainingSection />
-
       <section id="registrations" className="app-surface app-home-board overflow-hidden p-0">
         <div className="app-home-board-grid">
           <div className="app-home-board-primary p-6 sm:p-8">
@@ -374,6 +372,8 @@ export default function HomePageContent({
           </aside>
         </div>
       </section>
+
+      <FirstTrainingSection />
     </div>
   );
 }
