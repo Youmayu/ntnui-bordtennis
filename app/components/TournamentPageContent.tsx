@@ -88,8 +88,10 @@ export default function TournamentPageContent() {
           </select>
         </div>
         <TournamentReservationNotice availability={availability} />
-        {availability && new Date(availability.tournament_release_at) <= new Date(session?.current_time ?? 0) &&
-          <p className="text-sm text-[color:var(--text-soft)]">{copy.released}</p>}
+        {availability && (!availability.reserve_tournament_spots
+          ? <p className="text-sm text-[color:var(--text-soft)]">{copy.unreserved}</p>
+          : new Date(availability.tournament_release_at) <= new Date(session?.current_time ?? 0) &&
+            <p className="text-sm text-[color:var(--text-soft)]">{copy.released}</p>)}
         <div className="space-y-2">
           <label htmlFor="tournament-player" className="block text-sm font-medium">{copy.player}</label>
           <select id="tournament-player" required disabled={submitting} value={playerId}

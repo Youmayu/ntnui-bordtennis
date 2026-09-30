@@ -3,6 +3,7 @@ import { pool } from "@/lib/db";
 import { sanitizeLocation } from "@/lib/input-safety";
 import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
+import { getTournamentReservationsSelectSql } from "@/lib/tournament-reservations";
 
 type Queryable = Pick<PoolClient, "query">;
 
@@ -23,6 +24,7 @@ type ActiveTemplateRow = {
   location: string;
   capacity: number;
   members_only: boolean;
+  reserve_tournament_spots: boolean;
 };
 
 type InsertedRow = {
@@ -171,7 +173,8 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
          ends_at_time::text,
          location,
          capacity,
-         ${getMembersOnlySelectSql(accessSchema.hasTemplateMembersOnly, "schedule_templates")} AS members_only
+         ${getMembersOnlySelectSql(accessSchema.hasTemplateMembersOnly, "schedule_templates")} AS members_only,
+         ${getTournamentReservationsSelectSql(accessSchema.hasTemplateTournamentReservations, "schedule_templates")} AS reserve_tournament_spots
        FROM schedule_templates
        WHERE is_active = TRUE
        ORDER BY weekday ASC, starts_at_time ASC, id ASC`
@@ -199,6 +202,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
                members_only,
                auto_template_id,
                auto_week_start
+               ${accessSchema.hasSessionTournamentReservations ? ", reserve_tournament_spots" : ""}
              )
              SELECT
                target.starts_at,
@@ -208,6 +212,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
                $7,
                $8,
                $1::date
+               ${accessSchema.hasSessionTournamentReservations ? ", $10::boolean" : ""}
              FROM target
              WHERE (
                $9::boolean
@@ -246,6 +251,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
                capacity,
                auto_template_id,
                auto_week_start
+               ${accessSchema.hasSessionTournamentReservations ? ", reserve_tournament_spots" : ""}
              )
              SELECT
                target.starts_at,
@@ -254,6 +260,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
                $6,
                $7,
                $1::date
+               ${accessSchema.hasSessionTournamentReservations ? ", $9::boolean" : ""}
              FROM target
              WHERE (
                $8::boolean
@@ -287,6 +294,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
               template.members_only,
               template.id,
               force,
+              ...(accessSchema.hasSessionTournamentReservations ? [template.reserve_tournament_spots] : []),
             ]
           : [
               status.target_week_start_local,
@@ -297,6 +305,7 @@ async function runAutoScheduleGeneration({ force }: { force: boolean }) {
               template.capacity,
               template.id,
               force,
+              ...(accessSchema.hasSessionTournamentReservations ? [template.reserve_tournament_spots] : []),
             ]
       );
 

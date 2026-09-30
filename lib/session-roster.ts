@@ -29,6 +29,7 @@ export async function getSessionRoster(sessionId: number) {
         is_tournament: row.is_tournament,
       })),
       availability: {
+        reserve_tournament_spots: state.reserveTournamentSpots,
         reserved_count: state.reservedCount,
         available_spots: state.availableSpots,
         tournament_release_at: state.tournamentReleaseAt,

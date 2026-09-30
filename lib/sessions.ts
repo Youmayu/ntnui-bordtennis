@@ -4,7 +4,7 @@ import { sanitizeLocation } from "@/lib/input-safety";
 import { refreshSessionWaitlists, REGISTRATION_STATUS } from "@/lib/registrations";
 import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
-import { getReservedSpotCount, tournamentReleaseSql, type SessionAvailability } from "@/lib/tournament-reservations";
+import { getReservedSpotCount, getTournamentReservationsSelectSql, tournamentReleaseSql, type SessionAvailability } from "@/lib/tournament-reservations";
 
 export type UpcomingSession = SessionAvailability & {
   id: number;
@@ -25,9 +25,10 @@ export async function getUpcomingSessions(): Promise<UpcomingSession[]> {
   const res = await pool.query(
     `SELECT s.id, s.starts_at, s.ends_at, s.location, s.capacity,
        ${getMembersOnlySelectSql(accessSchema.hasSessionMembersOnly, "s")} AS members_only,
+       ${getTournamentReservationsSelectSql(accessSchema.hasSessionTournamentReservations, "s")} AS reserve_tournament_spots,
        NOW() AS current_time,
        ${tournamentReleaseSql("s.starts_at")} AS tournament_release_at,
-       NOW() < ${tournamentReleaseSql("s.starts_at")} AS reservations_active,
+       ${getTournamentReservationsSelectSql(accessSchema.hasSessionTournamentReservations, "s")} AND NOW() < ${tournamentReleaseSql("s.starts_at")} AS reservations_active,
        COUNT(r.id) FILTER (WHERE r.status = $1)::int AS confirmed_count,
        COUNT(r.id) FILTER (WHERE r.status = $2)::int AS waitlist_count,
        COUNT(r.id) FILTER (WHERE r.status = $1 AND r.tournament_player_id IS NOT NULL)::int AS tournament_count

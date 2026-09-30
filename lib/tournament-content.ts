@@ -19,7 +19,8 @@ export function getTournamentFormCopy(locale: Locale) {
   return locale === "no" ? {
     title: "Påmelding for turneringslaget",
     intro: "Velg økt og ditt eget navn for å melde deg på.",
-    rule: "Fem plasser holdes av til laget frem til kl. 00:00 to kalenderdager før hver økt, norsk tid. For onsdagens trening åpnes ubrukte plasser mandag ved midnatt.",
+    rule: "På økter med lagreservasjon holdes fem plasser av frem til kl. 00:00 to kalenderdager før økten, norsk tid. For onsdagens trening åpnes ubrukte plasser mandag ved midnatt.",
+    unreserved: "Denne økten har ingen reserverte lagplasser. Påmelding følger vanlig kapasitet og venteliste.",
     player: "Ditt navn", choosePlayer: "Velg navnet ditt", submitting: "Melder på …",
     released: "Reservasjonen er utløpt. Påmelding følger nå vanlig kapasitet og venteliste.",
     cancel: "Kontakt styret hvis du trenger å melde deg av.",
@@ -28,7 +29,8 @@ export function getTournamentFormCopy(locale: Locale) {
   } : {
     title: "Tournament team registration",
     intro: "Choose a session and your own name to register.",
-    rule: "Five spots are held for the team until 00:00 two calendar days before each session, Norwegian time. For Wednesday practice, unused spots open at midnight at the start of Monday.",
+    rule: "For sessions with team reservations, five spots are held until 00:00 two calendar days before the session, Norwegian time. For Wednesday practice, unused spots open at midnight at the start of Monday.",
+    unreserved: "This session has no reserved team spots. Registration follows normal capacity and waiting-list order.",
     player: "Your name", choosePlayer: "Choose your name", submitting: "Registering …",
     released: "The reservation period has ended. Registration now follows normal capacity and waiting-list order.",
     cancel: "Contact the board if you need to cancel your registration.",

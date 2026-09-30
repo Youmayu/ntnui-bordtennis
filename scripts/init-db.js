@@ -69,6 +69,13 @@ async function main() {
     ALTER TABLE schedule_templates
       ADD COLUMN IF NOT EXISTS members_only BOOLEAN NOT NULL DEFAULT TRUE;
 
+    -- Preserve existing reservations while allowing each session/template to opt out.
+    ALTER TABLE sessions
+      ADD COLUMN IF NOT EXISTS reserve_tournament_spots BOOLEAN NOT NULL DEFAULT TRUE;
+
+    ALTER TABLE schedule_templates
+      ADD COLUMN IF NOT EXISTS reserve_tournament_spots BOOLEAN NOT NULL DEFAULT TRUE;
+
     CREATE TABLE IF NOT EXISTS registrations (
       id SERIAL PRIMARY KEY,
       session_id INT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,

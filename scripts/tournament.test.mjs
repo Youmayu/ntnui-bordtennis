@@ -32,10 +32,18 @@ const rosterGet = load("app/api/registrations/route.ts", mocks).GET;
 const sessionsGet = load("app/api/sessions/route.ts", mocks).GET;
 const { tournamentReleaseSql } = load("lib/tournament-reservations.ts");
 const { TOURNAMENT_PLAYERS } = load("lib/tournament-team.ts");
+const migration = readFileSync(new URL("./init-db.js", import.meta.url), "utf8")
+  .split("await pool.query(`")[1].split("`);")[0];
+const autoSchedule = load("lib/auto-schedule.ts", { "@/lib/db": { pool } });
+const AdminPage = load("app/admin/page.tsx", {
+  ...mocks,
+  "@/lib/auto-schedule": { ...autoSchedule, ensureAutoScheduledSessions: async () => {} },
+  "next/cache": { revalidatePath() {} },
+  "./AdminClient": { default: () => null },
+  "./TrainingLocationField": { default: () => null },
+}).default;
 
 before(async () => {
-  const migration = readFileSync(new URL("./init-db.js", import.meta.url), "utf8")
-    .split("await pool.query(`")[1].split("`);")[0];
   await db.exec(migration);
   await db.exec(migration); // Migration must be safe to rerun.
 });
@@ -43,6 +51,7 @@ after(async () => { await db.close(); });
 beforeEach(async () => {
   now = "2026-09-20T21:59:59Z";
   await db.exec("TRUNCATE sessions RESTART IDENTITY CASCADE");
+  await db.exec("TRUNCATE schedule_templates RESTART IDENTITY CASCADE");
   await query(`INSERT INTO sessions (starts_at, ends_at, location, capacity, members_only)
     VALUES ('2026-09-23T16:00:00Z', '2026-09-23T18:00:00Z', 'Dragvoll B217', 8, FALSE)`);
 });
@@ -68,6 +77,29 @@ async function seed(count, status = "confirmed") {
 }
 async function roster() {
   return (await rosterGet(new Request("http://localhost/api/registrations?sessionId=1"))).json();
+}
+
+function formData(fields) {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(fields)) data.set(key, String(value));
+  return data;
+}
+
+async function adminActions() {
+  const actions = {};
+  const visit = (node) => {
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (!node?.props) return;
+    if (node.type === "form" && typeof node.props.action === "function") actions[node.props.action.name] = node.props.action;
+    visit(node.props.children);
+  };
+  visit(await AdminPage());
+  return actions;
+}
+
+function sessionForm(overrides = {}) {
+  return formData({ id: 1, starts_at: "2026-09-23T18:00", ends_at: "2026-09-23T20:00",
+    location: "B217", capacity: 8, ...overrides });
 }
 
 test("Wednesday reservation releases Monday midnight in Norway, including DST offsets", async () => {
@@ -229,4 +261,113 @@ test("missing/invalid CAPTCHA, unknown names, invalid IDs and ended sessions can
   now = "2026-09-23T18:00:00Z";
   assert.equal((await teamSignup()).status, 404);
   assert.equal((await query("SELECT * FROM registrations")).rows.length, 0);
+});
+
+test("disabled reservations expose all capacity to public signup and team members use the normal waitlist", async () => {
+  await query("UPDATE sessions SET reserve_tournament_spots = FALSE");
+  await seed(7);
+  const result = await publicSignup({ reserve_tournament_spots: true });
+  assert.equal(result.body.registrationStatus, "confirmed");
+  assert.equal((await teamSignup()).body.registrationStatus, "waitlist");
+  const state = await roster();
+  assert.equal(state.availability.reserve_tournament_spots, false);
+  assert.equal(state.availability.reserved_count, 0);
+  assert.equal(state.availability.available_spots, 0);
+  assert.equal(state.registrations.filter((row) => row.status === "confirmed").length, 8);
+  const listing = (await (await sessionsGet()).json()).sessions[0];
+  assert.equal(listing.reserve_tournament_spots, false);
+  assert.equal(listing.reserved_count, 0);
+  assert.equal(listing.available_spots, 0);
+});
+
+test("turning reservations off in admin immediately releases unused spaces to the existing queue", async () => {
+  await seed(3);
+  await teamSignup();
+  await seed(5, "waitlist");
+  const waitingIds = (await query("SELECT id FROM registrations WHERE status = 'waitlist' ORDER BY created_at, id")).rows.map((row) => row.id);
+  const actions = await adminActions();
+  await actions.updateSession(sessionForm()); // Unchecked checkbox is absent from FormData.
+  const saved = (await query("SELECT reserve_tournament_spots FROM sessions WHERE id = 1")).rows[0];
+  assert.equal(saved.reserve_tournament_spots, false);
+  // Verify promotion happened during the admin save, before any roster/API read.
+  assert.deepEqual((await query("SELECT id FROM registrations WHERE status = 'waitlist' ORDER BY id")).rows, [{ id: waitingIds[4] }]);
+  const state = await roster();
+  assert.equal(state.availability.reserved_count, 0);
+  assert.equal(state.registrations.filter((row) => row.status === "confirmed").length, 8);
+  assert.equal(state.registrations.find((row) => row.is_tournament).status, "confirmed");
+});
+
+test("without reservations, claiming a team identity does not skip older waiting players", async () => {
+  await query("UPDATE sessions SET reserve_tournament_spots = FALSE");
+  await seed(8);
+  await seed(1, "waitlist");
+  assert.equal((await publicSignup({ firstName: "Lionel", lastName: "Kehl" })).body.registrationStatus, "waitlist");
+  const firstId = (await query("SELECT id FROM registrations WHERE status = 'confirmed' ORDER BY id LIMIT 1")).rows[0].id;
+  await query("DELETE FROM registrations WHERE id = $1", [firstId]);
+  assert.equal((await teamSignup()).body.registrationStatus, "waitlist");
+  const waiting = (await roster()).registrations.filter((row) => row.status === "waitlist");
+  assert.equal(waiting.length, 1);
+  assert.equal(waiting[0].name, "Lionel Kehl");
+});
+
+test("re-enabling reservations never displaces confirmed players or overbooks a full session", async () => {
+  await query("UPDATE sessions SET reserve_tournament_spots = FALSE");
+  await seed(8);
+  const actions = await adminActions();
+  await actions.updateSession(sessionForm({ reserve_tournament_spots: "on" }));
+  assert.equal((await teamSignup()).body.registrationStatus, "waitlist");
+  const state = await roster();
+  assert.equal(state.availability.reserve_tournament_spots, true);
+  assert.equal(state.availability.reserved_count, 0);
+  assert.equal(state.registrations.filter((row) => row.status === "confirmed").length, 8);
+});
+
+test("admin creation and recurring templates save independent reservation settings and inherit them on generation", async () => {
+  let actions = await adminActions();
+  await actions.addSession(sessionForm({ starts_at: "2026-09-25T18:00", ends_at: "2026-09-25T20:00" }));
+  await actions.addSession(sessionForm({ starts_at: "2026-09-26T18:00", ends_at: "2026-09-26T20:00", reserve_tournament_spots: "on" }));
+  assert.deepEqual((await query("SELECT reserve_tournament_spots FROM sessions WHERE id > 1 ORDER BY id")).rows,
+    [{ reserve_tournament_spots: false }, { reserve_tournament_spots: true }]);
+
+  const template = { starts_at_time: "18:00", ends_at_time: "20:00", capacity: 8, location: "B212", is_active: "on", members_only: "on" };
+  await actions.addScheduleTemplate(formData({ ...template, weekday: 2, reserve_tournament_spots: "on" }));
+  await actions.addScheduleTemplate(formData({ ...template, weekday: 4 }));
+  assert.deepEqual((await query("SELECT reserve_tournament_spots FROM schedule_templates ORDER BY id")).rows,
+    [{ reserve_tournament_spots: true }, { reserve_tournament_spots: false }]);
+  actions = await adminActions();
+  await actions.updateScheduleTemplate(formData({ ...template, id: 1, weekday: 2 }));
+  await actions.updateScheduleTemplate(formData({ ...template, id: 2, weekday: 4, reserve_tournament_spots: "on" }));
+
+  assert.equal((await autoSchedule.generateNextWeekFromAutoSchedule()).created_count, 2);
+  const generated = (await query("SELECT auto_template_id, reserve_tournament_spots, members_only FROM sessions WHERE auto_template_id IS NOT NULL ORDER BY auto_template_id")).rows;
+  assert.deepEqual(generated, [
+    { auto_template_id: 1, reserve_tournament_spots: false, members_only: true },
+    { auto_template_id: 2, reserve_tournament_spots: true, members_only: true },
+  ]);
+  await actions.updateScheduleTemplate(formData({ ...template, id: 1, weekday: 2, reserve_tournament_spots: "on" }));
+  assert.equal((await query("SELECT reserve_tournament_spots FROM sessions WHERE auto_template_id = 1")).rows[0].reserve_tournament_spots, false);
+});
+
+test("migration preserves existing reservations and reruns preserve opt-outs; reads still work before migration", async () => {
+  // Simulate the previous production schema in this isolated in-memory database.
+  await db.exec("ALTER TABLE sessions DROP COLUMN reserve_tournament_spots; ALTER TABLE schedule_templates DROP COLUMN reserve_tournament_spots");
+  try {
+    await seed(3);
+    assert.equal((await roster()).availability.reserved_count, 5);
+    assert.equal((await (await sessionsGet()).json()).sessions[0].reserve_tournament_spots, true);
+    const actions = await adminActions();
+    await actions.updateSession(sessionForm());
+    assert.equal((await roster()).availability.reserved_count, 5);
+    await actions.addScheduleTemplate(formData({ weekday: 4, starts_at_time: "18:00", ends_at_time: "20:00", location: "B217", capacity: 8, is_active: "on" }));
+    assert.equal((await autoSchedule.generateNextWeekFromAutoSchedule()).created_count, 1);
+  } finally {
+    await db.exec(migration);
+  }
+  assert.equal((await query("SELECT reserve_tournament_spots FROM sessions WHERE id = 1")).rows[0].reserve_tournament_spots, true);
+  assert.equal((await query("SELECT reserve_tournament_spots FROM schedule_templates WHERE id = 1")).rows[0].reserve_tournament_spots, true);
+  await query("UPDATE sessions SET reserve_tournament_spots = FALSE");
+  await query("UPDATE schedule_templates SET reserve_tournament_spots = FALSE");
+  await db.exec(migration);
+  assert.equal((await query("SELECT reserve_tournament_spots FROM sessions WHERE id = 1")).rows[0].reserve_tournament_spots, false);
+  assert.equal((await query("SELECT reserve_tournament_spots FROM schedule_templates WHERE id = 1")).rows[0].reserve_tournament_spots, false);
 });

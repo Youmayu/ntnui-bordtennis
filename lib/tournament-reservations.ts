@@ -1,10 +1,16 @@
 export const TOURNAMENT_RESERVED_SPOTS = 5;
 
 export type SessionAvailability = {
+  reserve_tournament_spots: boolean;
   reserved_count: number;
   available_spots: number;
   tournament_release_at: string;
 };
+
+// Keep the previous behavior until the optional per-session setting is migrated.
+export function getTournamentReservationsSelectSql(hasColumn: boolean, alias: string) {
+  return hasColumn ? `${alias}.reserve_tournament_spots` : "TRUE";
+}
 
 export function getReservedSpotCount(
   capacity: number,

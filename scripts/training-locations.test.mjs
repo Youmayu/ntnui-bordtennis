@@ -56,6 +56,7 @@ test("admin saves both rooms, updates them, and generates recurring sessions wit
   const pool = { query, connect: async () => ({ query, release() {} }) };
   const autoSchedule = load("lib/auto-schedule.ts", { "@/lib/db": { pool } });
   const mocks = {
+    "next/cache": { revalidatePath() {} },
     "@/lib/db": { pool },
     "@/lib/auto-schedule": { ...autoSchedule, ensureAutoScheduledSessions: async () => {} },
     "./AdminClient": { default: () => null },

@@ -1,5 +1,6 @@
 import type { Pool, PoolClient } from "pg";
-import { getReservedSpotCount, tournamentReleaseSql } from "@/lib/tournament-reservations";
+import { getReservedSpotCount, getTournamentReservationsSelectSql, tournamentReleaseSql } from "@/lib/tournament-reservations";
+import { getSessionAccessSchema } from "@/lib/session-access";
 
 export const REGISTRATION_STATUS = {
   CONFIRMED: "confirmed",
@@ -19,6 +20,7 @@ export type PublicRegistration = {
 type Queryable = Pick<PoolClient, "query">;
 
 type SessionStateRow = {
+  reserve_tournament_spots: boolean;
   capacity: number;
   session_open: boolean;
   tournament_release_at: Date;
@@ -38,13 +40,16 @@ export async function fillConfirmedSlotsFromWaitlist(
   client: Queryable,
   sessionId: number
 ) {
+  const accessSchema = await getSessionAccessSchema(client);
   const sessionRes = await client.query<SessionStateRow>(
     `WITH locked_session AS MATERIALIZED (
-       SELECT capacity, starts_at, ends_at FROM sessions WHERE id = $1 FOR UPDATE
+       SELECT capacity, starts_at, ends_at,
+         ${getTournamentReservationsSelectSql(accessSchema.hasSessionTournamentReservations, "sessions")} AS reserve_tournament_spots
+       FROM sessions WHERE id = $1 FOR UPDATE
      )
-     SELECT capacity, ends_at > clock_timestamp() AS session_open,
+     SELECT capacity, reserve_tournament_spots, ends_at > clock_timestamp() AS session_open,
        ${tournamentReleaseSql()} AS tournament_release_at,
-       clock_timestamp() < ${tournamentReleaseSql()} AS reservations_active
+       reserve_tournament_spots AND clock_timestamp() < ${tournamentReleaseSql()} AS reservations_active
      FROM locked_session`,
     [sessionId]
   );
@@ -54,6 +59,7 @@ export async function fillConfirmedSlotsFromWaitlist(
   }
 
   const { capacity, session_open: sessionOpen, reservations_active: reservationsActive,
+    reserve_tournament_spots: reserveTournamentSpots,
     tournament_release_at: releaseAt } = sessionRes.rows[0];
 
   if (!sessionOpen) {
@@ -101,7 +107,7 @@ export async function fillConfirmedSlotsFromWaitlist(
   }
 
   return { sessionExists: true as const, sessionOpen: true as const, promotedCount, capacity,
-    availableSpots, reservedCount, tournamentReleaseAt: releaseAt.toISOString() };
+    availableSpots, reservedCount, reserveTournamentSpots, tournamentReleaseAt: releaseAt.toISOString() };
 }
 
 export async function getConfirmedRegistrationCounts(

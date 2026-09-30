@@ -1,4 +1,6 @@
 import { pool } from "@/lib/db";
+import { revalidatePath } from "next/cache";
+import { getTournamentReservationsSelectSql, TOURNAMENT_RESERVED_SPOTS } from "@/lib/tournament-reservations";
 import {
   ensureAutoScheduleScaffold,
   ensureAutoScheduledSessions,
@@ -37,6 +39,7 @@ type SessionRow = {
   location: string;
   capacity: number;
   members_only: boolean;
+  reserve_tournament_spots: boolean;
   attending_board_member_ids: BoardMemberId[];
   auto_template_id: number | null;
   auto_week_start: string | null;
@@ -72,6 +75,7 @@ type ScheduleTemplateRow = {
   location: string;
   capacity: number;
   members_only: boolean;
+  reserve_tournament_spots: boolean;
   is_active: boolean;
 };
 
@@ -90,6 +94,8 @@ type AutoScheduleSchemaStatusRow = {
   has_auto_week_start: boolean;
   has_session_members_only: boolean;
   has_template_members_only: boolean;
+  has_session_tournament_reservations: boolean;
+  has_template_tournament_reservations: boolean;
   has_attending_board_member_ids: boolean;
 };
 
@@ -104,6 +110,28 @@ const WEEKDAY_OPTIONS = [
 ] as const;
 
 const ADMIN_BOARD_ROLES = getMessages("no").about.roles;
+
+function TournamentReservationField({
+  defaultChecked = true,
+  disabled = false,
+}: {
+  defaultChecked?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="space-y-1 sm:col-span-2">
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="reserve_tournament_spots" defaultChecked={defaultChecked} disabled={disabled} />
+        Reserver plasser for turneringslaget
+      </label>
+      <p className="text-xs text-[color:var(--text-soft)]">
+        {disabled
+          ? "Kjør databaseoppdateringen for å kunne endre lagreservasjoner."
+          : `Inntil ${TOURNAMENT_RESERVED_SPOTS} plasser holdes av til kl. 00:00 to kalenderdager før økten. Uten avkrysning er alle plasser tilgjengelige for vanlig påmelding.`}
+      </p>
+    </div>
+  );
+}
 
 function BoardAttendanceFields({
   selectedIds = [],
@@ -285,6 +313,16 @@ export default async function AdminPage() {
            AND column_name = 'members_only'
        ) AS has_template_members_only,
        EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'sessions'
+           AND column_name = 'reserve_tournament_spots'
+       ) AS has_session_tournament_reservations,
+       EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'schedule_templates'
+           AND column_name = 'reserve_tournament_spots'
+       ) AS has_template_tournament_reservations,
+       EXISTS (
          SELECT 1
          FROM information_schema.columns
          WHERE table_schema = 'public'
@@ -302,6 +340,8 @@ export default async function AdminPage() {
       has_auto_week_start: false,
       has_session_members_only: false,
       has_template_members_only: false,
+      has_session_tournament_reservations: false,
+      has_template_tournament_reservations: false,
       has_attending_board_member_ids: false,
     } satisfies AutoScheduleSchemaStatusRow);
 
@@ -312,6 +352,8 @@ export default async function AdminPage() {
     autoScheduleSchema.has_auto_week_start;
   const sessionMembersOnlyAvailable = autoScheduleSchema.has_session_members_only;
   const templateMembersOnlyAvailable = autoScheduleSchema.has_template_members_only;
+  const sessionReservationsAvailable = autoScheduleSchema.has_session_tournament_reservations;
+  const templateReservationsAvailable = autoScheduleSchema.has_template_tournament_reservations;
   const boardAttendanceAvailable = autoScheduleSchema.has_attending_board_member_ids;
 
   let autoScheduleError: string | null = null;
@@ -346,6 +388,7 @@ export default async function AdminPage() {
                  location,
                  capacity,
                  members_only,
+                 ${getTournamentReservationsSelectSql(templateReservationsAvailable, "schedule_templates")} AS reserve_tournament_spots,
                  is_active
                FROM schedule_templates
                ORDER BY weekday ASC, starts_at_time ASC, id ASC`
@@ -357,6 +400,7 @@ export default async function AdminPage() {
                  location,
                  capacity,
                  TRUE AS members_only,
+                 ${getTournamentReservationsSelectSql(templateReservationsAvailable, "schedule_templates")} AS reserve_tournament_spots,
                  is_active
                FROM schedule_templates
                ORDER BY weekday ASC, starts_at_time ASC, id ASC`
@@ -419,6 +463,7 @@ export default async function AdminPage() {
            location,
            capacity,
            ${autoScheduleSchema.has_session_members_only ? "members_only" : "TRUE AS members_only"},
+           ${getTournamentReservationsSelectSql(sessionReservationsAvailable, "sessions")} AS reserve_tournament_spots,
            ${
              boardAttendanceAvailable
                ? "attending_board_member_ids"
@@ -436,6 +481,7 @@ export default async function AdminPage() {
            location,
            capacity,
            ${autoScheduleSchema.has_session_members_only ? "members_only" : "TRUE AS members_only"},
+           ${getTournamentReservationsSelectSql(sessionReservationsAvailable, "sessions")} AS reserve_tournament_spots,
            ${
              boardAttendanceAvailable
                ? "attending_board_member_ids"
@@ -595,37 +641,29 @@ export default async function AdminPage() {
     const location = getTrainingVenue(String(formData.get("location") ?? ""))?.label;
     const capacity = Number(formData.get("capacity"));
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
+    const reserveTournamentSpots = formData.get("reserve_tournament_spots") === "on";
     const isActive = String(formData.get("is_active") ?? "") === "on";
 
     if (!location || !Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
     if (!isValidTimeInput(startsAtTime) || !isValidTimeInput(endsAtTime)) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
 
+    const columns = ["weekday", "starts_at_time", "ends_at_time", "location", "capacity", "is_active"];
+    const values: unknown[] = [weekday, startsAtTime, endsAtTime, location, capacity, isActive];
+    if (templateMembersOnlyAvailable) {
+      columns.push("members_only");
+      values.push(membersOnly);
+    }
+    if (templateReservationsAvailable) {
+      columns.push("reserve_tournament_spots");
+      values.push(reserveTournamentSpots);
+    }
     await pool.query(
-      autoScheduleSchema.has_template_members_only
-        ? `INSERT INTO schedule_templates (
-             weekday,
-             starts_at_time,
-             ends_at_time,
-             location,
-             capacity,
-             members_only,
-             is_active
-           )
-           VALUES ($1, $2::time, $3::time, $4, $5, $6, $7)`
-        : `INSERT INTO schedule_templates (
-             weekday,
-             starts_at_time,
-             ends_at_time,
-             location,
-             capacity,
-             is_active
-           )
-           VALUES ($1, $2::time, $3::time, $4, $5, $6)`,
-      autoScheduleSchema.has_template_members_only
-        ? [weekday, startsAtTime, endsAtTime, location, capacity, membersOnly, isActive]
-        : [weekday, startsAtTime, endsAtTime, location, capacity, isActive]
+      `INSERT INTO schedule_templates (${columns.join(", ")})
+       VALUES (${values.map((_, index) => `$${index + 1}`).join(", ")})`,
+      values
     );
+    revalidatePath("/admin");
   }
 
   async function updateScheduleTemplate(formData: FormData) {
@@ -637,6 +675,7 @@ export default async function AdminPage() {
     const location = getTrainingVenue(String(formData.get("location") ?? ""))?.label;
     const capacity = Number(formData.get("capacity"));
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
+    const reserveTournamentSpots = formData.get("reserve_tournament_spots") === "on";
     const isActive = String(formData.get("is_active") ?? "") === "on";
 
     if (!Number.isFinite(id)) return;
@@ -644,29 +683,21 @@ export default async function AdminPage() {
     if (!isValidTimeInput(startsAtTime) || !isValidTimeInput(endsAtTime)) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
 
+    const assignments = ["weekday = $2", "starts_at_time = $3::time", "ends_at_time = $4::time", "location = $5", "capacity = $6", "is_active = $7"];
+    const values: unknown[] = [id, weekday, startsAtTime, endsAtTime, location, capacity, isActive];
+    if (templateMembersOnlyAvailable) {
+      assignments.push(`members_only = $${values.length + 1}`);
+      values.push(membersOnly);
+    }
+    if (templateReservationsAvailable) {
+      assignments.push(`reserve_tournament_spots = $${values.length + 1}`);
+      values.push(reserveTournamentSpots);
+    }
     await pool.query(
-      autoScheduleSchema.has_template_members_only
-        ? `UPDATE schedule_templates
-           SET weekday = $2,
-               starts_at_time = $3::time,
-               ends_at_time = $4::time,
-               location = $5,
-               capacity = $6,
-               members_only = $7,
-               is_active = $8
-           WHERE id = $1`
-        : `UPDATE schedule_templates
-           SET weekday = $2,
-               starts_at_time = $3::time,
-               ends_at_time = $4::time,
-               location = $5,
-               capacity = $6,
-               is_active = $7
-           WHERE id = $1`,
-      autoScheduleSchema.has_template_members_only
-        ? [id, weekday, startsAtTime, endsAtTime, location, capacity, membersOnly, isActive]
-        : [id, weekday, startsAtTime, endsAtTime, location, capacity, isActive]
+      `UPDATE schedule_templates SET ${assignments.join(", ")} WHERE id = $1`,
+      values
     );
+    revalidatePath("/admin");
   }
 
   async function deleteScheduleTemplate(formData: FormData) {
@@ -690,6 +721,7 @@ export default async function AdminPage() {
     const location = getTrainingVenue(String(formData.get("location") ?? ""))?.label;
     const capacity = Number(formData.get("capacity"));
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
+    const reserveTournamentSpots = formData.get("reserve_tournament_spots") === "on";
     const attendingBoardMemberIds = normalizeBoardMemberIds(
       formData.getAll("attending_board_member_ids")
     );
@@ -717,6 +749,11 @@ export default async function AdminPage() {
         values.push(membersOnly);
       }
 
+      if (sessionReservationsAvailable) {
+        assignments.push(`reserve_tournament_spots = $${values.length + 1}`);
+        values.push(reserveTournamentSpots);
+      }
+
       if (boardAttendanceAvailable) {
         assignments.push(`attending_board_member_ids = $${values.length + 1}::text[]`);
         values.push(attendingBoardMemberIds);
@@ -737,6 +774,7 @@ export default async function AdminPage() {
     } finally {
       client.release();
     }
+    revalidatePath("/", "layout");
   }
 
   async function addSession(formData: FormData) {
@@ -746,6 +784,7 @@ export default async function AdminPage() {
     const location = getTrainingVenue(String(formData.get("location") ?? ""))?.label;
     const capacity = Number(formData.get("capacity") ?? 20);
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
+    const reserveTournamentSpots = formData.get("reserve_tournament_spots") === "on";
     const attendingBoardMemberIds = normalizeBoardMemberIds(
       formData.getAll("attending_board_member_ids")
     );
@@ -769,6 +808,12 @@ export default async function AdminPage() {
       values.push(membersOnly);
     }
 
+    if (sessionReservationsAvailable) {
+      columns.push("reserve_tournament_spots");
+      placeholders.push(`$${values.length + 1}`);
+      values.push(reserveTournamentSpots);
+    }
+
     if (boardAttendanceAvailable) {
       columns.push("attending_board_member_ids");
       placeholders.push(`$${values.length + 1}::text[]`);
@@ -780,6 +825,7 @@ export default async function AdminPage() {
        VALUES (${placeholders.join(", ")})`,
       values
     );
+    revalidatePath("/", "layout");
   }
 
   async function deleteSession(formData: FormData) {
@@ -1069,6 +1115,8 @@ export default async function AdminPage() {
               Aktiv mal
             </label>
 
+            <TournamentReservationField disabled={!templateReservationsAvailable} />
+
             <div className="md:col-span-2 xl:col-span-2">
               <button className="app-button-primary inline-flex">Legg til mal</button>
             </div>
@@ -1097,6 +1145,9 @@ export default async function AdminPage() {
                     {getAccessLabel(template.members_only)}
                   </span>
                   <span className="app-badge app-badge-accent">{template.capacity} plasser</span>
+                  <span className="app-badge app-badge-neutral">
+                    Lagreservasjon {template.reserve_tournament_spots ? "på" : "av"}
+                  </span>
                   <span className={getStatusBadgeClass(template.is_active)}>
                     {template.is_active ? "Aktiv" : "Av"}
                   </span>
@@ -1185,6 +1236,12 @@ export default async function AdminPage() {
                     <input name="is_active" type="checkbox" defaultChecked={template.is_active} />
                     Aktiv mal
                   </label>
+
+                  <TournamentReservationField
+                    key={String(template.reserve_tournament_spots)}
+                    defaultChecked={template.reserve_tournament_spots}
+                    disabled={!templateReservationsAvailable}
+                  />
                 </form>
 
                 <div className="mt-4 flex flex-wrap gap-3">
@@ -1358,6 +1415,8 @@ export default async function AdminPage() {
 
           <BoardAttendanceFields disabled={!boardAttendanceAvailable} />
 
+          <TournamentReservationField disabled={!sessionReservationsAvailable} />
+
           <div className="md:col-span-2 xl:col-span-4">
             <button className="app-button-primary inline-flex">Legg til økt</button>
           </div>
@@ -1388,6 +1447,9 @@ export default async function AdminPage() {
                     {getAccessLabel(session.members_only)}
                   </span>
                   <span className="app-badge app-badge-accent">{session.capacity} plasser</span>
+                  <span className="app-badge app-badge-neutral">
+                    Lagreservasjon {session.reserve_tournament_spots ? "på" : "av"}
+                  </span>
                   <span
                     className={
                       !boardAttendanceAvailable
@@ -1479,6 +1541,12 @@ export default async function AdminPage() {
                   <BoardAttendanceFields
                     selectedIds={session.attending_board_member_ids}
                     disabled={!boardAttendanceAvailable}
+                  />
+
+                  <TournamentReservationField
+                    key={String(session.reserve_tournament_spots)}
+                    defaultChecked={session.reserve_tournament_spots}
+                    disabled={!sessionReservationsAvailable}
                   />
                 </form>
 
