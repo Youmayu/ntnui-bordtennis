@@ -6,7 +6,7 @@ import { BOARD_MEMBERS, type BoardMemberId } from "@/lib/board-members";
 import {
   getIntlLocale,
   getSessionAccessLabel,
-  getVenueLabel,
+  formatVenueLabel,
   localizePathname,
 } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
@@ -50,7 +50,7 @@ export default function HomePageContent({
   const confirmedCount = (roster.registrations ?? initialRegistrations)
     .filter((entry) => entry.status === REGISTRATION_STATUS.CONFIRMED).length;
   const intlLocale = getIntlLocale(locale);
-  const venueLabel = getVenueLabel(locale);
+  const venueLabel = formatVenueLabel(session?.location, locale);
   const scheduleHref = localizePathname("/schedule", locale);
   const registerHref = localizePathname("/register", locale);
   const unregisterHref = localizePathname("/unregister", locale);
@@ -354,6 +354,7 @@ export default function HomePageContent({
               <div className="text-[color:var(--text-soft)]">{messages.home.locationLabel}</div>
               <VenueLink
                 locale={locale}
+                location={session.location}
                 className="font-medium text-[color:var(--accent)] hover:underline"
                 textClassName="font-medium"
                 showMazeMapBadge
@@ -373,7 +374,7 @@ export default function HomePageContent({
         </div>
       </section>
 
-      <FirstTrainingSection />
+      <FirstTrainingSection location={session.location} />
     </div>
   );
 }

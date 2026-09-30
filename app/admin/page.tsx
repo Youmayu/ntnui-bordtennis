@@ -16,7 +16,7 @@ import {
   sanitizeMemberName,
 } from "@/lib/input-safety";
 import { createPageMetadata } from "@/lib/seo";
-import { DEFAULT_SESSION_LOCATION, getMessages } from "@/lib/site-content";
+import { DEFAULT_SESSION_LOCATION, getMessages, getTrainingVenue } from "@/lib/site-content";
 import {
   BOARD_MEMBERS,
   normalizeBoardMemberIds,
@@ -28,6 +28,7 @@ import {
   type RegistrationStatus,
 } from "@/lib/registrations";
 import AdminClient from "./AdminClient";
+import TrainingLocationField from "./TrainingLocationField";
 
 type SessionRow = {
   id: number;
@@ -591,12 +592,12 @@ export default async function AdminPage() {
     const weekday = Number(formData.get("weekday"));
     const startsAtTime = String(formData.get("starts_at_time") ?? "");
     const endsAtTime = String(formData.get("ends_at_time") ?? "");
-    const location = normalizeAutoScheduleLocation(String(formData.get("location") ?? ""));
+    const location = getTrainingVenue(String(formData.get("location") ?? ""))?.label;
     const capacity = Number(formData.get("capacity"));
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
     const isActive = String(formData.get("is_active") ?? "") === "on";
 
-    if (!Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
+    if (!location || !Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
     if (!isValidTimeInput(startsAtTime) || !isValidTimeInput(endsAtTime)) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
 
@@ -633,13 +634,13 @@ export default async function AdminPage() {
     const weekday = Number(formData.get("weekday"));
     const startsAtTime = String(formData.get("starts_at_time") ?? "");
     const endsAtTime = String(formData.get("ends_at_time") ?? "");
-    const location = normalizeAutoScheduleLocation(String(formData.get("location") ?? ""));
+    const location = getTrainingVenue(String(formData.get("location") ?? ""))?.label;
     const capacity = Number(formData.get("capacity"));
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
     const isActive = String(formData.get("is_active") ?? "") === "on";
 
     if (!Number.isFinite(id)) return;
-    if (!Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
+    if (!location || !Number.isFinite(weekday) || weekday < 1 || weekday > 7) return;
     if (!isValidTimeInput(startsAtTime) || !isValidTimeInput(endsAtTime)) return;
     if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
 
@@ -686,7 +687,7 @@ export default async function AdminPage() {
     const id = Number(formData.get("id"));
     const startsAtLocal = String(formData.get("starts_at") ?? "");
     const endsAtLocal = String(formData.get("ends_at") ?? "");
-    const location = sanitizeLocation(String(formData.get("location") ?? ""));
+    const location = getTrainingVenue(String(formData.get("location") ?? ""))?.label;
     const capacity = Number(formData.get("capacity"));
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
     const attendingBoardMemberIds = normalizeBoardMemberIds(
@@ -742,7 +743,7 @@ export default async function AdminPage() {
     "use server";
     const startsAtLocal = String(formData.get("starts_at") ?? "");
     const endsAtLocal = String(formData.get("ends_at") ?? "");
-    const location = sanitizeLocation(String(formData.get("location") ?? ""));
+    const location = getTrainingVenue(String(formData.get("location") ?? ""))?.label;
     const capacity = Number(formData.get("capacity") ?? 20);
     const membersOnly = String(formData.get("members_only") ?? "") === "on";
     const attendingBoardMemberIds = normalizeBoardMemberIds(
@@ -1050,14 +1051,7 @@ export default async function AdminPage() {
             </div>
 
             <div className="flex flex-col gap-1 md:col-span-2 xl:col-span-4">
-              <label className="text-xs text-[color:var(--text-soft)]">Sted</label>
-              <input
-                name="location"
-                defaultValue={DEFAULT_SESSION_LOCATION}
-                maxLength={120}
-                className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
-                required
-              />
+              <TrainingLocationField />
             </div>
 
             <label className="flex items-center gap-2 text-sm">
@@ -1174,14 +1168,7 @@ export default async function AdminPage() {
                   </div>
 
                   <div className="flex flex-col gap-1 sm:col-span-2">
-                    <label className="text-xs text-[color:var(--text-soft)]">Sted</label>
-                    <input
-                      name="location"
-                      defaultValue={template.location}
-                      maxLength={120}
-                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
-                      required
-                    />
+                    <TrainingLocationField key={template.location} defaultValue={template.location} />
                   </div>
 
                   <label className="flex items-center gap-2 text-sm">
@@ -1366,14 +1353,7 @@ export default async function AdminPage() {
           </div>
 
           <div className="flex flex-col gap-1 md:col-span-2 xl:col-span-4">
-            <label className="text-xs text-[color:var(--text-soft)]">Sted</label>
-            <input
-              name="location"
-              defaultValue={DEFAULT_SESSION_LOCATION}
-              maxLength={120}
-              className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
-              required
-            />
+            <TrainingLocationField />
           </div>
 
           <BoardAttendanceFields disabled={!boardAttendanceAvailable} />
@@ -1493,14 +1473,7 @@ export default async function AdminPage() {
                   </div>
 
                   <div className="flex flex-col gap-1 md:col-span-2 xl:col-span-4">
-                    <label className="text-xs text-[color:var(--text-soft)]">Sted</label>
-                    <input
-                      name="location"
-                      defaultValue={session.location}
-                      maxLength={120}
-                      className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
-                      required
-                    />
+                    <TrainingLocationField key={session.location} defaultValue={session.location} />
                   </div>
 
                   <BoardAttendanceFields

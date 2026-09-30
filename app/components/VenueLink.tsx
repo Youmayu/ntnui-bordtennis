@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  MAZEMAP_URL,
+  TRAINING_VENUES,
   formatVenueLabel,
-  isDefaultVenueLocation,
+  getTrainingVenue,
   type Locale,
 } from "@/lib/site-content";
 
@@ -30,23 +30,32 @@ export default function VenueLink({
 }: VenueLinkProps) {
   const label = formatVenueLabel(location, locale);
 
-  if (location && !isDefaultVenueLocation(location)) {
+  const venue = getTrainingVenue(location);
+
+  if (location?.trim() && !venue) {
     return <span className={textClassName}>{label}</span>;
   }
 
+  const venues = venue ? [venue] : TRAINING_VENUES;
+
   return (
-    <a
-      href={MAZEMAP_URL}
-      target="_blank"
-      rel="noreferrer"
-      className={joinClasses("app-venue-link", className)}
-    >
-      <span className={textClassName}>{label}</span>
-      {showMazeMapBadge && (
-        <span className={joinClasses("app-map-button", badgeClassName)}>
-          MazeMap
-        </span>
-      )}
-    </a>
+    <span className="inline-flex flex-wrap gap-x-4 gap-y-2">
+      {venues.map((trainingVenue) => (
+        <a
+          key={trainingVenue.room}
+          href={trainingVenue.mapUrl}
+          target="_blank"
+          rel="noreferrer"
+          className={joinClasses("app-venue-link", className)}
+        >
+          <span className={textClassName}>{trainingVenue.label}</span>
+          {showMazeMapBadge && (
+            <span className={joinClasses("app-map-button", badgeClassName)}>
+              MazeMap
+            </span>
+          )}
+        </a>
+      ))}
+    </span>
   );
 }

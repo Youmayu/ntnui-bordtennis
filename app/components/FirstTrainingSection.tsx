@@ -6,7 +6,7 @@ import VenueLink from "@/app/components/VenueLink";
 import { getFirstTrainingCopy } from "@/lib/first-training-content";
 import { localizePathname, NTNUI_MEMBERSHIP_URL } from "@/lib/site-content";
 
-export default function FirstTrainingSection() {
+export default function FirstTrainingSection({ location }: { location?: string } = {}) {
   const { locale, messages } = useSitePreferences();
   const copy = getFirstTrainingCopy(locale);
 
@@ -44,7 +44,7 @@ export default function FirstTrainingSection() {
 
       <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[color:var(--border-muted)] pt-4 text-sm">
         <span className="font-semibold text-[color:var(--text-strong)]">{messages.home.locationLabel}</span>
-        <VenueLink locale={locale} showMazeMapBadge textClassName="font-medium" />
+        <VenueLink locale={locale} location={location} showMazeMapBadge textClassName="font-medium" />
       </div>
     </section>
   );

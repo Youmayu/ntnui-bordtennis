@@ -1,6 +1,6 @@
 <div align="center">
   <h1>NTNUI Bordtennis</h1>
-  <p>Multilingual training registration site for NTNUI Bordtennis at Dragvoll Idrettssenter B217.</p>
+  <p>Multilingual training registration site for NTNUI Bordtennis at Dragvoll Idrettssenter B217 and B212.</p>
   <p>
     <a href="https://nextjs.org/"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-16.2-black?style=flat-square&amp;logo=next.js"></a>
     <a href="https://react.dev/"><img alt="React" src="https://img.shields.io/badge/React-19-20232a?style=flat-square&amp;logo=react"></a>
@@ -39,7 +39,7 @@ The public site uses route-based locales such as `/no`, `/en`, `/de`, and `/zh`,
 | Languages | Supports Norwegian, English, Danish, Swedish, German, Chinese, French, and Spanish |
 | Theme | Supports dark and light mode, with dark mode as the default |
 | Responsive UI | Uses a premium desktop layout and a compact mobile navigation/menu flow |
-| Navigation | Includes direct MazeMap access for Dragvoll Idrettssenter B217 |
+| Navigation | Includes room-specific MazeMap access for Dragvoll Idrettssenter B217 and B212 |
 | Privacy | Localized privacy, cookie and website information pages, form notices, and optional preference-cookie controls |
 | Admin | Manage sessions, announcements, registrations, and club operations from `/admin` |
 | Anti-abuse | Uses Cloudflare Turnstile on register and unregister flows |
@@ -178,7 +178,8 @@ heroku run -a <your-app-name> -- node scripts/init-db.js
 - If a session is full, new signups are stored as `waitlist`.
 - When a confirmed player unregisters, the earliest waitlisted player is promoted automatically.
 - Announcements are written once and shown as-is across languages.
-- The venue label is kept as `Dragvoll Idrettssenter B217` across locales for map consistency.
+- Admins select B217 or B212 for individual sessions and recurring templates, with an optional MazeMap preview. Existing sessions remain in their saved room; template changes apply to sessions generated afterwards.
+- Session links use the saved room's MazeMap destination. General location sections list both rooms, with labels kept as `Dragvoll Idrettssenter B217` / `Dragvoll Idrettssenter B212` across locales for map consistency.
 - The public site uses locale-based URLs for better multilingual SEO.
 
 ## SEO

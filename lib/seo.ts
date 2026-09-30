@@ -11,7 +11,7 @@ const SITE_NAME_EN = "NTNUI Table Tennis";
 
 export const SITE_TITLE = `${SITE_NAME_NO} | ${SITE_NAME_EN}`;
 export const SITE_DESCRIPTION =
-  "Påmelding, timeplan og informasjon for NTNUI Bordtennis (NTNUI Table Tennis) ved Dragvoll Idrettssenter B217 i Trondheim.";
+  "Påmelding, timeplan og informasjon for NTNUI Bordtennis (NTNUI Table Tennis) ved Dragvoll Idrettssenter B217 / B212 i Trondheim.";
 
 const BASE_KEYWORDS = [
   "NTNUI Bordtennis",
@@ -22,6 +22,8 @@ const BASE_KEYWORDS = [
   "NTNU bordtennis",
   "Dragvoll Idrettssenter B217",
   "Dragvoll Sports Centre B217",
+  "Dragvoll Idrettssenter B212",
+  "Dragvoll Sports Centre B212",
   "bordtennis trening",
   "table tennis practice",
 ];

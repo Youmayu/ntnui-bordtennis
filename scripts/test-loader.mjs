@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 export function load(file, mocks = {}, globals = {}) {
   const filename = resolve(root, file);
   const source = ts.transpileModule(readFileSync(filename, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   const loadedModule = { exports: {} };
   const localRequire = (id) => {

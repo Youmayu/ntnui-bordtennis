@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start -p $PORT",
     "lint": "eslint",
-    "test:registrations": "node --test scripts/registrations.test.mjs scripts/tournament.test.mjs"
+    "test:registrations": "node --test scripts/registrations.test.mjs scripts/tournament.test.mjs",
+    "test:locations": "node --test scripts/training-locations.test.mjs"
   },
   "dependencies": {
     "next": "^16.2.2",

@@ -35,12 +35,26 @@ const LEVEL_KEY_BY_VALUE: Record<string, LevelKey> = {
   Erfaren: "experienced",
 };
 
-export const MAZEMAP_URL =
-  "https://use.mazemap.com/?utm_medium=qr-code-mobile#v=1&config=ntnu&campusid=18&zlevel=2&center=10.475060,63.406574&zoom=17.8&sharepoitype=identifier&sharepoi=850-B217";
+export const TRAINING_VENUES = [
+  {
+    room: "B217",
+    label: "Dragvoll Idrettssenter B217",
+    mapUrl: "https://link.mazemap.com/BGjlq1kK",
+    embedUrl:
+      "https://use.mazemap.com/embed.html#v=1&campusid=18&zlevel=2&center=10.475198,63.406499&zoom=18&sharepoitype=identifier&sharepoi=850-B217&utm_medium=iframe",
+  },
+  {
+    room: "B212",
+    label: "Dragvoll Idrettssenter B212",
+    mapUrl: "https://link.mazemap.com/pCEbCsSJ",
+    embedUrl:
+      "https://use.mazemap.com/embed.html#v=1&campusid=18&zlevel=2&center=10.474672,63.406536&zoom=18&sharepoitype=identifier&sharepoi=850-B212&utm_medium=iframe",
+  },
+] as const;
 
 export const NTNUI_MEMBERSHIP_URL = "https://medlem.ntnui.no/groups/bordtennis/";
 
-export const VENUE_LABEL = "Dragvoll Idrettssenter B217";
+export const VENUE_LABEL = "Dragvoll Idrettssenter B217 / B212";
 
 const VENUE_LABELS: Record<Locale, string> = {
   no: VENUE_LABEL,
@@ -138,10 +152,10 @@ const SESSION_ACCESS_COPY: Record<Locale, SessionAccessCopy> = {
   },
 };
 
-export const DEFAULT_SESSION_LOCATION = VENUE_LABEL;
+export const DEFAULT_SESSION_LOCATION = TRAINING_VENUES[0].label;
 
 const DEFAULT_LOCATION_ALIASES = [
-  VENUE_LABEL,
+  DEFAULT_SESSION_LOCATION,
   "Dragvoll Sports Centre B217",
   "Dragvoll Idrætscenter B217",
   "Dragvoll idrottscenter B217",
@@ -172,6 +186,17 @@ const DEFAULT_LOCATION_ALIASES = [
 const DEFAULT_LOCATION_ALIAS_SET = new Set(
   DEFAULT_LOCATION_ALIASES.map((value) => value.trim().toLowerCase())
 );
+
+const TRAINING_VENUE_ALIASES = TRAINING_VENUES.map((venue) => ({
+  venue,
+  aliases: new Set([
+    venue.room.toLowerCase(),
+    `dragvoll ${venue.room.toLowerCase()}`,
+    ...DEFAULT_LOCATION_ALIASES.map((alias) =>
+      `${alias.replace(/\s+B217$/, "")} ${venue.room}`.toLowerCase()
+    ),
+  ]),
+}));
 
 const SORTED_DEFAULT_LOCATION_ALIASES = [...new Set(DEFAULT_LOCATION_ALIASES)].sort(
   (left, right) => right.length - left.length
@@ -413,7 +438,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Om oss",
       title: "Kontakt og praktisk info",
-      body: "NTNUI Bordtennis trener på Dragvoll Idrettssenter B217. Her finner du kontaktinformasjon og roller i klubben.",
+      body: "NTNUI Bordtennis trener på Dragvoll Idrettssenter B217 / B212. Her finner du kontaktinformasjon og roller i klubben.",
       roles: {
         leader: "Leder",
         deputy: "Nestleder",
@@ -539,7 +564,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "About",
       title: "Contact and practical info",
-      body: "NTNUI Table Tennis trains at Dragvoll Idrettssenter B217. Here you will find contact information and club roles.",
+      body: "NTNUI Table Tennis trains at Dragvoll Idrettssenter B217 / B212. Here you will find contact information and club roles.",
       roles: {
         leader: "Chair",
         deputy: "Vice chair",
@@ -665,7 +690,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Om os",
       title: "Kontakt og praktisk info",
-      body: "NTNUI Bordtennis træner i Dragvoll Idrettssenter B217. Her finder du kontaktoplysninger og klubbens roller.",
+      body: "NTNUI Bordtennis træner i Dragvoll Idrettssenter B217 / B212. Her finder du kontaktoplysninger og klubbens roller.",
       roles: {
         leader: "Leder",
         deputy: "Næstleder",
@@ -791,7 +816,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Om oss",
       title: "Kontakt och praktisk info",
-      body: "NTNUI Bordtennis tränar i Dragvoll Idrettssenter B217. Här hittar du kontaktuppgifter och klubbens roller.",
+      body: "NTNUI Bordtennis tränar i Dragvoll Idrettssenter B217 / B212. Här hittar du kontaktuppgifter och klubbens roller.",
       roles: {
         leader: "Ordförande",
         deputy: "Vice ordförande",
@@ -916,7 +941,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "关于我们",
       title: "联系方式和实用信息",
-      body: "NTNUI 乒乓球在 Dragvoll Idrettssenter B217 训练。这里提供联系方式和俱乐部职务信息。",
+      body: "NTNUI 乒乓球在 Dragvoll Idrettssenter B217 / B212 训练。这里提供联系方式和俱乐部职务信息。",
       roles: {
         leader: "负责人",
         deputy: "副负责人",
@@ -1042,7 +1067,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "À propos",
       title: "Contact et informations pratiques",
-      body: "NTNUI Tennis de table s’entraîne à Dragvoll Idrettssenter B217. Vous trouverez ici les coordonnées et les rôles du club.",
+      body: "NTNUI Tennis de table s’entraîne à Dragvoll Idrettssenter B217 / B212. Vous trouverez ici les coordonnées et les rôles du club.",
       roles: {
         leader: "Présidence",
         deputy: "Vice-présidence",
@@ -1168,7 +1193,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Sobre nosotros",
       title: "Contacto e información práctica",
-      body: "NTNUI Tenis de mesa entrena en Dragvoll Idrettssenter B217. Aquí encontrarás información de contacto y los roles del club.",
+      body: "NTNUI Tenis de mesa entrena en Dragvoll Idrettssenter B217 / B212. Aquí encontrarás información de contacto y los roles del club.",
       roles: {
         leader: "Presidencia",
         deputy: "Vicepresidencia",
@@ -1294,7 +1319,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Über uns",
       title: "Kontakt und praktische Infos",
-      body: "NTNUI Tischtennis trainiert im Dragvoll Idrettssenter B217. Hier findest du Kontaktinformationen und Rollen im Verein.",
+      body: "NTNUI Tischtennis trainiert im Dragvoll Idrettssenter B217 / B212. Hier findest du Kontaktinformationen und Rollen im Verein.",
       roles: {
         leader: "Leitung",
         deputy: "Stellvertretung",
@@ -1353,13 +1378,22 @@ export function isDefaultVenueLocation(location: string | null | undefined) {
   return DEFAULT_LOCATION_ALIAS_SET.has(normalizeSingleLineDisplay(location).toLowerCase());
 }
 
+export function getTrainingVenue(location: string | null | undefined) {
+  const normalized = normalizeSingleLineDisplay(location ?? "").toLowerCase();
+  if (!normalized) return null;
+
+  // Room-less legacy locations refer to B217; explicit rooms take precedence.
+  return TRAINING_VENUE_ALIASES.find(({ aliases }) => aliases.has(normalized))?.venue
+    ?? (DEFAULT_LOCATION_ALIAS_SET.has(normalized) ? TRAINING_VENUES[0] : null);
+}
+
 export function normalizeVenueText(text: string) {
   let normalized = normalizeMultilineDisplay(text);
 
   for (const alias of SORTED_DEFAULT_LOCATION_ALIASES) {
     normalized = normalized.replace(
-      new RegExp(`${escapeRegExp(alias)}(?!\\s+B217)`, "g"),
-      VENUE_LABEL
+      new RegExp(`${escapeRegExp(alias)}(?!\\s+B\\d+)`, "g"),
+      DEFAULT_SESSION_LOCATION
     );
   }
 
@@ -1377,7 +1411,7 @@ export function formatVenueLabel(location: string | null | undefined, locale: Lo
     return getVenueLabel(locale);
   }
 
-  return isDefaultVenueLocation(normalizedLocation) ? getVenueLabel(locale) : normalizedLocation;
+  return getTrainingVenue(normalizedLocation)?.label ?? normalizedLocation;
 }
 
 export function getLevelKey(levelValue: string): LevelKey {
