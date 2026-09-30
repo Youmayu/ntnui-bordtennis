@@ -3,9 +3,7 @@
 import Image from "next/image";
 import ttLogo from "@/app/ttlogo.png";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
-import VenueLink from "@/app/components/VenueLink";
 import { BOARD_MEMBERS } from "@/lib/board-members";
-import { normalizeVenueText } from "@/lib/site-content";
 
 type PersonCardProps = {
   role: string;
@@ -45,7 +43,7 @@ function PersonCard({ role, name, email, phone }: PersonCardProps) {
 }
 
 export default function AboutPageContent() {
-  const { locale, messages } = useSitePreferences();
+  const { messages } = useSitePreferences();
 
   return (
     <div className="space-y-10">
@@ -57,7 +55,7 @@ export default function AboutPageContent() {
               {messages.about.title}
             </h1>
             <p className="mt-4 max-w-2xl text-[color:var(--text-muted)]">
-              {normalizeVenueText(messages.about.body)}
+              {messages.about.body}
             </p>
           </div>
 
@@ -78,32 +76,6 @@ export default function AboutPageContent() {
         ))}
       </section>
 
-      <section className="app-surface app-location-stage overflow-hidden p-0">
-        <div className="app-location-photo-shell" aria-hidden="true">
-          <Image
-            src="/images/website/treningshall.jpg"
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="app-location-photo-image"
-          />
-        </div>
-
-        <div className="relative z-10 p-6 sm:p-8">
-          <div className="app-panel-eyebrow">{messages.about.locationTitle}</div>
-          <h2 className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
-            {messages.about.locationTitle}
-          </h2>
-          <div className="mt-4">
-            <VenueLink
-              locale={locale}
-              className="text-[color:var(--accent)] hover:underline"
-              textClassName="font-medium text-[color:var(--accent)]"
-              showMazeMapBadge
-            />
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

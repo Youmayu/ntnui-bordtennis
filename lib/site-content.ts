@@ -438,7 +438,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Om oss",
       title: "Kontakt og praktisk info",
-      body: "NTNUI Bordtennis trener på Dragvoll Idrettssenter B217 / B212. Her finner du kontaktinformasjon og roller i klubben.",
+      body: "Her finner du kontaktinformasjon og roller i klubben.",
       roles: {
         leader: "Leder",
         deputy: "Nestleder",
@@ -564,7 +564,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "About",
       title: "Contact and practical info",
-      body: "NTNUI Table Tennis trains at Dragvoll Idrettssenter B217 / B212. Here you will find contact information and club roles.",
+      body: "Here you will find contact information and club roles.",
       roles: {
         leader: "Chair",
         deputy: "Vice chair",
@@ -690,7 +690,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Om os",
       title: "Kontakt og praktisk info",
-      body: "NTNUI Bordtennis træner i Dragvoll Idrettssenter B217 / B212. Her finder du kontaktoplysninger og klubbens roller.",
+      body: "Her finder du kontaktoplysninger og klubbens roller.",
       roles: {
         leader: "Leder",
         deputy: "Næstleder",
@@ -816,7 +816,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Om oss",
       title: "Kontakt och praktisk info",
-      body: "NTNUI Bordtennis tränar i Dragvoll Idrettssenter B217 / B212. Här hittar du kontaktuppgifter och klubbens roller.",
+      body: "Här hittar du kontaktuppgifter och klubbens roller.",
       roles: {
         leader: "Ordförande",
         deputy: "Vice ordförande",
@@ -941,7 +941,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "关于我们",
       title: "联系方式和实用信息",
-      body: "NTNUI 乒乓球在 Dragvoll Idrettssenter B217 / B212 训练。这里提供联系方式和俱乐部职务信息。",
+      body: "这里提供联系方式和俱乐部职务信息。",
       roles: {
         leader: "负责人",
         deputy: "副负责人",
@@ -1067,7 +1067,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "À propos",
       title: "Contact et informations pratiques",
-      body: "NTNUI Tennis de table s’entraîne à Dragvoll Idrettssenter B217 / B212. Vous trouverez ici les coordonnées et les rôles du club.",
+      body: "Vous trouverez ici les coordonnées et les rôles du club.",
       roles: {
         leader: "Présidence",
         deputy: "Vice-présidence",
@@ -1193,7 +1193,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Sobre nosotros",
       title: "Contacto e información práctica",
-      body: "NTNUI Tenis de mesa entrena en Dragvoll Idrettssenter B217 / B212. Aquí encontrarás información de contacto y los roles del club.",
+      body: "Aquí encontrarás información de contacto y los roles del club.",
       roles: {
         leader: "Presidencia",
         deputy: "Vicepresidencia",
@@ -1319,7 +1319,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     about: {
       badge: "Über uns",
       title: "Kontakt und praktische Infos",
-      body: "NTNUI Tischtennis trainiert im Dragvoll Idrettssenter B217 / B212. Hier findest du Kontaktinformationen und Rollen im Verein.",
+      body: "Hier findest du Kontaktinformationen und Rollen im Verein.",
       roles: {
         leader: "Leitung",
         deputy: "Stellvertretung",

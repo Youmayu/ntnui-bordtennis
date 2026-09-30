@@ -179,7 +179,7 @@ heroku run -a <your-app-name> -- node scripts/init-db.js
 - When a confirmed player unregisters, the earliest waitlisted player is promoted automatically.
 - Announcements are written once and shown as-is across languages.
 - Admins select B217 or B212 for individual sessions and recurring templates, with an optional MazeMap preview. Existing sessions remain in their saved room; template changes apply to sessions generated afterwards.
-- Session links use the saved room's MazeMap destination. General location sections list both rooms, with labels kept as `Dragvoll Idrettssenter B217` / `Dragvoll Idrettssenter B212` across locales for map consistency.
+- Location labels and MazeMap links appear on individual training cards and beside the session selector when signing up. Each uses the saved room's destination, with labels kept as `Dragvoll Idrettssenter B217` / `Dragvoll Idrettssenter B212` across locales for map consistency.
 - The public site uses locale-based URLs for better multilingual SEO.
 
 ## SEO

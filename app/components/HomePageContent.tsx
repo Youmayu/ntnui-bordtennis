@@ -6,7 +6,6 @@ import { BOARD_MEMBERS, type BoardMemberId } from "@/lib/board-members";
 import {
   getIntlLocale,
   getSessionAccessLabel,
-  formatVenueLabel,
   localizePathname,
 } from "@/lib/site-content";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
@@ -50,7 +49,6 @@ export default function HomePageContent({
   const confirmedCount = (roster.registrations ?? initialRegistrations)
     .filter((entry) => entry.status === REGISTRATION_STATUS.CONFIRMED).length;
   const intlLocale = getIntlLocale(locale);
-  const venueLabel = formatVenueLabel(session?.location, locale);
   const scheduleHref = localizePathname("/schedule", locale);
   const registerHref = localizePathname("/register", locale);
   const unregisterHref = localizePathname("/unregister", locale);
@@ -71,13 +69,9 @@ export default function HomePageContent({
             />
           </div>
 
-          <div className="app-stage-grid relative z-10">
+          <div className="relative z-10">
             <div className="app-stage-copy max-w-3xl">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="app-badge app-badge-neutral">{venueLabel}</span>
-              </div>
-
-              <h1 className="mt-5 text-3xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:mt-6 sm:text-5xl">
+              <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
                 {messages.home.emptyTitle}
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--text-muted)]">
@@ -92,17 +86,6 @@ export default function HomePageContent({
               <DiscordInvitation />
             </div>
 
-            <div className="app-stage-panel app-stage-panel-muted">
-              <div className="app-stage-kicker">{messages.home.locationLabel}</div>
-              <div className="mt-3">
-                <VenueLink
-                  locale={locale}
-                  className="font-medium text-[color:var(--accent)] hover:underline"
-                  textClassName="font-medium"
-                  showMazeMapBadge
-                />
-              </div>
-            </div>
           </div>
         </section>
         <FirstTrainingSection />
@@ -165,11 +148,7 @@ export default function HomePageContent({
 
         <div className="app-stage-grid relative z-10">
           <div className="app-stage-copy">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="app-badge app-badge-neutral">{venueLabel}</span>
-            </div>
-
-            <h1 className="mt-5 max-w-3xl text-3xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:mt-6 sm:text-5xl">
+            <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-[color:var(--text-strong)] sm:text-5xl">
               {messages.home.heroTitle}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--text-muted)]">
@@ -350,17 +329,6 @@ export default function HomePageContent({
           <aside className="app-home-board-secondary p-6 text-sm sm:p-8">
             <div className="app-panel-eyebrow">{messages.home.infoTitle}</div>
 
-            <div className="app-side-block space-y-2">
-              <div className="text-[color:var(--text-soft)]">{messages.home.locationLabel}</div>
-              <VenueLink
-                locale={locale}
-                location={session.location}
-                className="font-medium text-[color:var(--accent)] hover:underline"
-                textClassName="font-medium"
-                showMazeMapBadge
-              />
-            </div>
-
             <div className="app-side-block">
               <div className="text-[color:var(--text-soft)]">{messages.home.levelLabel}</div>
               <div className="mt-2">{messages.home.levelBody}</div>
@@ -374,7 +342,7 @@ export default function HomePageContent({
         </div>
       </section>
 
-      <FirstTrainingSection location={session.location} />
+      <FirstTrainingSection />
     </div>
   );
 }

@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import ntnuiLogo from "@/app/ntnuilogo.png";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
-import VenueLink from "@/app/components/VenueLink";
 import DiscordLink from "@/app/components/DiscordLink";
 import { getLegalCopy } from "@/lib/legal";
 import { PRIVACY_EMAIL } from "@/lib/legal-content";
@@ -25,16 +24,8 @@ export default function SiteFooter() {
             <div className="app-footer-title">{messages.shell.brand}</div>
           </div>
 
-          <div className="app-footer-location">
-            <VenueLink
-              locale={locale}
-              className="font-medium text-[color:var(--accent)] hover:underline"
-              textClassName="font-medium text-[color:var(--accent)]"
-              showMazeMapBadge
-            />
-            <div className="mt-3">
-              <DiscordLink variant="footer" />
-            </div>
+          <div className="min-w-0">
+            <DiscordLink variant="footer" />
           </div>
 
           <div className="app-footer-copy">{messages.shell.footerCopyright(new Date().getFullYear())}</div>

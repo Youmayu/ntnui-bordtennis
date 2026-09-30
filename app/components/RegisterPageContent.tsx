@@ -499,15 +499,6 @@ export default function RegisterPageContent() {
                   {" - "}
                   {sessionTimeFormatter.format(new Date(selectedSession.ends_at))}
                 </div>
-                <div className="mt-4">
-                  <VenueLink
-                    locale={locale}
-                    location={selectedSession.location}
-                    className="font-medium text-[color:var(--accent)] hover:underline"
-                    textClassName="font-medium"
-                    showMazeMapBadge
-                  />
-                </div>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <span
                     className={

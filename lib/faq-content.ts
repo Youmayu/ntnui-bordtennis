@@ -1,4 +1,4 @@
-import { VENUE_LABEL, type Locale } from "@/lib/site-content";
+import type { Locale } from "@/lib/site-content";
 
 export type FaqItem = {
   question: string;
@@ -55,8 +55,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Hvor trener dere?",
             answer: [
-              `Vi trener i ${VENUE_LABEL}.`,
-              "Bruk MazeMap-knappen på nettsiden hvis du trenger veibeskrivelse.",
+              "Rom og veibeskrivelse vises på hvert treningskort og når du melder deg på.",
             ],
           },
         ],
@@ -141,8 +140,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Where do you train?",
             answer: [
-              `We train at ${VENUE_LABEL}.`,
-              "Use the MazeMap button on the website if you need directions.",
+              "The room and directions are shown on each training card and when you sign up.",
             ],
           },
         ],
@@ -227,8 +225,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Hvor træner I?",
             answer: [
-              `Vi træner i ${VENUE_LABEL}.`,
-              "Brug MazeMap-knappen på hjemmesiden, hvis du har brug for vejvisning.",
+              "Lokale og vejvisning vises på hvert træningskort og ved tilmelding.",
             ],
           },
         ],
@@ -313,8 +310,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Var tränar ni?",
             answer: [
-              `Vi tränar i ${VENUE_LABEL}.`,
-              "Använd MazeMap-knappen på webbplatsen om du behöver vägbeskrivning.",
+              "Rum och vägbeskrivning visas på varje träningskort och när du anmäler dig.",
             ],
           },
         ],
@@ -399,8 +395,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Wo trainiert ihr?",
             answer: [
-              `Wir trainieren in ${VENUE_LABEL}.`,
-              "Nutze den MazeMap-Button auf der Website, wenn du eine Wegbeschreibung brauchst.",
+              "Raum und Wegbeschreibung findest du bei der jeweiligen Trainingseinheit und bei der Anmeldung.",
             ],
           },
         ],
@@ -485,8 +480,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "你们在哪里训练？",
             answer: [
-              `我们在 ${VENUE_LABEL} 训练。`,
-              "如果你需要路线，可以使用网站上的 MazeMap 按钮。",
+              "每次训练的卡片和报名页面上都会显示房间和路线信息。",
             ],
           },
         ],
@@ -571,8 +565,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Où avez-vous vos entraînements ?",
             answer: [
-              `Nous nous entraînons à ${VENUE_LABEL}.`,
-              "Utilisez le bouton MazeMap sur le site si vous avez besoin d’un itinéraire.",
+              "La salle et l’itinéraire sont indiqués sur la fiche de chaque entraînement et lors de l’inscription.",
             ],
           },
         ],
@@ -657,8 +650,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "¿Dónde entrenáis?",
             answer: [
-              `Entrenamos en ${VENUE_LABEL}.`,
-              "Usa el botón de MazeMap en la web si necesitas indicaciones.",
+              "La sala y las indicaciones aparecen en la tarjeta de cada entrenamiento y al inscribirte.",
             ],
           },
         ],
