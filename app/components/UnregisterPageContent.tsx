@@ -97,7 +97,8 @@ export default function UnregisterPageContent() {
     (async () => {
       const res = await fetch(`/api/registrations?sessionId=${sessionId}`);
       const data = await res.json();
-      const nextRegistrations = (data.registrations ?? []) as Registration[];
+      const nextRegistrations = ((data.registrations ?? []) as Registration[])
+        .filter((registration) => !registration.is_board);
 
       if (cancelled) {
         return;

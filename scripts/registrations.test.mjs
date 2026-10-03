@@ -92,9 +92,9 @@ test("public roster includes both statuses, preserves queue order and exposes no
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("Cache-Control"), "no-store");
   assert.deepEqual((await response.json()).registrations, [
-    { id: 1, name: "Anne Smith", status: "confirmed", is_tournament: true },
-    { id: 2, name: "Bo Li", status: "waitlist", is_tournament: false },
-    { id: 3, name: "Cam Jones", status: "waitlist", is_tournament: false },
+    { id: 1, name: "Anne Smith", status: "confirmed", is_tournament: true, is_board: false },
+    { id: 2, name: "Bo Li", status: "waitlist", is_tournament: false, is_board: false },
+    { id: 3, name: "Cam Jones", status: "waitlist", is_tournament: false, is_board: false },
   ]);
 });
 

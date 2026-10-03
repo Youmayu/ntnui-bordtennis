@@ -61,6 +61,7 @@ test("admin saves both rooms, updates them, and generates recurring sessions wit
     "@/lib/auto-schedule": { ...autoSchedule, ensureAutoScheduledSessions: async () => {} },
     "./AdminClient": { default: () => null },
     "./TrainingLocationField": { default: TrainingLocationField },
+    "./SessionForm": { default: "form" },
   };
   const AdminPage = load("app/admin/page.tsx", mocks).default;
   const { getUpcomingSessions } = load("lib/sessions.ts", mocks);

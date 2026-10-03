@@ -1,3 +1,20 @@
+import type { Locale } from "@/lib/site-content";
+
+const BOARD_MEMBER_LABELS: Record<Locale, string> = {
+  no: "Styremedlem",
+  en: "Board member",
+  da: "Bestyrelsesmedlem",
+  sv: "Styrelseledamot",
+  de: "Vorstandsmitglied",
+  zh: "理事会成员",
+  fr: "Membre du bureau",
+  es: "Miembro de la junta",
+};
+
+export function getBoardMemberLabel(locale: Locale) {
+  return BOARD_MEMBER_LABELS[locale];
+}
+
 export const BOARD_MEMBERS = [
   {
     id: "maja-bo",

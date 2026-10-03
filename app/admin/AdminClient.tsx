@@ -10,6 +10,7 @@ type RegistrationRow = {
   level: string | null;
   status: string;
   created_at: string;
+  board_member_id: string | null;
 };
 
 function getStatusBadgeClass(status: string) {
@@ -158,9 +159,13 @@ export default function AdminClient({
                     form={`update-${registration.id}`}
                     name={`name-${registration.id}`}
                     defaultValue={registration.name}
+                    disabled={Boolean(registration.board_member_id)}
                     maxLength={80}
                     className="app-field min-w-[220px] rounded-2xl px-4 py-3 text-sm outline-none"
                   />
+                  {registration.board_member_id && (
+                    <span className="app-badge app-badge-board mt-2">Styremedlem · endres via styreoppmøte</span>
+                  )}
                 </td>
 
                 <td className="px-4 py-4 pr-3">
@@ -168,9 +173,10 @@ export default function AdminClient({
                     form={`update-${registration.id}`}
                     name={`level-${registration.id}`}
                     defaultValue={registration.level ?? ""}
+                    disabled={Boolean(registration.board_member_id)}
                     className="app-field rounded-2xl px-4 py-3 text-sm outline-none"
                   >
-                    {registration.level === null && <option value="">Ikke oppgitt (turneringslaget)</option>}
+                    {registration.level === null && <option value="">Ikke oppgitt</option>}
                     <option>Nybegynner</option>
                     <option>Viderekommen</option>
                     <option>Erfaren</option>
@@ -196,7 +202,7 @@ export default function AdminClient({
                   >
                     <button
                       className="app-button-primary inline-flex"
-                      disabled={busyId === registration.id}
+                      disabled={busyId === registration.id || Boolean(registration.board_member_id)}
                     >
                       Lagre
                     </button>

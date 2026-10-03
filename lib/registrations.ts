@@ -1,6 +1,8 @@
 import type { Pool, PoolClient } from "pg";
 import { getReservedSpotCount, getTournamentReservationsSelectSql, tournamentReleaseSql } from "@/lib/tournament-reservations";
 import { getSessionAccessSchema } from "@/lib/session-access";
+import { getBoardAttendanceSelectSql } from "@/lib/board-attendance";
+import { syncBoardRegistrations } from "@/lib/board-registrations";
 
 export const REGISTRATION_STATUS = {
   CONFIRMED: "confirmed",
@@ -15,11 +17,13 @@ export type PublicRegistration = {
   name: string;
   status: RegistrationStatus;
   is_tournament: boolean;
+  is_board: boolean;
 };
 
 type Queryable = Pick<PoolClient, "query">;
 
 type SessionStateRow = {
+  attending_board_member_ids: string[];
   reserve_tournament_spots: boolean;
   capacity: number;
   session_open: boolean;
@@ -44,10 +48,11 @@ export async function fillConfirmedSlotsFromWaitlist(
   const sessionRes = await client.query<SessionStateRow>(
     `WITH locked_session AS MATERIALIZED (
        SELECT capacity, starts_at, ends_at,
-         ${getTournamentReservationsSelectSql(accessSchema.hasSessionTournamentReservations, "sessions")} AS reserve_tournament_spots
+         ${getTournamentReservationsSelectSql(accessSchema.hasSessionTournamentReservations, "sessions")} AS reserve_tournament_spots,
+         ${getBoardAttendanceSelectSql(accessSchema.hasSessionBoardAttendance, "sessions")} AS attending_board_member_ids
        FROM sessions WHERE id = $1 FOR UPDATE
      )
-     SELECT capacity, reserve_tournament_spots, ends_at > clock_timestamp() AS session_open,
+     SELECT capacity, reserve_tournament_spots, attending_board_member_ids, ends_at > clock_timestamp() AS session_open,
        ${tournamentReleaseSql()} AS tournament_release_at,
        reserve_tournament_spots AND clock_timestamp() < ${tournamentReleaseSql()} AS reservations_active
      FROM locked_session`,
@@ -64,6 +69,10 @@ export async function fillConfirmedSlotsFromWaitlist(
 
   if (!sessionOpen) {
     return { sessionExists: true as const, sessionOpen: false as const, promotedCount: 0, capacity };
+  }
+
+  if (accessSchema.hasBoardRegistrations && accessSchema.hasSessionBoardAttendance) {
+    await syncBoardRegistrations(client, sessionId, sessionRes.rows[0].attending_board_member_ids);
   }
 
   let promotedCount = 0;
@@ -107,7 +116,9 @@ export async function fillConfirmedSlotsFromWaitlist(
   }
 
   return { sessionExists: true as const, sessionOpen: true as const, promotedCount, capacity,
-    availableSpots, reservedCount, reserveTournamentSpots, tournamentReleaseAt: releaseAt.toISOString() };
+    availableSpots, reservedCount, reserveTournamentSpots,
+    hasBoardRegistrations: accessSchema.hasBoardRegistrations,
+    tournamentReleaseAt: releaseAt.toISOString() };
 }
 
 export async function getConfirmedRegistrationCounts(
@@ -132,11 +143,13 @@ export async function refreshSessionWaitlists(pool: Pick<Pool, "connect">) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    const accessSchema = await getSessionAccessSchema(client);
     const sessions = await client.query<{ id: number }>(
       `SELECT s.id FROM sessions s
-       WHERE s.ends_at > NOW() AND EXISTS (
+       WHERE s.ends_at > NOW() AND (EXISTS (
          SELECT 1 FROM registrations r WHERE r.session_id = s.id AND r.status = $1
-       ) ORDER BY s.id`, [REGISTRATION_STATUS.WAITLIST]
+       ) OR cardinality(${getBoardAttendanceSelectSql(accessSchema.hasSessionBoardAttendance, "s")}) > 0)
+       ORDER BY s.id`, [REGISTRATION_STATUS.WAITLIST]
     );
     for (const session of sessions.rows) await fillConfirmedSlotsFromWaitlist(client, session.id);
     await client.query("COMMIT");

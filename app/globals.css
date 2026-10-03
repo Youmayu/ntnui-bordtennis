@@ -4,12 +4,18 @@
   --tournament-ink: #6528a4;
   --tournament-soft: #f2e8ff;
   --tournament-border: #c5a1e8;
+  --board-ink: #805300;
+  --board-soft: #fff4cc;
+  --board-border: #d9ae45;
 }
 
 [data-theme="dark"] {
   --tournament-ink: #e2c8ff;
   --tournament-soft: #30213f;
   --tournament-border: #8560aa;
+  --board-ink: #f5d47b;
+  --board-soft: #332a13;
+  --board-border: #8b7338;
 }
 
 .app-badge-tournament,
@@ -40,6 +46,26 @@
   color: var(--tournament-ink);
   border-color: var(--tournament-border);
   background: var(--tournament-soft);
+}
+
+.app-badge.app-badge-board,
+.app-roster-row.app-roster-board {
+  color: var(--board-ink);
+  background: var(--board-soft);
+  border: 1px solid var(--board-border);
+}
+
+.app-roster-row.app-roster-board {
+  padding: 0.75rem;
+  border-radius: 0.8rem;
+  margin-block: 0.3rem;
+}
+
+.app-roster-board .app-roster-name { color: var(--board-ink); }
+.app-roster-panel .app-roster-board .app-roster-index {
+  color: var(--board-ink);
+  border-color: var(--board-border);
+  background: var(--board-soft);
 }
 
 .app-button-tournament {

@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { syncBoardRegistrations } from "@/lib/board-registrations";
 import { getTournamentReservationsSelectSql, TOURNAMENT_RESERVED_SPOTS } from "@/lib/tournament-reservations";
 import {
   ensureAutoScheduleScaffold,
@@ -26,11 +27,14 @@ import {
 } from "@/lib/board-members";
 import {
   fillConfirmedSlotsFromWaitlist,
+  getConfirmedRegistrationCounts,
+  refreshSessionWaitlists,
   REGISTRATION_STATUS,
   type RegistrationStatus,
 } from "@/lib/registrations";
 import AdminClient from "./AdminClient";
 import TrainingLocationField from "./TrainingLocationField";
+import SessionForm from "./SessionForm";
 
 type SessionRow = {
   id: number;
@@ -52,6 +56,7 @@ type RegRow = {
   level: string | null;
   status: RegistrationStatus;
   created_at: string;
+  board_member_id: string | null;
 };
 
 type AnnouncementRow = {
@@ -97,6 +102,7 @@ type AutoScheduleSchemaStatusRow = {
   has_session_tournament_reservations: boolean;
   has_template_tournament_reservations: boolean;
   has_attending_board_member_ids: boolean;
+  has_board_registrations: boolean;
 };
 
 const WEEKDAY_OPTIONS = [
@@ -149,7 +155,7 @@ function BoardAttendanceFields({
         Styremedlemmer som kommer
       </legend>
       <p className="mb-3 text-xs text-[color:var(--text-soft)]">
-        Kryss av styremedlemmene som kommer på økten. Nye økter starter uten avkrysninger.
+        Hvert valgt styremedlem får en bekreftet plass og teller mot kapasiteten. Fjern avkrysningen for å melde dem av.
       </p>
       <div className="grid gap-2 sm:grid-cols-3">
         {BOARD_MEMBERS.map((member) => (
@@ -328,7 +334,12 @@ export default async function AdminPage() {
          WHERE table_schema = 'public'
            AND table_name = 'sessions'
            AND column_name = 'attending_board_member_ids'
-       ) AS has_attending_board_member_ids`
+       ) AS has_attending_board_member_ids,
+       EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = 'public' AND table_name = 'registrations'
+           AND column_name = 'board_member_id'
+       ) AS has_board_registrations`
   );
 
   const autoScheduleSchema =
@@ -343,6 +354,7 @@ export default async function AdminPage() {
       has_session_tournament_reservations: false,
       has_template_tournament_reservations: false,
       has_attending_board_member_ids: false,
+      has_board_registrations: false,
     } satisfies AutoScheduleSchemaStatusRow);
 
   const autoScheduleAvailable =
@@ -355,6 +367,7 @@ export default async function AdminPage() {
   const sessionReservationsAvailable = autoScheduleSchema.has_session_tournament_reservations;
   const templateReservationsAvailable = autoScheduleSchema.has_template_tournament_reservations;
   const boardAttendanceAvailable = autoScheduleSchema.has_attending_board_member_ids;
+  const boardRegistrationsAvailable = autoScheduleSchema.has_board_registrations;
 
   let autoScheduleError: string | null = null;
   let autoScheduleSettings: ScheduleSettingsRow = { auto_enabled: true };
@@ -494,8 +507,10 @@ export default async function AdminPage() {
          LIMIT 50`
   );
 
+  await refreshSessionWaitlists(pool);
   const regsRes = await pool.query(
-    `SELECT id, session_id, name, level, status, created_at
+    `SELECT id, session_id, name, level, status, created_at,
+       ${boardRegistrationsAvailable ? "board_member_id" : "NULL::text AS board_member_id"}
      FROM registrations
      ORDER BY created_at DESC
      LIMIT 300`
@@ -544,7 +559,8 @@ export default async function AdminPage() {
       );
 
       const regRes = await client.query(
-        `SELECT session_id, status
+        `SELECT session_id, status,
+           ${boardRegistrationsAvailable ? "board_member_id" : "NULL::text AS board_member_id"}
          FROM registrations
          WHERE id = $1
          FOR UPDATE`,
@@ -559,8 +575,16 @@ export default async function AdminPage() {
       const registration = regRes.rows[0] as {
         session_id: number;
         status: RegistrationStatus;
+        board_member_id: string | null;
       };
 
+      if (registration.board_member_id && boardAttendanceAvailable) {
+        await client.query(
+          `UPDATE sessions SET attending_board_member_ids = array_remove(attending_board_member_ids, $2)
+           WHERE id = $1`,
+          [registration.session_id, registration.board_member_id]
+        );
+      }
       await client.query(`DELETE FROM registrations WHERE id = $1`, [id]);
 
       if (registration.status === REGISTRATION_STATUS.CONFIRMED) {
@@ -574,6 +598,7 @@ export default async function AdminPage() {
     } finally {
       client.release();
     }
+    revalidatePath("/", "layout");
   }
 
   async function updateRegistration(formData: FormData) {
@@ -586,7 +611,8 @@ export default async function AdminPage() {
 
     await pool.query(
       `UPDATE registrations SET name = $2, level = $3 WHERE id = $1
-       AND ($3::text IS NOT NULL OR tournament_player_id IS NOT NULL)`,
+       AND ($3::text IS NOT NULL OR tournament_player_id IS NOT NULL)
+       ${boardRegistrationsAvailable ? "AND board_member_id IS NULL" : ""}`,
       [id, name, level]
     );
   }
@@ -726,10 +752,10 @@ export default async function AdminPage() {
       formData.getAll("attending_board_member_ids")
     );
 
-    if (!Number.isFinite(id)) return;
-    if (!startsAtLocal || !endsAtLocal || !location) return;
-    if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
-    if (startsAtLocal >= endsAtLocal) return;
+    if (!Number.isSafeInteger(id) || !startsAtLocal || !endsAtLocal || !location ||
+      !Number.isInteger(capacity) || capacity < 1 || capacity > 200 || startsAtLocal >= endsAtLocal) {
+      return { error: "Kontroller tidspunkt, sted og kapasitet." };
+    }
 
     const client = await pool.connect();
 
@@ -754,7 +780,7 @@ export default async function AdminPage() {
         values.push(reserveTournamentSpots);
       }
 
-      if (boardAttendanceAvailable) {
+      if (boardAttendanceAvailable && boardRegistrationsAvailable) {
         assignments.push(`attending_board_member_ids = $${values.length + 1}::text[]`);
         values.push(attendingBoardMemberIds);
       }
@@ -766,6 +792,14 @@ export default async function AdminPage() {
         values
       );
 
+      if (boardRegistrationsAvailable && boardAttendanceAvailable) {
+        await syncBoardRegistrations(client, id, attendingBoardMemberIds);
+      }
+      const counts = await getConfirmedRegistrationCounts(client, id);
+      if (counts.count > capacity) {
+        await client.query("ROLLBACK");
+        return { error: `Det er ikke plass til alle bekreftede spillere og valgte styremedlemmer. Øk kapasiteten til minst ${counts.count}, eller velg færre styremedlemmer.` };
+      }
       await fillConfirmedSlotsFromWaitlist(client, id);
       await client.query("COMMIT");
     } catch {
@@ -789,9 +823,13 @@ export default async function AdminPage() {
       formData.getAll("attending_board_member_ids")
     );
 
-    if (!startsAtLocal || !endsAtLocal || !location) return;
-    if (!Number.isFinite(capacity) || capacity < 1 || capacity > 200) return;
-    if (startsAtLocal >= endsAtLocal) return;
+    if (!startsAtLocal || !endsAtLocal || !location || !Number.isInteger(capacity) ||
+      capacity < 1 || capacity > 200 || startsAtLocal >= endsAtLocal) {
+      return { error: "Kontroller tidspunkt, sted og kapasitet." };
+    }
+    if (attendingBoardMemberIds.length > capacity) {
+      return { error: "Kapasiteten må ha plass til alle valgte styremedlemmer." };
+    }
 
     const columns = ["starts_at", "ends_at", "location", "capacity"];
     const placeholders = [
@@ -814,17 +852,30 @@ export default async function AdminPage() {
       values.push(reserveTournamentSpots);
     }
 
-    if (boardAttendanceAvailable) {
+    if (boardAttendanceAvailable && boardRegistrationsAvailable) {
       columns.push("attending_board_member_ids");
       placeholders.push(`$${values.length + 1}::text[]`);
       values.push(attendingBoardMemberIds);
     }
 
-    await pool.query(
-      `INSERT INTO sessions (${columns.join(", ")})
-       VALUES (${placeholders.join(", ")})`,
-      values
-    );
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const inserted = await client.query<{ id: number }>(
+        `INSERT INTO sessions (${columns.join(", ")})
+         VALUES (${placeholders.join(", ")}) RETURNING id`,
+        values
+      );
+      if (boardRegistrationsAvailable && boardAttendanceAvailable) {
+        await syncBoardRegistrations(client, inserted.rows[0].id, attendingBoardMemberIds);
+      }
+      await client.query("COMMIT");
+    } catch {
+      await client.query("ROLLBACK").catch(() => {});
+      throw new Error("Could not create session.");
+    } finally {
+      client.release();
+    }
     revalidatePath("/", "layout");
   }
 
@@ -1363,7 +1414,7 @@ export default async function AdminPage() {
           </p>
         </div>
 
-        <form action={addSession} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <SessionForm action={addSession} resetOnSuccess className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs text-[color:var(--text-soft)]">Start (Oslo)</label>
             <input
@@ -1413,14 +1464,14 @@ export default async function AdminPage() {
             <TrainingLocationField />
           </div>
 
-          <BoardAttendanceFields disabled={!boardAttendanceAvailable} />
+          <BoardAttendanceFields disabled={!boardAttendanceAvailable || !boardRegistrationsAvailable} />
 
           <TournamentReservationField disabled={!sessionReservationsAvailable} />
 
           <div className="md:col-span-2 xl:col-span-4">
             <button className="app-button-primary inline-flex">Legg til økt</button>
           </div>
-        </form>
+        </SessionForm>
 
         <div className="grid gap-4">
           {sessions.map((session) => (
@@ -1480,7 +1531,7 @@ export default async function AdminPage() {
               </summary>
 
               <div className="border-t border-[color:var(--border-muted)] p-5">
-                <form
+                <SessionForm
                   id={`session-${session.id}`}
                   action={updateSession}
                   className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
@@ -1539,8 +1590,9 @@ export default async function AdminPage() {
                   </div>
 
                   <BoardAttendanceFields
+                    key={session.attending_board_member_ids.join(",")}
                     selectedIds={session.attending_board_member_ids}
-                    disabled={!boardAttendanceAvailable}
+                    disabled={!boardAttendanceAvailable || !boardRegistrationsAvailable}
                   />
 
                   <TournamentReservationField
@@ -1548,7 +1600,7 @@ export default async function AdminPage() {
                     defaultChecked={session.reserve_tournament_spots}
                     disabled={!sessionReservationsAvailable}
                   />
-                </form>
+                </SessionForm>
 
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button form={`session-${session.id}`} type="submit" className="app-button-primary inline-flex">

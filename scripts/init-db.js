@@ -99,12 +99,23 @@ async function main() {
     ALTER TABLE registrations
       ADD COLUMN IF NOT EXISTS tournament_player_id TEXT;
 
+    ALTER TABLE registrations
+      ADD COLUMN IF NOT EXISTS board_member_id TEXT;
+
     -- Tournament signup collects only a roster identity and CAPTCHA.
     ALTER TABLE registrations ALTER COLUMN level DROP NOT NULL;
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_registrations_tournament_player
       ON registrations(session_id, tournament_player_id)
       WHERE tournament_player_id IS NOT NULL;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_registrations_board_member
+      ON registrations(session_id, board_member_id)
+      WHERE board_member_id IS NOT NULL;
+
+    ALTER TABLE registrations DROP CONSTRAINT IF EXISTS registrations_level_required_check;
+    ALTER TABLE registrations ADD CONSTRAINT registrations_level_required_check
+      CHECK (level IS NOT NULL OR tournament_player_id IS NOT NULL OR board_member_id IS NOT NULL) NOT VALID;
 
     UPDATE registrations
       SET status = 'confirmed'
@@ -118,13 +129,6 @@ async function main() {
 
     DO $$
     BEGIN
-      IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'registrations_level_required_check'
-      ) THEN
-        ALTER TABLE registrations ADD CONSTRAINT registrations_level_required_check
-          CHECK (level IS NOT NULL OR tournament_player_id IS NOT NULL) NOT VALID;
-      END IF;
-
       IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'sessions_location_length_check'
       ) THEN

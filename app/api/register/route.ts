@@ -83,7 +83,8 @@ export async function POST(req: Request) {
 
     const duplicate = await client.query(
       `SELECT id FROM registrations WHERE session_id = $1
-       AND tournament_player_id IS NOT NULL AND lower(name) = lower($2)`,
+       AND (tournament_player_id IS NOT NULL${fillResult.hasBoardRegistrations ? " OR board_member_id IS NOT NULL" : ""})
+       AND lower(regexp_replace(trim(name), '[[:space:]]+', ' ', 'g')) = lower($2)`,
       [sessionId, safeName]
     );
     if (duplicate.rowCount) {

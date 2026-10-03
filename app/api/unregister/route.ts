@@ -2,6 +2,7 @@ import type { PoolClient } from "pg";
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { isValidBirthMonthDay } from "@/lib/birth-month-day";
+import { getSessionAccessSchema } from "@/lib/session-access";
 import {
   fillConfirmedSlotsFromWaitlist,
   REGISTRATION_STATUS,
@@ -70,8 +71,10 @@ export async function POST(req: Request) {
       [registrationId]
     );
 
+    const accessSchema = await getSessionAccessSchema(client);
     const res = await client.query(
-      `SELECT r.id, r.session_id, r.status, r.birth_month, r.birth_day
+      `SELECT r.id, r.session_id, r.status, r.birth_month, r.birth_day,
+         ${accessSchema.hasBoardRegistrations ? "r.board_member_id IS NOT NULL" : "FALSE"} AS is_board
        FROM registrations r
        INNER JOIN sessions s ON s.id = r.session_id
        WHERE r.id = $1
@@ -91,7 +94,13 @@ export async function POST(req: Request) {
       status: RegistrationStatus;
       birth_month: number | null;
       birth_day: number | null;
+      is_board: boolean;
     };
+
+    if (registration.is_board) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Styreoppmøte endres i adminpanelet." }, { status: 409 });
+    }
 
     if (!registration.birth_month || !registration.birth_day) {
       await client.query("ROLLBACK");

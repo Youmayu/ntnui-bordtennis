@@ -13,7 +13,8 @@ export async function getSessionRoster(sessionId: number) {
       return { registrations: [] as PublicRegistration[], availability: null };
     }
     const res = await client.query<PublicRegistration>(
-      `SELECT r.id, r.name, r.status, r.tournament_player_id IS NOT NULL AS is_tournament
+      `SELECT r.id, r.name, r.status, r.tournament_player_id IS NOT NULL AS is_tournament,
+         ${state.hasBoardRegistrations ? "r.board_member_id IS NOT NULL" : "FALSE"} AS is_board
        FROM registrations r
        WHERE r.session_id = $1
        ORDER BY CASE WHEN r.status = $2 THEN 0 ELSE 1 END,
@@ -27,6 +28,7 @@ export async function getSessionRoster(sessionId: number) {
         name: normalizeSingleLineDisplay(row.name),
         status: row.status,
         is_tournament: row.is_tournament,
+        is_board: row.is_board ?? false,
       })),
       availability: {
         reserve_tournament_spots: state.reserveTournamentSpots,

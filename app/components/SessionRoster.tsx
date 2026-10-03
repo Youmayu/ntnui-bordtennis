@@ -4,6 +4,7 @@ import { useId } from "react";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import { getRegistrationCopy } from "@/lib/registration-content";
 import { getIntlLocale } from "@/lib/site-content";
+import { getBoardMemberLabel } from "@/lib/board-members";
 import { REGISTRATION_STATUS, type PublicRegistration } from "@/lib/registrations";
 import type { SessionAvailability } from "@/lib/tournament-reservations";
 import { getTournamentCopy } from "@/lib/tournament-content";
@@ -80,10 +81,12 @@ export default function SessionRoster({
               ) : (
                 <ol className="app-roster-grid" role="list">
                   {group.entries.map((registration, index) => (
-                    <li key={registration.id} className={`app-roster-row${registration.is_tournament ? " app-roster-tournament" : ""}`}>
+                    <li key={registration.id} className={`app-roster-row${registration.is_board ? " app-roster-board" : registration.is_tournament ? " app-roster-tournament" : ""}`}>
                       <span className="app-roster-index" aria-hidden="true">{index + 1}</span>
                       <span className="app-roster-name">{registration.name}
-                        {registration.is_tournament && <span className="app-roster-team-label">{tournamentCopy.team}</span>}
+                        {registration.is_board
+                          ? <span className="app-roster-team-label">{getBoardMemberLabel(locale)}</span>
+                          : registration.is_tournament && <span className="app-roster-team-label">{tournamentCopy.team}</span>}
                       </span>
                     </li>
                   ))}
