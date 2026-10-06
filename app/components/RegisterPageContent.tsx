@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import TurnstileWidget from "@/app/components/TurnstileWidget";
 import FormPrivacyNotice from "@/app/components/FormPrivacyNotice";
@@ -18,7 +19,7 @@ import {
 import { getDaysInMonth } from "@/lib/birth-month-day";
 import { sanitizeRegistrationName } from "@/lib/input-safety";
 import { getRegistrationCopy } from "@/lib/registration-content";
-import { REGISTRATION_STATUS } from "@/lib/registrations";
+import { REGISTRATION_STATUS, type RegistrationStatus } from "@/lib/registrations";
 import SessionRoster from "@/app/components/SessionRoster";
 import { useSessionRegistrations } from "@/app/components/useSessionRegistrations";
 import type { SessionAvailability } from "@/lib/tournament-reservations";
@@ -34,6 +35,15 @@ type Session = SessionAvailability & {
   members_only: boolean;
   confirmed_count: number;
   waitlist_count: number;
+};
+
+type RegistrationReceipt = {
+  registrationId: number;
+  name: string;
+  session: Session;
+  status: RegistrationStatus;
+  alreadyRegistered: boolean;
+  receivedAt: string;
 };
 
 function getMonthOptions(locale: Locale) {
@@ -85,7 +95,10 @@ export default function RegisterPageContent() {
   const [birthDay, setBirthDay] = useState<number | null>(null);
   const [memberConfirmed, setMemberConfirmed] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [message, setMessage] = useState<{ text: string; waitlisted: boolean } | null>(null);
+  const [receipt, setReceipt] = useState<RegistrationReceipt | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const pending = useRef(false);
+  const receiptRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [rosterRevision, setRosterRevision] = useState(0);
   const roster = useSessionRegistrations(sessionId, null, rosterRevision);
@@ -103,6 +116,17 @@ export default function RegisterPageContent() {
     ? selectedSession.confirmed_count + reservedCount >= selectedSession.capacity
     : false;
   const fullTitle = reservedCount > 0 ? getTournamentCopy(locale).publicFull : registrationCopy.fullTitle;
+  const currentRegistration = receipt && roster.updatedAt && roster.updatedAt >= receipt.receivedAt
+    ? roster.registrations?.find((entry) => entry.id === receipt.registrationId)
+    : null;
+  const receiptWaitlisted = (currentRegistration?.status ?? receipt?.status) === REGISTRATION_STATUS.WAITLIST;
+
+  useEffect(() => {
+    if (receipt) {
+      receiptRef.current?.focus({ preventScroll: true });
+      receiptRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+    }
+  }, [receipt]);
 
   const dayOptions = useMemo(
     () =>
@@ -135,12 +159,6 @@ export default function RegisterPageContent() {
     [birthDay, birthMonth, memberConfirmed, firstName, lastName, selectedSession?.members_only, sessionId, turnstileToken]
   );
 
-  async function loadSessions(preferredSessionId?: number | null) {
-    const nextSessions = await fetchSessions();
-    setSessions(nextSessions);
-    setSessionId(getPreferredSessionId(nextSessions, preferredSessionId));
-  }
-
   useEffect(() => {
     let cancelled = false;
 
@@ -154,7 +172,7 @@ export default function RegisterPageContent() {
       setSessions(nextSessions);
       setSessionId(getPreferredSessionId(nextSessions, requestedSessionId));
       setMemberConfirmed(false);
-      setMessage(null);
+      setReceipt(null);
       setError(null);
     })();
 
@@ -165,10 +183,11 @@ export default function RegisterPageContent() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setMessage(null);
+    if (pending.current || receipt) return;
     setError(null);
 
-    if (!sanitizeRegistrationName(firstName, lastName)) {
+    const safeName = sanitizeRegistrationName(firstName, lastName);
+    if (!safeName) {
       setError(registrationCopy.nameError);
       return;
     }
@@ -180,7 +199,7 @@ export default function RegisterPageContent() {
       setError(messages.register.errors.captcha);
       return;
     }
-    if (!sessionId) {
+    if (!sessionId || !selectedSession) {
       setError(messages.register.errors.session);
       return;
     }
@@ -193,45 +212,59 @@ export default function RegisterPageContent() {
       return;
     }
 
-    const res = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId,
-        firstName,
-        lastName,
-        level,
-        birthMonth,
-        birthDay,
-        memberConfirmed,
-        turnstileToken: submittedToken,
-        website: "",
-      }),
-    });
+    pending.current = true;
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          firstName,
+          lastName,
+          level,
+          birthMonth,
+          birthDay,
+          memberConfirmed,
+          turnstileToken: submittedToken,
+          website: "",
+        }),
+      });
 
-    const data = await res.json();
-    setTurnstileToken("");
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error ?? messages.register.errors.generic);
+        return;
+      }
+      if (data.ok !== true || !Number.isSafeInteger(data.registrationId) ||
+          ![REGISTRATION_STATUS.CONFIRMED, REGISTRATION_STATUS.WAITLIST].includes(data.registrationStatus)) {
+        throw new Error("Invalid registration response");
+      }
 
-    if (!res.ok) {
-      setError(data?.error ?? messages.register.errors.generic);
-      return;
+      setReceipt({
+        registrationId: data.registrationId,
+        name: safeName,
+        session: selectedSession,
+        status: data.registrationStatus,
+        alreadyRegistered: data.alreadyRegistered === true,
+        receivedAt: new Date().toISOString(),
+      });
+      setFirstName("");
+      setLastName("");
+      setLevel("Nybegynner");
+      setBirthMonth(null);
+      setBirthDay(null);
+      setMemberConfirmed(false);
+      // A roster refresh has its own error state; it must never turn a saved
+      // booking into an apparent signup failure and encourage another attempt.
+      setRosterRevision((value) => value + 1);
+    } catch {
+      setError(registrationCopy.submissionError);
+    } finally {
+      setTurnstileToken("");
+      pending.current = false;
+      setSubmitting(false);
     }
-
-    const waitlisted = data?.registrationStatus === "waitlist";
-    setMessage({
-      text: waitlisted
-        ? messages.register.successWaitlist
-        : messages.register.success,
-      waitlisted,
-    });
-    setFirstName("");
-    setLastName("");
-    setLevel("Nybegynner");
-    setBirthMonth(null);
-    setBirthDay(null);
-    setMemberConfirmed(false);
-    setRosterRevision((value) => value + 1);
-    await loadSessions(sessionId);
   }
 
   function handleBirthMonthChange(nextMonth: number | null) {
@@ -257,24 +290,25 @@ export default function RegisterPageContent() {
         <p className="text-[color:var(--text-muted)]">{messages.register.body}</p>
         {selectedSession && (
           <a href="#session-registrations" className="app-roster-link">
-            {registrationCopy.title} ↓
+            {receipt ? registrationCopy.title : registrationCopy.checkFirst} ↓
           </a>
         )}
       </div>
 
       <div className="app-surface app-form-board overflow-hidden p-0">
         <div className="app-form-board-grid">
-          <form onSubmit={onSubmit} className="app-form-shell space-y-5 p-6 sm:p-8">
+          <form onSubmit={onSubmit} aria-busy={submitting} className="app-form-shell space-y-5 p-6 sm:p-8">
             <div className="space-y-2">
               <label htmlFor="register-session" className="text-sm font-medium">{messages.register.sessionLabel}</label>
               <select
                 id="register-session"
-                aria-describedby={selectedSessionIsFull ? "register-full-notice" : undefined}
+                disabled={submitting}
+                aria-describedby={!receipt && selectedSessionIsFull ? "register-full-notice" : undefined}
                 value={sessionId ?? ""}
                 onChange={(e) => {
                   setSessionId(Number(e.target.value));
                   setMemberConfirmed(false);
-                  setMessage(null);
+                  setReceipt(null);
                   setError(null);
                 }}
                 className="app-field w-full rounded-2xl px-4 py-3 text-sm outline-none"
@@ -309,6 +343,39 @@ export default function RegisterPageContent() {
               )}
             </div>
 
+            {receipt ? (
+              <div ref={receiptRef} tabIndex={-1} role="status" aria-labelledby="registration-receipt-title"
+                className={`${receiptWaitlisted ? "app-alert-waitlist" : "app-alert-success"} scroll-mt-6 space-y-5 p-6 md:scroll-mt-56`}>
+                <div className="flex items-start gap-3">
+                  <span aria-hidden="true" className="text-3xl">{receiptWaitlisted ? "◷" : "✓"}</span>
+                  <div>
+                    <h2 id="registration-receipt-title" className="text-xl font-semibold">
+                      {receipt.alreadyRegistered ? registrationCopy.alreadyTitle
+                        : receiptWaitlisted ? registrationCopy.waitlistTitle : registrationCopy.confirmedTitle}
+                    </h2>
+                    <p className="mt-2 font-semibold">{receipt.name}</p>
+                  </div>
+                </div>
+                <span className={`app-badge ${receiptWaitlisted ? "app-badge-accent" : "app-badge-success"}`}>
+                  {receiptWaitlisted ? registrationCopy.waitlist : registrationCopy.confirmed}
+                </span>
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">{sessionDateFormatter.format(new Date(receipt.session.starts_at))}</p>
+                  <p>{sessionTimeFormatter.format(new Date(receipt.session.starts_at))}
+                    {" – "}{sessionTimeFormatter.format(new Date(receipt.session.ends_at))}</p>
+                  <VenueLink locale={locale} location={receipt.session.location} className="underline underline-offset-4" />
+                </div>
+                <p className="text-sm leading-6">{receiptWaitlisted ? registrationCopy.waitlistSavedHelp : registrationCopy.savedHelp}</p>
+                <div className="flex flex-wrap gap-3">
+                  <a href="#session-registrations" className="app-button-secondary">{registrationCopy.showParticipants}</a>
+                  <Link href={`/${locale}/unregister`} className="app-button-secondary">{messages.shell.nav.unregister}</Link>
+                </div>
+                <button type="button" className="text-sm underline underline-offset-4" onClick={() => setReceipt(null)}>
+                  {registrationCopy.registerAnother}
+                </button>
+              </div>
+            ) : (
+            <fieldset disabled={submitting} className="min-w-0 space-y-5">
             {selectedSession && selectedSessionIsFull && (
               <div id="register-full-notice" className="app-full-notice" role="status">
                 <span className="app-full-notice-icon" aria-hidden="true">!</span>
@@ -474,18 +541,15 @@ export default function RegisterPageContent() {
 
             <button
               type="submit"
-              disabled={disabled}
+              disabled={disabled || submitting}
               aria-describedby={selectedSessionIsFull ? "register-full-notice" : undefined}
               className={`${selectedSessionIsFull ? "app-button-danger" : "app-button-success"} w-full justify-center`}
             >
-              {selectedSessionIsFull ? registrationCopy.joinWaitlist : messages.register.submit}
+              {submitting ? registrationCopy.submitting : selectedSessionIsFull ? registrationCopy.joinWaitlist : messages.register.submit}
             </button>
 
             {error && <div role="alert" className="app-alert-error">{error}</div>}
-            {message && (
-              <div role="status" className={message.waitlisted ? "app-alert-waitlist" : "app-alert-success"}>
-                {message.text}
-              </div>
+            </fieldset>
             )}
           </form>
 

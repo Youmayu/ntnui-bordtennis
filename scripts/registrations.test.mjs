@@ -43,7 +43,10 @@ for (const confirmedCount of [0, 1]) {
         if (sql.includes("COUNT(*)")) return { rows: [{ count: confirmedCount, tournament_count: 0 }], rowCount: 1 };
         if (sql.includes("SELECT id")) return { rows: [], rowCount: 0 };
         if (sql.includes("SELECT members_only")) return { rows: [{ members_only: false }], rowCount: 1 };
-        if (sql.includes("INSERT INTO registrations")) inserted = values;
+        if (sql.includes("INSERT INTO registrations")) {
+          inserted = values;
+          return { rows: [{ id: 42 }], rowCount: 1 };
+        }
         else if (sql === "COMMIT") committed = true;
         else if (sql !== "BEGIN") assert.fail(`Unexpected query: ${sql}`);
         return { rows: [], rowCount: 0 };
@@ -60,7 +63,9 @@ for (const confirmedCount of [0, 1]) {
     }));
     const expectedStatus = confirmedCount ? "waitlist" : "confirmed";
     assert.equal(response.status, 200);
-    assert.equal((await response.json()).registrationStatus, expectedStatus);
+    assert.deepEqual(await response.json(), {
+      ok: true, alreadyRegistered: false, registrationId: 42, registrationStatus: expectedStatus,
+    });
     assert.deepEqual(Array.from(inserted), [1, "Anne-Marie O'Neill", "Nybegynner", 2, 29, expectedStatus]);
     assert.ok(committed && released);
   });

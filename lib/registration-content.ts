@@ -19,6 +19,15 @@ type RegistrationCopy = {
   lastName: string;
   nameHelp: string;
   nameError: string;
+  confirmedTitle: string;
+  waitlistTitle: string;
+  alreadyTitle: string;
+  savedHelp: string;
+  waitlistSavedHelp: string;
+  checkFirst: string;
+  submitting: string;
+  registerAnother: string;
+  submissionError: string;
 };
 
 const COPY: Record<Locale, RegistrationCopy> = {
@@ -41,6 +50,15 @@ const COPY: Record<Locale, RegistrationCopy> = {
     lastName: "Etternavn",
     nameHelp: "Begge felt er påkrevd. Maks 80 tegn til sammen, inkludert mellomrom.",
     nameError: "Oppgi både fornavn og etternavn med bokstaver, maks 80 tegn til sammen.",
+    confirmedTitle: "Du har fått plass!",
+    waitlistTitle: "Du står på ventelisten",
+    alreadyTitle: "Du er allerede påmeldt",
+    savedHelp: "Påmeldingen din er lagret. Du trenger ikke melde deg på denne økten igjen.",
+    waitlistSavedHelp: "Plassen din på ventelisten er lagret, men du har ikke en bekreftet treningsplass ennå. Følg med på deltakerlisten. Du trenger ikke melde deg på igjen.",
+    checkFirst: "Usikker på om du allerede er påmeldt? Sjekk deltakerlisten.",
+    submitting: "Sender påmelding …",
+    registerAnother: "Meld på en annen person",
+    submissionError: "Kunne ikke bekrefte påmeldingen. Sjekk deltakerlisten eller prøv igjen.",
   },
   en: {
     title: "Registrations",
@@ -61,6 +79,15 @@ const COPY: Record<Locale, RegistrationCopy> = {
     lastName: "Surname",
     nameHelp: "Both fields are required. Maximum 80 characters combined, including spaces.",
     nameError: "Enter both first name and surname using letters, with no more than 80 characters combined.",
+    confirmedTitle: "Your place is confirmed!",
+    waitlistTitle: "You're on the waiting list",
+    alreadyTitle: "You're already registered",
+    savedHelp: "Your registration is saved. You do not need to sign up for this session again.",
+    waitlistSavedHelp: "Your place on the waiting list is saved, but you do not have a confirmed training spot yet. Check the participant list for updates. You do not need to sign up again.",
+    checkFirst: "Not sure if you already signed up? Check the participant list.",
+    submitting: "Registering …",
+    registerAnother: "Register another person",
+    submissionError: "Could not confirm your registration. Check the participant list or try again.",
   },
   da: {
     title: "Tilmeldinger",
@@ -81,6 +108,15 @@ const COPY: Record<Locale, RegistrationCopy> = {
     lastName: "Efternavn",
     nameHelp: "Begge felter er påkrævet. Højst 80 tegn i alt, inklusive mellemrum.",
     nameError: "Angiv både fornavn og efternavn med bogstaver, højst 80 tegn i alt.",
+    confirmedTitle: "Din plads er bekræftet!",
+    waitlistTitle: "Du står på ventelisten",
+    alreadyTitle: "Du er allerede tilmeldt",
+    savedHelp: "Din tilmelding er gemt. Du behøver ikke tilmelde dig denne træning igen.",
+    waitlistSavedHelp: "Din plads på ventelisten er gemt, men du har endnu ikke en bekræftet træningsplads. Følg med på deltagerlisten. Du behøver ikke tilmelde dig igen.",
+    checkFirst: "Er du i tvivl om, hvorvidt du allerede er tilmeldt? Tjek deltagerlisten.",
+    submitting: "Sender tilmelding …",
+    registerAnother: "Tilmeld en anden person",
+    submissionError: "Tilmeldingen kunne ikke bekræftes. Tjek deltagerlisten, eller prøv igen.",
   },
   sv: {
     title: "Anmälningar",
@@ -101,6 +137,15 @@ const COPY: Record<Locale, RegistrationCopy> = {
     lastName: "Efternamn",
     nameHelp: "Båda fälten är obligatoriska. Högst 80 tecken totalt, inklusive mellanslag.",
     nameError: "Ange både förnamn och efternamn med bokstäver, högst 80 tecken totalt.",
+    confirmedTitle: "Din plats är bekräftad!",
+    waitlistTitle: "Du står på väntelistan",
+    alreadyTitle: "Du är redan anmäld",
+    savedHelp: "Din anmälan är sparad. Du behöver inte anmäla dig till det här passet igen.",
+    waitlistSavedHelp: "Din plats på väntelistan är sparad, men du har ännu ingen bekräftad träningsplats. Håll koll på deltagarlistan. Du behöver inte anmäla dig igen.",
+    checkFirst: "Osäker på om du redan är anmäld? Kontrollera deltagarlistan.",
+    submitting: "Skickar anmälan …",
+    registerAnother: "Anmäl en annan person",
+    submissionError: "Kunde inte bekräfta anmälan. Kontrollera deltagarlistan eller försök igen.",
   },
   de: {
     title: "Anmeldungen",
@@ -121,6 +166,15 @@ const COPY: Record<Locale, RegistrationCopy> = {
     lastName: "Nachname",
     nameHelp: "Beide Felder sind erforderlich. Insgesamt höchstens 80 Zeichen einschließlich Leerzeichen.",
     nameError: "Gib Vor- und Nachnamen mit Buchstaben und insgesamt höchstens 80 Zeichen ein.",
+    confirmedTitle: "Dein Platz ist bestätigt!",
+    waitlistTitle: "Du stehst auf der Warteliste",
+    alreadyTitle: "Du bist bereits angemeldet",
+    savedHelp: "Deine Anmeldung ist gespeichert. Du musst dich für dieses Training nicht erneut anmelden.",
+    waitlistSavedHelp: "Dein Wartelistenplatz ist gespeichert, aber du hast noch keinen bestätigten Trainingsplatz. Prüfe die Teilnehmerliste auf Änderungen. Du musst dich nicht erneut anmelden.",
+    checkFirst: "Unsicher, ob du bereits angemeldet bist? Prüfe die Teilnehmerliste.",
+    submitting: "Anmeldung wird gesendet …",
+    registerAnother: "Eine andere Person anmelden",
+    submissionError: "Die Anmeldung konnte nicht bestätigt werden. Prüfe die Teilnehmerliste oder versuche es erneut.",
   },
   zh: {
     title: "报名名单",
@@ -141,6 +195,15 @@ const COPY: Record<Locale, RegistrationCopy> = {
     lastName: "姓",
     nameHelp: "两项均为必填，合计最多80个字符（包括空格）。",
     nameError: "请填写名和姓，仅使用文字，合计不超过80个字符。",
+    confirmedTitle: "你的训练名额已确认！",
+    waitlistTitle: "你已加入候补名单",
+    alreadyTitle: "你已经报名了",
+    savedHelp: "你的报名已保存，无需再次报名本次训练。",
+    waitlistSavedHelp: "你的候补位置已保存，但尚未获得确认的训练名额。请查看参与者名单以了解最新状态，无需再次报名。",
+    checkFirst: "不确定是否已经报名？请查看参与者名单。",
+    submitting: "正在提交报名……",
+    registerAnother: "为其他人报名",
+    submissionError: "无法确认报名。请查看参与者名单或重试。",
   },
   fr: {
     title: "Inscriptions",
@@ -161,6 +224,15 @@ const COPY: Record<Locale, RegistrationCopy> = {
     lastName: "Nom de famille",
     nameHelp: "Les deux champs sont obligatoires. 80 caractères au total maximum, espaces compris.",
     nameError: "Indiquez votre prénom et votre nom de famille avec des lettres, dans la limite de 80 caractères au total.",
+    confirmedTitle: "Votre place est confirmée !",
+    waitlistTitle: "Vous êtes sur la liste d’attente",
+    alreadyTitle: "Vous êtes déjà inscrit",
+    savedHelp: "Votre inscription est enregistrée. Vous n’avez pas besoin de vous réinscrire à cette séance.",
+    waitlistSavedHelp: "Votre place sur la liste d’attente est enregistrée, mais vous n’avez pas encore de place confirmée. Consultez la liste des participants pour suivre votre statut. Il est inutile de vous réinscrire.",
+    checkFirst: "Vous ne savez plus si vous êtes inscrit ? Consultez la liste des participants.",
+    submitting: "Inscription en cours…",
+    registerAnother: "Inscrire une autre personne",
+    submissionError: "Impossible de confirmer votre inscription. Consultez la liste des participants ou réessayez.",
   },
   es: {
     title: "Inscripciones",
@@ -181,6 +253,15 @@ const COPY: Record<Locale, RegistrationCopy> = {
     lastName: "Apellidos",
     nameHelp: "Ambos campos son obligatorios. Máximo 80 caracteres en total, incluidos los espacios.",
     nameError: "Introduce tu nombre y apellidos con letras, con un máximo de 80 caracteres en total.",
+    confirmedTitle: "¡Tu plaza está confirmada!",
+    waitlistTitle: "Estás en la lista de espera",
+    alreadyTitle: "Ya estás inscrito",
+    savedHelp: "Tu inscripción está guardada. No necesitas volver a inscribirte en este entrenamiento.",
+    waitlistSavedHelp: "Tu puesto en la lista de espera está guardado, pero aún no tienes una plaza confirmada. Consulta la lista de participantes para ver los cambios. No necesitas volver a inscribirte.",
+    checkFirst: "¿No recuerdas si ya te inscribiste? Consulta la lista de participantes.",
+    submitting: "Enviando inscripción…",
+    registerAnother: "Inscribir a otra persona",
+    submissionError: "No se pudo confirmar tu inscripción. Consulta la lista de participantes o inténtalo de nuevo.",
   },
 };
 

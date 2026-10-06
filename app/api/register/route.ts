@@ -2,10 +2,11 @@ import type { PoolClient } from "pg";
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { isValidBirthMonthDay } from "@/lib/birth-month-day";
-import { sanitizeLevel, sanitizeRegistrationName } from "@/lib/input-safety";
+import { sanitizeLevel, sanitizeMemberName, sanitizeRegistrationName } from "@/lib/input-safety";
 import {
   fillConfirmedSlotsFromWaitlist,
   REGISTRATION_STATUS,
+  type RegistrationStatus,
 } from "@/lib/registrations";
 import { getSessionAccessSchema } from "@/lib/session-access";
 
@@ -81,15 +82,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Økten finnes ikke." }, { status: 404 });
     }
 
-    const duplicate = await client.query(
-      `SELECT id FROM registrations WHERE session_id = $1
-       AND (tournament_player_id IS NOT NULL${fillResult.hasBoardRegistrations ? " OR board_member_id IS NOT NULL" : ""})
-       AND lower(regexp_replace(trim(name), '[[:space:]]+', ' ', 'g')) = lower($2)`,
-      [sessionId, safeName]
+    // fillConfirmedSlotsFromWaitlist holds the session lock until COMMIT, so
+    // simultaneous submissions cannot both pass this check and insert a row.
+    // Use birth details for public signups to allow people who share a name.
+    // Team, board and legacy bookings may not have birth details.
+    const candidates = await client.query<{ id: number; name: string; status: RegistrationStatus }>(
+      `SELECT id, name, status FROM registrations WHERE session_id = $1
+       AND ((birth_month = $2 AND birth_day = $3)
+         OR birth_month IS NULL OR birth_day IS NULL
+         OR tournament_player_id IS NOT NULL${fillResult.hasBoardRegistrations ? " OR board_member_id IS NOT NULL" : ""})
+       ORDER BY CASE WHEN status = 'confirmed' THEN 0 ELSE 1 END, created_at, id`,
+      [sessionId, Number(birthMonth), Number(birthDay)]
     );
-    if (duplicate.rowCount) {
-      await client.query("ROLLBACK");
-      return NextResponse.json({ error: "Du er allerede påmeldt denne økten." }, { status: 409 });
+    const duplicate = candidates.rows.find(
+      (entry) => sanitizeMemberName(entry.name)?.toLowerCase() === safeName.toLowerCase()
+    );
+    if (duplicate) {
+      // Keep any waitlist promotion and report the booking's current status.
+      await client.query("COMMIT");
+      return NextResponse.json({
+        ok: true,
+        alreadyRegistered: true,
+        registrationId: duplicate.id,
+        registrationStatus: duplicate.status,
+      });
     }
     const accessSchema = await getSessionAccessSchema(client);
     let membersOnly = true;
@@ -118,9 +134,9 @@ export async function POST(req: Request) {
         ? REGISTRATION_STATUS.CONFIRMED
         : REGISTRATION_STATUS.WAITLIST;
 
-    await client.query(
+    const inserted = await client.query<{ id: number }>(
       `INSERT INTO registrations (session_id, name, level, birth_month, birth_day, status)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
       [
         sessionId,
         safeName,
@@ -133,7 +149,9 @@ export async function POST(req: Request) {
 
     await client.query("COMMIT");
 
-    return NextResponse.json({ ok: true, registrationStatus }, { status: 200 });
+    return NextResponse.json({
+      ok: true, alreadyRegistered: false, registrationId: inserted.rows[0].id, registrationStatus,
+    }, { status: 200 });
   } catch {
     if (client) {
       await client.query("ROLLBACK").catch(() => {});

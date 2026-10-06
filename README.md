@@ -181,6 +181,8 @@ heroku run -a <your-app-name> -- node scripts/init-db.js
 
 - Before publishing the privacy notices, resolve the controller, retention, provider and transfer details in [the privacy publication review](docs/privacy-review.md).
 - Session capacity counts confirmed registrations only.
+- Repeated public signups reuse the existing booking for the same session, normalized full name, and birth month/day. Team, board, and legacy bookings without birth details are matched by name. Retries preserve the original place in the queue and report its current status; no database migration is needed for this protection.
+- After signup, a confirmation replaces the form with the player's name, session details, and confirmed/waitlist status. The form blocks simultaneous submissions and offers an explicit action to register another person. Existing duplicate records are left for admin review.
 - If a session is full, new signups are stored as `waitlist`.
 - When a confirmed player unregisters, the earliest waitlisted player is promoted automatically.
 - Announcements are written once and shown as-is across languages.

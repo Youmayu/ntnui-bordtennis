@@ -222,7 +222,92 @@ test("cancelling a team booking restores its reservation until the cutoff", asyn
 
 test("public signup for an existing team booking cannot create a duplicate", async () => {
   await teamSignup();
-  assert.equal((await publicSignup({ firstName: "Lionel", lastName: "Kehl" })).status, 409);
+  const repeat = await publicSignup({ firstName: "Lionel", lastName: "Kehl" });
+  assert.equal(repeat.status, 200);
+  assert.equal(repeat.body.alreadyRegistered, true);
+  assert.equal(repeat.body.registrationStatus, "confirmed");
+  assert.equal((await roster()).registrations.length, 1);
+});
+
+for (const full of [false, true]) {
+  test(`repeated public signup reuses its ${full ? "waitlist" : "confirmed"} booking without changing details or queue order`, async () => {
+    if (full) await seed(3);
+    const first = await publicSignup();
+    const original = (await query("SELECT * FROM registrations WHERE id = $1", [first.body.registrationId])).rows[0];
+    await publicSignup({ firstName: "Bo", lastName: "Li" });
+    const repeat = await publicSignup({ firstName: "  ANNE  ", lastName: "smith", level: "Erfaren" });
+    assert.equal(first.body.alreadyRegistered, false);
+    assert.deepEqual(repeat, { status: 200, body: {
+      ok: true, alreadyRegistered: true, registrationId: original.id,
+      registrationStatus: full ? "waitlist" : "confirmed",
+    } });
+    assert.deepEqual((await query("SELECT * FROM registrations WHERE id = $1", [original.id])).rows[0], original);
+    assert.equal((await roster()).registrations.length, full ? 5 : 2);
+  });
+}
+
+test("duplicate matching normalizes legacy whitespace, Unicode and punctuation", async () => {
+  const original = await query(`INSERT INTO registrations (session_id, name, level, birth_month, birth_day)
+    VALUES (1, $1, 'Nybegynner', 2, 29) RETURNING id`, ["  Jose\u0301–Luis   O’Neill  "]);
+  const repeat = await publicSignup({ firstName: "JOSÉ-LUIS", lastName: "O'Neill" });
+  assert.equal(repeat.status, 200);
+  assert.equal(repeat.body.alreadyRegistered, true);
+  assert.equal(repeat.body.registrationId, original.rows[0].id);
+  assert.equal((await roster()).registrations.length, 1);
+});
+
+test("legacy registrations without birthdays are reused by normalized name", async () => {
+  await query("INSERT INTO registrations (session_id, name, level) VALUES (1, 'Anne Smith', 'Nybegynner')");
+  assert.equal((await publicSignup()).body.alreadyRegistered, true);
+  assert.equal((await roster()).registrations.length, 1);
+});
+
+test("same name with different birth details and signups to different sessions remain independent", async () => {
+  await publicSignup();
+  for (const overrides of [{ birthDay: 28 }, { birthMonth: 3 }]) {
+    const otherPerson = await publicSignup(overrides);
+    assert.equal(otherPerson.status, 200);
+    assert.equal(otherPerson.body.alreadyRegistered, false);
+  }
+  await query(`INSERT INTO sessions (starts_at, ends_at, location, capacity, members_only)
+    VALUES ('2026-09-24T16:00:00Z', '2026-09-24T18:00:00Z', 'Dragvoll B217', 8, FALSE)`);
+  const otherSession = await publicSignup({ sessionId: 2 });
+  assert.equal(otherSession.status, 200);
+  assert.equal(otherSession.body.alreadyRegistered, false);
+  assert.equal((await roster(1)).registrations.length, 3);
+  assert.equal((await roster(2)).registrations.length, 1);
+});
+
+test("simultaneous public retries create one booking and return the same registration ID", async () => {
+  const responses = await Promise.all([publicSignup(), publicSignup(), publicSignup()]);
+  assert.ok(responses.every((response) => response.status === 200));
+  assert.equal(responses.filter((response) => !response.body.alreadyRegistered).length, 1);
+  assert.equal(new Set(responses.map((response) => response.body.registrationId)).size, 1);
+  assert.equal((await roster()).registrations.length, 1);
+});
+
+test("retry after reservation release commits the promotion and reports the current confirmed status", async () => {
+  await seed(3);
+  const first = await publicSignup();
+  assert.equal(first.body.registrationStatus, "waitlist");
+  now = "2026-09-20T22:00:00Z";
+  const repeat = await publicSignup();
+  assert.equal(repeat.body.alreadyRegistered, true);
+  assert.equal(repeat.body.registrationStatus, "confirmed");
+  assert.equal(repeat.body.registrationId, first.body.registrationId);
+  assert.equal((await query("SELECT status FROM registrations WHERE id = $1", [first.body.registrationId])).rows[0].status, "confirmed");
+});
+
+test("players can sign up again after cancelling", async () => {
+  const first = await publicSignup();
+  const cancelled = await post(unregisterPost, {
+    registrationId: first.body.registrationId, birthMonth: 2, birthDay: 29, turnstileToken: "test",
+  });
+  assert.equal(cancelled.status, 200);
+  const next = await publicSignup();
+  assert.equal(next.status, 200);
+  assert.equal(next.body.alreadyRegistered, false);
+  assert.notEqual(next.body.registrationId, first.body.registrationId);
   assert.equal((await roster()).registrations.length, 1);
 });
 
@@ -423,7 +508,10 @@ for (const status of ["confirmed", "waitlist"]) {
     await actions.updateSession(sessionForm({ attending_board_member_ids: ["he-you-ma"] }));
     const rows = (await query("SELECT id, name, board_member_id, status, birth_month FROM registrations")).rows;
     assert.deepEqual(rows, [{ id: previous.rows[0].id, name: "He You Ma", board_member_id: "he-you-ma", status: "confirmed", birth_month: 2 }]);
-    assert.equal((await publicSignup({ firstName: "He You", lastName: "Ma" })).status, 409);
+    const repeat = await publicSignup({ firstName: "He You", lastName: "Ma" });
+    assert.equal(repeat.status, 200);
+    assert.equal(repeat.body.alreadyRegistered, true);
+    assert.equal(repeat.body.registrationId, previous.rows[0].id);
     const cancelled = await post(unregisterPost, { registrationId: previous.rows[0].id, birthMonth: 2, birthDay: 29, turnstileToken: "test" });
     assert.equal(cancelled.status, 409);
     assert.equal((await roster()).registrations.length, 1);
