@@ -57,6 +57,12 @@ export async function POST(req: Request) {
       );
       registrationStatus = updated.rows[0].status;
     } else {
+      // A full waiting list closes all new signups, including reserved spots.
+      // Existing bookings above can still be retrieved or upgraded.
+      if (state.registrationClosed) {
+        await client.query("COMMIT");
+        return NextResponse.json({ error: "registration_closed" }, { status: 409 });
+      }
       registrationStatus = state.availableSpots + state.reservedCount > 0
         ? REGISTRATION_STATUS.CONFIRMED : REGISTRATION_STATUS.WAITLIST;
       await client.query(

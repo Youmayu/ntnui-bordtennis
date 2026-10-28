@@ -166,6 +166,7 @@ heroku run -a <your-app-name> -- node scripts/init-db.js
 
 ## Operational notes
 
+- Urgent announcements require `node scripts/init-db.js` to add `announcements.is_urgent` (defaults to false for existing notices). Until it runs, regular announcements still work and urgency controls stay disabled. Use **Haster** when publishing, or **Merk som haster** / **Fjern hastemarkering** on existing notices. Urgent notices appear first with a red highlight and a brief pulse that respects reduced-motion preferences.
 - Run `node scripts/init-db.js` against the target database **before deploying** the tournament reservation update. It adds the optional tournament player ID, a per-session unique index, and allows team registrations without a skill level or birth details. Existing registrations remain intact.
 - The per-training reservation control requires running `node scripts/init-db.js` after deploying this update. It adds `reserve_tournament_spots` to sessions and recurring templates, preserving existing reservations. Until the migration runs, reservations keep their previous behavior and the new admin controls are disabled.
 - Use **Reserver plasser for turneringslaget** when creating or editing a session or recurring template. Reservations default to on. Template changes apply to sessions generated afterwards; existing sessions can be edited individually.
@@ -183,7 +184,8 @@ heroku run -a <your-app-name> -- node scripts/init-db.js
 - Session capacity counts confirmed registrations only.
 - Repeated public signups reuse the existing booking for the same session, normalized full name, and birth month/day. Team, board, and legacy bookings without birth details are matched by name. Retries preserve the original place in the queue and report its current status; no database migration is needed for this protection.
 - After signup, a confirmation replaces the form with the player's name, session details, and confirmed/waitlist status. The form blocks simultaneous submissions and offers an explicit action to register another person. Existing duplicate records are left for admin review.
-- If a session is full, new signups are stored as `waitlist`.
+- If a session is full, up to two extra signups are stored as `waitlist`. Once the waiting list reaches two players, all new signup closes for that session, including tournament signup with unused reserved spots. Registration automatically reopens when cancellation or promotion brings the queue below two. Duplicate requests still reuse existing bookings.
+- The waiting-list limit is enforced under the session lock and needs no database migration. Existing queues above the limit are preserved and remain closed to new signups until enough players leave the queue.
 - When a confirmed player unregisters, the earliest waitlisted player is promoted automatically.
 - Announcements are written once and shown as-is across languages.
 - Admins select B217 or B212 for individual sessions and recurring templates, with an optional MazeMap preview. Existing sessions remain in their saved room; template changes apply to sessions generated afterwards.

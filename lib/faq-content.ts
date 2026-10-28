@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/site-content";
+import { WAITLIST_LIMIT } from "@/lib/registration-limits";
 
 export type FaqItem = {
   question: string;
@@ -95,7 +96,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Hva skjer hvis en trening er full?",
             answer: [
-              "Hvis alle plassene er tatt, blir du satt på venteliste.",
+              `Hvis alle plassene er tatt, kan inntil ${WAITLIST_LIMIT} spillere stå på venteliste. Når ventelisten er full, stenges påmeldingen til økten.`,
               "Hvis noen melder seg av, flyttes neste person på ventelisten inn automatisk.",
             ],
           },
@@ -180,7 +181,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "What happens if a session is full?",
             answer: [
-              "If all spots are taken, you will be placed on the waiting list.",
+              `If all spots are taken, up to ${WAITLIST_LIMIT} players can join the waiting list. When the waiting list is full, registration closes for the session.`,
               "If someone unregisters, the next person on the waiting list is promoted automatically.",
             ],
           },
@@ -265,7 +266,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Hvad sker der, hvis en træning er fuld?",
             answer: [
-              "Hvis alle pladser er optaget, kommer du på venteliste.",
+              `Hvis alle pladser er optaget, kan højst ${WAITLIST_LIMIT} spillere komme på venteliste. Når ventelisten er fuld, lukkes tilmeldingen til træningen.`,
               "Hvis nogen melder fra, bliver den næste på ventelisten flyttet ind automatisk.",
             ],
           },
@@ -350,7 +351,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Vad händer om en träning är full?",
             answer: [
-              "Om alla platser är tagna hamnar du på väntelistan.",
+              `Om alla platser är tagna kan högst ${WAITLIST_LIMIT} spelare stå på väntelistan. När väntelistan är full stängs anmälan till passet.`,
               "Om någon avanmäler sig flyttas nästa person på väntelistan in automatiskt.",
             ],
           },
@@ -435,7 +436,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Was passiert, wenn ein Training voll ist?",
             answer: [
-              "Wenn alle Plätze belegt sind, kommst du auf die Warteliste.",
+              `Wenn alle Plätze belegt sind, können sich bis zu ${WAITLIST_LIMIT} Spieler auf die Warteliste setzen lassen. Ist die Warteliste voll, wird die Anmeldung für das Training geschlossen.`,
               "Wenn sich jemand abmeldet, rückt die nächste Person auf der Warteliste automatisch nach.",
             ],
           },
@@ -520,7 +521,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "如果训练已经满员怎么办？",
             answer: [
-              "如果名额已满，你会被加入候补名单。",
+              `如果训练名额已满，最多${WAITLIST_LIMIT}人可以加入候补名单。候补名单满员后，本次训练将关闭报名。`,
               "如果有人取消报名，候补名单上的下一位会自动补上。",
             ],
           },
@@ -605,7 +606,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "Que se passe-t-il si une séance est complète ?",
             answer: [
-              "Si toutes les places sont prises, vous serez ajouté à la liste d’attente.",
+              `Si toutes les places sont prises, jusqu’à ${WAITLIST_LIMIT} joueurs peuvent rejoindre la liste d’attente. Lorsque celle-ci est pleine, les inscriptions à la séance sont closes.`,
               "Si quelqu’un se désinscrit, la personne suivante sur la liste d’attente obtient automatiquement la place.",
             ],
           },
@@ -690,7 +691,7 @@ export const FAQ_BY_LOCALE: Record<Locale, FaqContent> = {
           {
             question: "¿Qué pasa si un entrenamiento está lleno?",
             answer: [
-              "Si ya no quedan plazas, entrarás en la lista de espera.",
+              `Si ya no quedan plazas, hasta ${WAITLIST_LIMIT} jugadores pueden apuntarse a la lista de espera. Cuando se llena, se cierran las inscripciones para el entrenamiento.`,
               "Si alguien se da de baja, la siguiente persona de la lista de espera entra automáticamente.",
             ],
           },

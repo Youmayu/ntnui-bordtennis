@@ -4,6 +4,8 @@ export type SessionAvailability = {
   reserve_tournament_spots: boolean;
   reserved_count: number;
   available_spots: number;
+  waitlist_count: number;
+  registration_closed: boolean;
   tournament_release_at: string;
 };
 

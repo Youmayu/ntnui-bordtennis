@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import { getRegistrationCopy } from "@/lib/registration-content";
+import { isRegistrationClosed, WAITLIST_LIMIT } from "@/lib/registration-limits";
 import { getIntlLocale } from "@/lib/site-content";
 import { getBoardMemberLabel } from "@/lib/board-members";
 import { REGISTRATION_STATUS, type PublicRegistration } from "@/lib/registrations";
@@ -31,6 +32,7 @@ export default function SessionRoster({
   const confirmed = registrations?.filter((entry) => entry.status === REGISTRATION_STATUS.CONFIRMED) ?? [];
   const waitlist = registrations?.filter((entry) => entry.status === REGISTRATION_STATUS.WAITLIST) ?? [];
   const isFull = confirmed.length >= capacity;
+  const registrationClosed = availability?.registration_closed ?? isRegistrationClosed(waitlist.length);
   const tournamentCopy = getTournamentCopy(locale);
   const reservedCount = availability?.reserved_count ?? 0;
 
@@ -55,7 +57,7 @@ export default function SessionRoster({
             {copy.confirmed} · {confirmed.length}/{capacity} ↓
           </a>
           <a className="app-badge app-badge-accent min-h-11 underline underline-offset-4" href={`#${id}-waitlist-panel`}>
-            {copy.waitlist} · {waitlist.length} ↓
+            {copy.waitlist} · {waitlist.length}/{WAITLIST_LIMIT} ↓
           </a>
         </div>
       )}
@@ -65,7 +67,7 @@ export default function SessionRoster({
         <div className="app-roster-panels">
           {[
             { key: "confirmed", title: copy.confirmed, help: copy.confirmedHelp, entries: confirmed, empty: messages.home.nobodyRegistered, count: `${confirmed.length}/${capacity}` },
-            { key: "waitlist", title: copy.waitlist, help: copy.waitlistHelp, entries: waitlist, empty: copy.emptyWaitlist, count: waitlist.length },
+            { key: "waitlist", title: copy.waitlist, help: copy.waitlistHelp, entries: waitlist, empty: copy.emptyWaitlist, count: `${waitlist.length}/${WAITLIST_LIMIT}` },
           ].map((group) => (
             <section key={group.key} id={`${id}-${group.key}-panel`} className={`app-roster-panel app-roster-${group.key}`} aria-labelledby={`${id}-${group.key}`}>
               <div className="app-roster-panel-heading">
@@ -76,6 +78,9 @@ export default function SessionRoster({
                 </span>
               </div>
               <p className="app-roster-help">{group.help}</p>
+              {group.key === "waitlist" && <p className="app-roster-help">
+                {registrationClosed ? <><strong>{copy.closedTitle}. </strong>{copy.closedHelp}</> : copy.waitlistLimitHelp}
+              </p>}
               {group.entries.length === 0 && !(group.key === "confirmed" && reservedCount > 0) ? (
                 <p className="app-roster-empty">{group.empty}</p>
               ) : (

@@ -5,6 +5,7 @@ import { getIntlLocale, getSessionAccessLabel, localizePathname } from "@/lib/si
 import { useSitePreferences } from "@/app/components/SitePreferencesProvider";
 import VenueLink from "@/app/components/VenueLink";
 import { getRegistrationCopy } from "@/lib/registration-content";
+import { isRegistrationClosed, WAITLIST_LIMIT } from "@/lib/registration-limits";
 import type { UpcomingSession } from "@/lib/sessions";
 import { useUpcomingSessions } from "@/app/components/useUpcomingSessions";
 import TournamentReservationNotice from "@/app/components/TournamentReservationNotice";
@@ -68,6 +69,7 @@ export default function SchedulePageContent({ sessions: initialSessions }: { ses
                   new Date(session.starts_at).getTime() <= now &&
                   new Date(session.ends_at).getTime() > now;
                 const isFull = session.available_spots === 0;
+                const registrationClosed = session.registration_closed ?? isRegistrationClosed(session.waitlist_count);
 
                 return (
                   <article key={session.id} className="app-schedule-row p-5 sm:p-6">
@@ -114,6 +116,9 @@ export default function SchedulePageContent({ sessions: initialSessions }: { ses
                               {session.confirmed_count}/{session.capacity}
                               {session.available_spots === 0 && ` · ${session.reserved_count > 0 ? getTournamentCopy(locale).publicFull : getRegistrationCopy(locale).fullTitle}`}
                             </span>
+                            <span className="app-badge app-badge-accent">
+                              {registrationCopy.waitlist} · {session.waitlist_count}/{WAITLIST_LIMIT}
+                            </span>
                           </div>
                         </div>
 
@@ -127,7 +132,12 @@ export default function SchedulePageContent({ sessions: initialSessions }: { ses
                             showMazeMapBadge
                           />
                         </div>
-                        <Link
+                        {registrationClosed ? (
+                          <button type="button" disabled className="app-button-secondary mt-4 inline-flex items-center justify-center">
+                            {registrationCopy.closedTitle}
+                            <span className="sr-only"> · {formatter.format(new Date(session.starts_at))}</span>
+                          </button>
+                        ) : <Link
                           href={{
                             pathname: localizePathname("/register", locale),
                             query: { sessionId: session.id },
@@ -136,7 +146,7 @@ export default function SchedulePageContent({ sessions: initialSessions }: { ses
                         >
                           {isFull ? registrationCopy.joinWaitlist : messages.shell.nav.register}
                           <span className="sr-only"> · {formatter.format(new Date(session.starts_at))}</span>
-                        </Link>
+                        </Link>}
                       </div>
                     </div>
                     <ScheduleSessionRoster

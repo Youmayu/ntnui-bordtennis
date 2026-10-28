@@ -16,6 +16,7 @@ import SessionRoster from "@/app/components/SessionRoster";
 import { useSessionRegistrations } from "@/app/components/useSessionRegistrations";
 import { REGISTRATION_STATUS, type PublicRegistration } from "@/lib/registrations";
 import { getRegistrationCopy } from "@/lib/registration-content";
+import { isRegistrationClosed } from "@/lib/registration-limits";
 import type { SessionAvailability } from "@/lib/tournament-reservations";
 import { getTournamentCopy } from "@/lib/tournament-content";
 
@@ -101,6 +102,18 @@ export default function HomePageContent({
   const spotsLeft = Math.max(0, session.capacity - confirmedCount - reservedCount);
   const isFull = spotsLeft === 0;
   const registrationCopy = getRegistrationCopy(locale);
+  const registrationClosed = roster.availability?.registration_closed ?? isRegistrationClosed(
+    (roster.registrations ?? initialRegistrations).filter((entry) => entry.status === REGISTRATION_STATUS.WAITLIST).length
+  );
+  const registrationAction = registrationClosed ? (
+    <button type="button" disabled className="app-button-secondary inline-flex items-center justify-center">
+      {registrationCopy.closedTitle}
+    </button>
+  ) : (
+    <Link href={registerHref} className={`${isFull ? "app-button-danger" : "app-button-success"} inline-flex items-center justify-center`}>
+      {isFull ? registrationCopy.joinWaitlist : messages.home.ctaRegister}
+    </Link>
+  );
   const fullTitle = reservedCount > 0 ? getTournamentCopy(locale).publicFull : registrationCopy.fullTitle;
   const attendingBoardMemberIds = new Set(session.attending_board_member_ids);
   const attendingBoardMembers = BOARD_MEMBERS.filter((member) =>
@@ -156,18 +169,14 @@ export default function HomePageContent({
             </p>
 
             <div className="app-mobile-hero-actions mt-5 grid gap-3 sm:hidden">
-              <Link href={registerHref} className="app-button-success inline-flex items-center justify-center">
-                {messages.home.ctaRegister}
-              </Link>
+              {registrationAction}
               <Link href={unregisterHref} className="app-button-danger inline-flex items-center justify-center">
                 {messages.shell.nav.unregister}
               </Link>
             </div>
 
             <div className="mt-8 hidden flex-wrap gap-3 sm:flex">
-              <Link href={registerHref} className="app-button-success inline-flex items-center">
-                {messages.home.ctaRegister}
-              </Link>
+              {registrationAction}
               <Link href={unregisterHref} className="app-button-danger inline-flex items-center">
                 {messages.shell.nav.unregister}
               </Link>
@@ -237,7 +246,7 @@ export default function HomePageContent({
             <div className="app-stage-stats">
               <div className={`app-stage-stat${isFull ? " app-capacity-full" : ""}`}>
                 <span className="app-stage-stat-value">{spotsLeft}</span>
-                <span className="app-stage-stat-label">{isFull ? fullTitle : messages.home.spotsLeft(spotsLeft)}</span>
+                <span className="app-stage-stat-label">{registrationClosed ? registrationCopy.closedTitle : isFull ? fullTitle : messages.home.spotsLeft(spotsLeft)}</span>
               </div>
               <div className={`app-stage-stat app-stage-stat-secondary${isFull ? " app-capacity-full" : ""}`}>
                 <span className="app-stage-stat-value">
@@ -267,7 +276,7 @@ export default function HomePageContent({
               </div>
 
               <div className={`app-stat-card min-w-[170px] px-5 py-4 text-sm ${isFull ? "app-capacity-full" : "text-white"}`}>
-                {isFull && <div className="mb-1 font-bold">{fullTitle}</div>}
+                {(isFull || registrationClosed) && <div className="mb-1 font-bold">{registrationClosed ? registrationCopy.closedTitle : fullTitle}</div>}
                 <div className="font-semibold">{messages.home.spotsLeft(spotsLeft)}</div>
                 {isActive && (
                   <div className="mt-1 opacity-80">{messages.home.currentStatus}</div>
@@ -317,9 +326,7 @@ export default function HomePageContent({
               ))}
 
             <div className="mt-8 hidden flex-wrap gap-3 sm:flex">
-              <Link href={registerHref} className="app-button-success inline-flex">
-                {messages.home.ctaRegister}
-              </Link>
+              {registrationAction}
               <Link href={unregisterHref} className="app-button-danger inline-flex">
                 {messages.shell.nav.unregister}
               </Link>

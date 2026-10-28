@@ -107,6 +107,13 @@ export async function POST(req: Request) {
         registrationStatus: duplicate.status,
       });
     }
+    if (fillResult.registrationClosed) {
+      await client.query("COMMIT");
+      return NextResponse.json({
+        code: "registration_closed",
+        error: "Ventelisten er full. Påmeldingen til denne økten er stengt.",
+      }, { status: 409 });
+    }
     const accessSchema = await getSessionAccessSchema(client);
     let membersOnly = true;
 

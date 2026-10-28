@@ -3,6 +3,7 @@ import { getReservedSpotCount, getTournamentReservationsSelectSql, tournamentRel
 import { getSessionAccessSchema } from "@/lib/session-access";
 import { getBoardAttendanceSelectSql } from "@/lib/board-attendance";
 import { syncBoardRegistrations } from "@/lib/board-registrations";
+import { isRegistrationClosed } from "@/lib/registration-limits";
 
 export const REGISTRATION_STATUS = {
   CONFIRMED: "confirmed",
@@ -115,7 +116,16 @@ export async function fillConfirmedSlotsFromWaitlist(
     promotedCount += 1;
   }
 
+  // Count after promotions, while still holding the session lock. This also
+  // reopens signup automatically when a cancellation or release frees a place.
+  const waitlist = await client.query<{ count: number }>(
+    `SELECT COUNT(*)::int AS count FROM registrations WHERE session_id = $1 AND status = $2`,
+    [sessionId, REGISTRATION_STATUS.WAITLIST]
+  );
+  const waitlistCount = waitlist.rows[0].count;
+
   return { sessionExists: true as const, sessionOpen: true as const, promotedCount, capacity,
+    waitlistCount, registrationClosed: isRegistrationClosed(waitlistCount),
     availableSpots, reservedCount, reserveTournamentSpots,
     hasBoardRegistrations: accessSchema.hasBoardRegistrations,
     tournamentReleaseAt: releaseAt.toISOString() };

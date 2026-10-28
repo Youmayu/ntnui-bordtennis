@@ -19,6 +19,7 @@ import {
 import { getDaysInMonth } from "@/lib/birth-month-day";
 import { sanitizeRegistrationName } from "@/lib/input-safety";
 import { getRegistrationCopy } from "@/lib/registration-content";
+import { isRegistrationClosed, WAITLIST_LIMIT } from "@/lib/registration-limits";
 import { REGISTRATION_STATUS, type RegistrationStatus } from "@/lib/registrations";
 import SessionRoster from "@/app/components/SessionRoster";
 import { useSessionRegistrations } from "@/app/components/useSessionRegistrations";
@@ -100,6 +101,7 @@ export default function RegisterPageContent() {
   const pending = useRef(false);
   const receiptRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [closedResponse, setClosedResponse] = useState<{ sessionId: number; receivedAt: string } | null>(null);
   const [rosterRevision, setRosterRevision] = useState(0);
   const roster = useSessionRegistrations(sessionId, null, rosterRevision);
   const session = sessions.find((session) => session.id === sessionId) ?? null;
@@ -111,6 +113,9 @@ export default function RegisterPageContent() {
   const registrationCopy = getRegistrationCopy(locale);
   const accessCopy = getSessionAccessCopy(locale);
   const availability = roster.availability ?? selectedSession;
+  const registrationClosed = (availability?.registration_closed ?? isRegistrationClosed(selectedSession?.waitlist_count ?? 0)) ||
+    (closedResponse?.sessionId === sessionId &&
+      (!roster.updatedAt || roster.updatedAt <= closedResponse.receivedAt));
   const reservedCount = availability?.reserved_count ?? 0;
   const selectedSessionIsFull = selectedSession
     ? selectedSession.confirmed_count + reservedCount >= selectedSession.capacity
@@ -183,7 +188,7 @@ export default function RegisterPageContent() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (pending.current || receipt) return;
+    if (pending.current || receipt || registrationClosed) return;
     setError(null);
 
     const safeName = sanitizeRegistrationName(firstName, lastName);
@@ -233,6 +238,11 @@ export default function RegisterPageContent() {
 
       const data = await res.json();
       if (!res.ok) {
+        if (data?.code === "registration_closed") {
+          setClosedResponse({ sessionId, receivedAt: new Date().toISOString() });
+          setRosterRevision((value) => value + 1);
+          return;
+        }
         setError(data?.error ?? messages.register.errors.generic);
         return;
       }
@@ -303,7 +313,7 @@ export default function RegisterPageContent() {
               <select
                 id="register-session"
                 disabled={submitting}
-                aria-describedby={!receipt && selectedSessionIsFull ? "register-full-notice" : undefined}
+                aria-describedby={!receipt && !registrationClosed && selectedSessionIsFull ? "register-full-notice" : undefined}
                 value={sessionId ?? ""}
                 onChange={(e) => {
                   setSessionId(Number(e.target.value));
@@ -327,6 +337,7 @@ export default function RegisterPageContent() {
                     {formatVenueLabel(session.location, locale)}
                     {" - "}
                     {getSessionAccessLabel(locale, session.members_only)}
+                    {(session.id === sessionId ? registrationClosed : session.registration_closed) && ` · ${registrationCopy.closedTitle}`}
                   </option>
                 ))}
               </select>
@@ -374,6 +385,15 @@ export default function RegisterPageContent() {
                   {registrationCopy.registerAnother}
                 </button>
               </div>
+            ) : registrationClosed ? (
+              <div role="status" className="app-alert-waitlist space-y-4">
+                <h2 className="text-xl font-semibold">{registrationCopy.closedTitle}</h2>
+                <p className="text-sm leading-6">{registrationCopy.closedHelp}</p>
+                <a href="#session-registrations" className="app-button-secondary inline-flex">{registrationCopy.showParticipants}</a>
+                <button type="button" disabled className="app-button-secondary w-full justify-center">
+                  {registrationCopy.closedTitle}
+                </button>
+              </div>
             ) : (
             <fieldset disabled={submitting} className="min-w-0 space-y-5">
             {selectedSession && selectedSessionIsFull && (
@@ -382,12 +402,13 @@ export default function RegisterPageContent() {
                 <div className="min-w-0">
                   <h2 className="app-full-notice-title">{fullTitle}</h2>
                   <p className="mt-2 text-sm leading-6">{registrationCopy.waitlistSignup}</p>
+                  <p className="mt-2 text-sm leading-6">{registrationCopy.waitlistLimitHelp}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span className="app-badge app-capacity-full">
                       {selectedSession.confirmed_count}/{selectedSession.capacity}
                     </span>
                     <span className="app-badge app-badge-neutral">
-                      {messages.register.waitlistCount(selectedSession.waitlist_count)}
+                      {registrationCopy.waitlist} · {selectedSession.waitlist_count}/{WAITLIST_LIMIT}
                     </span>
                   </div>
                 </div>
@@ -541,7 +562,7 @@ export default function RegisterPageContent() {
 
             <button
               type="submit"
-              disabled={disabled || submitting}
+              disabled={disabled || submitting || registrationClosed}
               aria-describedby={selectedSessionIsFull ? "register-full-notice" : undefined}
               className={`${selectedSessionIsFull ? "app-button-danger" : "app-button-success"} w-full justify-center`}
             >
@@ -575,11 +596,11 @@ export default function RegisterPageContent() {
                   </span>
                   <span className={`app-badge ${selectedSessionIsFull ? "app-capacity-full" : "app-badge-success"}`}>
                     {selectedSession.confirmed_count}/{selectedSession.capacity}
-                    {selectedSessionIsFull && ` · ${fullTitle}`}
+                    {registrationClosed ? ` · ${registrationCopy.closedTitle}` : selectedSessionIsFull && ` · ${fullTitle}`}
                   </span>
                   {selectedSession.waitlist_count > 0 && (
                     <span className="app-badge app-badge-accent">
-                      {messages.register.waitlistCount(selectedSession.waitlist_count)}
+                      {registrationCopy.waitlist} · {selectedSession.waitlist_count}/{WAITLIST_LIMIT}
                     </span>
                   )}
                 </div>

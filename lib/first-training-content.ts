@@ -25,7 +25,7 @@ const FIRST_TRAINING_COPY: Record<Locale, FirstTrainingCopy> = {
     feesLink: "Medlemspriser",
     bookingTitle: "Meld deg på hver økt",
     bookingBody:
-      "Medlemskap reserverer ikke en plass. Velg en økt i treningsplanen og meld deg på. Er økten full, kan du stå på venteliste.",
+      "Medlemskap reserverer ikke en plass. Velg en økt i treningsplanen og meld deg på. Er økten full, kan du stå på venteliste hvis det er plass der.",
     bookingLink: "Velg en økt",
     equipmentTitle: "Dette tar du med",
     equipmentBody:
@@ -41,7 +41,7 @@ const FIRST_TRAINING_COPY: Record<Locale, FirstTrainingCopy> = {
     feesLink: "Membership fees",
     bookingTitle: "Book each session",
     bookingBody:
-      "Membership does not reserve a spot. Choose a session in the schedule and register. If it is full, join the waiting list.",
+      "Membership does not reserve a spot. Choose a session in the schedule and register. If it is full, you can join the waiting list if space remains.",
     bookingLink: "Choose a session",
     equipmentTitle: "What to bring",
     equipmentBody:
@@ -57,7 +57,7 @@ const FIRST_TRAINING_COPY: Record<Locale, FirstTrainingCopy> = {
     feesLink: "Medlemspriser",
     bookingTitle: "Tilmeld dig hver træning",
     bookingBody:
-      "Medlemskab reserverer ikke en plads. Vælg en træning i træningsplanen, og tilmeld dig. Er den fuld, kan du komme på venteliste.",
+      "Medlemskab reserverer ikke en plads. Vælg en træning i træningsplanen, og tilmeld dig. Er den fuld, kan du komme på venteliste, hvis der er plads på den.",
     bookingLink: "Vælg en træning",
     equipmentTitle: "Det skal du tage med",
     equipmentBody:
@@ -73,7 +73,7 @@ const FIRST_TRAINING_COPY: Record<Locale, FirstTrainingCopy> = {
     feesLink: "Medlemsavgifter",
     bookingTitle: "Anmäl dig till varje pass",
     bookingBody:
-      "Medlemskap reserverar ingen plats. Välj ett pass i träningsschemat och anmäl dig. Är det fullt kan du ställa dig på väntelistan.",
+      "Medlemskap reserverar ingen plats. Välj ett pass i träningsschemat och anmäl dig. Är det fullt kan du ställa dig på väntelistan om det finns plats där.",
     bookingLink: "Välj ett pass",
     equipmentTitle: "Det här tar du med",
     equipmentBody:
@@ -89,7 +89,7 @@ const FIRST_TRAINING_COPY: Record<Locale, FirstTrainingCopy> = {
     feesLink: "Mitgliedsbeiträge",
     bookingTitle: "Für jede Einheit anmelden",
     bookingBody:
-      "Die Mitgliedschaft reserviert keinen Platz. Wähle eine Einheit im Trainingsplan und melde dich an. Ist sie voll, trage dich auf die Warteliste ein.",
+      "Die Mitgliedschaft reserviert keinen Platz. Wähle eine Einheit im Trainingsplan und melde dich an. Ist sie voll, kannst du dich auf die Warteliste setzen lassen, sofern dort noch Platz ist.",
     bookingLink: "Einheit auswählen",
     equipmentTitle: "Was du mitbringen solltest",
     equipmentBody:
@@ -105,7 +105,7 @@ const FIRST_TRAINING_COPY: Record<Locale, FirstTrainingCopy> = {
     feesLink: "会员费用",
     bookingTitle: "每次训练都需报名",
     bookingBody:
-      "会员身份不会自动预留名额。请在训练安排中选择场次并报名。如果已满员，可以加入候补名单。",
+      "会员身份不会自动预留名额。请在训练安排中选择场次并报名。如果已满员且候补名单仍有空位，可以加入候补名单。",
     bookingLink: "选择训练场次",
     equipmentTitle: "需要带什么",
     equipmentBody:
@@ -121,7 +121,7 @@ const FIRST_TRAINING_COPY: Record<Locale, FirstTrainingCopy> = {
     feesLink: "Tarifs d’adhésion",
     bookingTitle: "Inscrivez-vous à chaque séance",
     bookingBody:
-      "L’adhésion ne réserve pas de place. Choisissez une séance dans le programme et inscrivez-vous. Si elle est complète, rejoignez la liste d’attente.",
+      "L’adhésion ne réserve pas de place. Choisissez une séance dans le programme et inscrivez-vous. Si elle est complète, vous pouvez rejoindre la liste d’attente s’il y reste de la place.",
     bookingLink: "Choisir une séance",
     equipmentTitle: "Que faut-il apporter ?",
     equipmentBody:
@@ -137,7 +137,7 @@ const FIRST_TRAINING_COPY: Record<Locale, FirstTrainingCopy> = {
     feesLink: "Cuotas de afiliación",
     bookingTitle: "Inscríbete en cada sesión",
     bookingBody:
-      "Ser miembro no reserva una plaza. Elige una sesión en el horario e inscríbete. Si está llena, apúntate a la lista de espera.",
+      "Ser miembro no reserva una plaza. Elige una sesión en el horario e inscríbete. Si está llena, puedes apuntarte a la lista de espera si aún queda sitio.",
     bookingLink: "Elegir una sesión",
     equipmentTitle: "Qué llevar",
     equipmentBody:

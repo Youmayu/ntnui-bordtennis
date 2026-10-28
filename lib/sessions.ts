@@ -2,6 +2,7 @@ import { ensureAutoScheduledSessions } from "@/lib/auto-schedule";
 import { pool } from "@/lib/db";
 import { sanitizeLocation } from "@/lib/input-safety";
 import { refreshSessionWaitlists, REGISTRATION_STATUS } from "@/lib/registrations";
+import { isRegistrationClosed } from "@/lib/registration-limits";
 import { getMembersOnlySelectSql, getSessionAccessSchema } from "@/lib/session-access";
 import { DEFAULT_SESSION_LOCATION } from "@/lib/site-content";
 import { getReservedSpotCount, getTournamentReservationsSelectSql, tournamentReleaseSql, type SessionAvailability } from "@/lib/tournament-reservations";
@@ -46,6 +47,7 @@ export async function getUpcomingSessions(): Promise<UpcomingSession[]> {
       location: sanitizeLocation(session.location) ?? DEFAULT_SESSION_LOCATION,
       reserved_count: reservedCount,
       available_spots: Math.max(0, session.capacity - session.confirmed_count - reservedCount),
+      registration_closed: isRegistrationClosed(session.waitlist_count),
     };
   });
 }

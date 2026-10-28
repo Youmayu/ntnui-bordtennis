@@ -10,12 +10,14 @@ import SessionRoster from "@/app/components/SessionRoster";
 import TournamentReservationNotice from "@/app/components/TournamentReservationNotice";
 import { getIntlLocale } from "@/lib/site-content";
 import { getRegistrationCopy } from "@/lib/registration-content";
+import { isRegistrationClosed } from "@/lib/registration-limits";
 import { getTournamentCopy, getTournamentFormCopy } from "@/lib/tournament-content";
 import { TOURNAMENT_PLAYERS } from "@/lib/tournament-team";
 
 export default function TournamentPageContent() {
   const { locale, messages } = useSitePreferences();
   const copy = getTournamentFormCopy(locale);
+  const registrationCopy = getRegistrationCopy(locale);
   const { sessions, loading, error: sessionsError } = useUpcomingSessions();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const session = sessions.find((entry) => entry.id === selectedId) ?? sessions[0] ?? null;
@@ -27,6 +29,10 @@ export default function TournamentPageContent() {
   const roster = useSessionRegistrations(session?.id ?? null, null, revision);
   const availability = roster.availability ?? session;
   const [error, setError] = useState<string | null>(null);
+  const [closedResponse, setClosedResponse] = useState<{ sessionId: number; receivedAt: string } | null>(null);
+  const registrationClosed = (availability?.registration_closed ?? isRegistrationClosed(session?.waitlist_count ?? 0)) ||
+    Boolean(closedResponse && closedResponse.sessionId === session?.id &&
+      (!roster.updatedAt || roster.updatedAt <= closedResponse.receivedAt));
   const [result, setResult] = useState<{ text: string; waitlisted: boolean } | null>(null);
   const isFull = availability ? availability.available_spots + availability.reserved_count === 0 : false;
   const formatter = new Intl.DateTimeFormat(getIntlLocale(locale), {
@@ -35,7 +41,7 @@ export default function TournamentPageContent() {
 
   async function register(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending.current || !session || !playerId || !token) return;
+    if (pending.current || !session || !playerId || !token || registrationClosed) return;
     pending.current = true;
     setSubmitting(true);
     setError(null);
@@ -47,6 +53,11 @@ export default function TournamentPageContent() {
       });
       const data = await response.json();
       if (!response.ok) {
+        if (data.error === "registration_closed") {
+          setClosedResponse({ sessionId: session.id, receivedAt: new Date().toISOString() });
+          setRevision((value) => value + 1);
+          return;
+        }
         setError(copy.errors[data.error as keyof typeof copy.errors] ?? copy.errors.unavailable);
         return;
       }
@@ -84,9 +95,19 @@ export default function TournamentPageContent() {
             className="app-field w-full rounded-2xl px-4 py-3" value={session?.id ?? ""}
             onChange={(event) => { setSelectedId(Number(event.target.value)); setResult(null); setError(null); }}>
             {!session && <option value="">—</option>}
-            {sessions.map((entry) => <option key={entry.id} value={entry.id}>{formatter.format(new Date(entry.starts_at))} · {entry.location}</option>)}
+            {sessions.map((entry) => <option key={entry.id} value={entry.id}>{formatter.format(new Date(entry.starts_at))} · {entry.location}
+              {(entry.id === session?.id ? registrationClosed : entry.registration_closed) && ` · ${registrationCopy.closedTitle}`}
+            </option>)}
           </select>
         </div>
+        {registrationClosed ? (
+          <div role="status" className="app-alert-waitlist space-y-3">
+            <h2 className="text-xl font-semibold">{registrationCopy.closedTitle}</h2>
+            <p className="text-sm leading-6">{registrationCopy.closedHelp}</p>
+            <button type="button" disabled className="app-button-secondary w-full justify-center">{registrationCopy.closedTitle}</button>
+          </div>
+        ) : (
+        <fieldset disabled={submitting} className="min-w-0 space-y-5">
         <TournamentReservationNotice availability={availability} />
         {availability && (!availability.reserve_tournament_spots
           ? <p className="text-sm text-[color:var(--text-soft)]">{copy.unreserved}</p>
@@ -103,11 +124,15 @@ export default function TournamentPageContent() {
         </div>
         <FormPrivacyNotice />
         <TurnstileWidget siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""} token={token} onTokenChange={setToken} />
-        {isFull && <p className="app-alert-waitlist">{getRegistrationCopy(locale).waitlistSignup}</p>}
+        {isFull && <div className="app-alert-waitlist space-y-2">
+          <p>{registrationCopy.waitlistSignup}</p><p>{registrationCopy.waitlistLimitHelp}</p>
+        </div>}
         <button type="submit" className="app-button-tournament w-full justify-center"
           disabled={submitting || !session || !playerId || !token || sessionsError}>
           {submitting ? copy.submitting : isFull ? getRegistrationCopy(locale).joinWaitlist : messages.register.submit}
         </button>
+        </fieldset>
+        )}
         {error && <p role="alert" className="app-alert-error">{error}</p>}
         {result && <p role="status" className={result.waitlisted ? "app-alert-waitlist" : "app-alert-success"}>{result.text}</p>}
         <p className="text-sm text-[color:var(--text-soft)]">{copy.cancel}</p>

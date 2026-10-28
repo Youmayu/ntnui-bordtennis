@@ -216,9 +216,13 @@ async function main() {
       id SERIAL PRIMARY KEY,
       title TEXT NOT NULL,
       body TEXT NOT NULL,
+      is_urgent BOOLEAN NOT NULL DEFAULT FALSE,
       expires_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    ALTER TABLE announcements
+      ADD COLUMN IF NOT EXISTS is_urgent BOOLEAN NOT NULL DEFAULT FALSE;
 
     CREATE INDEX IF NOT EXISTS idx_announcements_created_at
       ON announcements(created_at DESC);

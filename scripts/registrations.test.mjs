@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load } from "./test-loader.mjs";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 const { sanitizeRegistrationName } = load("lib/input-safety.ts");
 
@@ -109,5 +111,51 @@ test("public roster rejects absent, fractional and invalid session IDs", async (
   });
   for (const value of ["", "0", "-1", "1.5", "NaN", "Infinity"]) {
     assert.equal((await GET(new Request(`http://localhost/api/registrations?sessionId=${value}`))).status, 400);
+  }
+});
+
+test("home and schedule offer waiting-list signup only below the limit, and rosters show the two-player cap", () => {
+  const { getMessages } = load("lib/site-content.ts");
+  for (const count of [0, 1, 2, 3]) {
+    const session = {
+      id: 1, starts_at: "2026-09-23T16:00:00Z", ends_at: "2026-09-23T18:00:00Z",
+      current_time: "2026-09-21T12:00:00Z", location: "B217", capacity: 1,
+      confirmed_count: 1, waitlist_count: count, attending_board_member_ids: [], members_only: false,
+      reserve_tournament_spots: false, reserved_count: 0, available_spots: 0,
+      tournament_release_at: "2026-09-20T22:00:00Z", registration_closed: count >= 2,
+    };
+    const registrations = [
+      { id: 1, name: "Anne Smith", status: "confirmed" },
+      ...Array.from({ length: count }, (_, index) => ({ id: index + 2, name: `Waiting player ${index}`, status: "waitlist" })),
+    ];
+    const mocks = {
+      "@/app/components/SitePreferencesProvider": { useSitePreferences: () => ({ locale: "en", messages: getMessages("en") }) },
+      "@/app/components/VenueLink": { default: () => null },
+      "@/app/components/DiscordInvitation": { default: () => null },
+      "@/app/components/FirstTrainingSection": { default: () => null },
+      "@/app/components/TournamentReservationNotice": { default: () => null },
+      "@/app/components/ScheduleSessionRoster": { default: () => null },
+      "@/app/components/useSessionRegistrations": { useSessionRegistrations: () => ({ registrations, availability: session, error: false, updatedAt: null }) },
+      "@/app/components/useUpcomingSessions": { useUpcomingSessions: () => ({ sessions: [session], error: false }) },
+    };
+    const Roster = load("app/components/SessionRoster.tsx", mocks).default;
+    mocks["@/app/components/SessionRoster"] = { default: Roster };
+    const Home = load("app/components/HomePageContent.tsx", mocks).default;
+    const Schedule = load("app/components/SchedulePageContent.tsx", mocks).default;
+    for (const html of [
+      renderToStaticMarkup(createElement(Home, { session, initialRegistrations: registrations, boardAttendanceAvailable: false, initialAvailability: session })),
+      renderToStaticMarkup(createElement(Schedule, { sessions: [session] })),
+    ]) {
+      if (count >= 2) {
+        assert.match(html, /<button[^>]*disabled=""[^>]*>Registration closed/);
+        assert.doesNotMatch(html, /href="\/en\/register/);
+      } else {
+        assert.match(html, /href="\/en\/register/);
+        assert.match(html, /Join waiting list/);
+      }
+    }
+    const rosterHtml = renderToStaticMarkup(createElement(Roster, { registrations, capacity: 1, error: false, updatedAt: null, availability: session }));
+    assert.ok(rosterHtml.includes(`${count}/2`));
+    assert.ok(rosterHtml.includes(count >= 2 ? "Registration closed" : "limited to 2 players"));
   }
 });

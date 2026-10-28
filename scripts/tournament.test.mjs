@@ -311,6 +311,147 @@ test("players can sign up again after cancelling", async () => {
   assert.equal((await roster()).registrations.length, 1);
 });
 
+test("two public waitlist bookings close all new signup, including unused tournament reservations", async () => {
+  await seed(3);
+  const first = await publicSignup();
+  assert.equal(first.body.registrationStatus, "waitlist");
+  assert.equal((await roster()).availability.registration_closed, false);
+  const second = await publicSignup({ firstName: "Bo", lastName: "Li" });
+  assert.equal(second.body.registrationStatus, "waitlist");
+
+  const rejected = await publicSignup({ firstName: "Cam", lastName: "Jones" });
+  assert.equal(rejected.status, 409);
+  assert.equal(rejected.body.code, "registration_closed");
+  assert.deepEqual(await teamSignup(), { status: 409, body: { error: "registration_closed" } });
+  const state = await roster();
+  assert.equal(state.availability.reserved_count, 5);
+  assert.equal(state.availability.waitlist_count, 2);
+  assert.equal(state.availability.registration_closed, true);
+  assert.equal(state.registrations.length, 5);
+  const listing = (await (await sessionsGet()).json()).sessions[0];
+  assert.equal(listing.registration_closed, true);
+  assert.equal(listing.waitlist_count, 2);
+
+  // Repeat attempts still return the original booking, even when closed.
+  const repeat = await publicSignup();
+  assert.equal(repeat.status, 200);
+  assert.equal(repeat.body.alreadyRegistered, true);
+  assert.equal(repeat.body.registrationId, first.body.registrationId);
+});
+
+test("regular and tournament players share the same two waiting-list places", async () => {
+  await seed(8);
+  await publicSignup();
+  assert.equal((await teamSignup()).body.registrationStatus, "waitlist");
+  assert.equal((await teamSignup("frank-lin")).status, 409);
+  assert.equal((await publicSignup({ firstName: "Bo", lastName: "Li" })).status, 409);
+  const repeat = await teamSignup();
+  assert.equal(repeat.status, 200);
+  assert.equal(repeat.body.alreadyRegistered, true);
+  assert.equal((await roster()).availability.waitlist_count, 2);
+});
+
+test("simultaneous public and team submissions cannot claim more than the last waiting-list place", async () => {
+  await seed(8);
+  await seed(1, "waitlist");
+  const responses = await Promise.all([
+    publicSignup(), teamSignup(), publicSignup({ firstName: "Bo", lastName: "Li" }),
+  ]);
+  assert.equal(responses.filter((response) => response.status === 200).length, 1);
+  assert.equal(responses.filter((response) => response.status === 409).length, 2);
+  assert.equal((await roster()).availability.waitlist_count, 2);
+});
+
+for (const cancelledStatus of ["confirmed", "waitlist"]) {
+  test(`cancelling a ${cancelledStatus} booking reopens registration without losing waiting-list order`, async () => {
+    await query("UPDATE sessions SET reserve_tournament_spots = FALSE");
+    await seed(8);
+    const first = await publicSignup();
+    const second = await publicSignup({ firstName: "Bo", lastName: "Li" });
+    const cancelledId = cancelledStatus === "confirmed"
+      ? (await query("SELECT id FROM registrations WHERE status = 'confirmed' ORDER BY id LIMIT 1")).rows[0].id
+      : first.body.registrationId;
+    assert.equal((await post(unregisterPost, {
+      registrationId: cancelledId, birthMonth: 2, birthDay: 29, turnstileToken: "test",
+    })).status, 200);
+    const reopened = await roster();
+    assert.equal(reopened.availability.registration_closed, false);
+    assert.equal(reopened.availability.waitlist_count, 1);
+    if (cancelledStatus === "confirmed") {
+      assert.equal(reopened.registrations.find((row) => row.id === first.body.registrationId).status, "confirmed");
+    }
+    assert.equal((await publicSignup({ firstName: "Cam", lastName: "Jones" })).body.registrationStatus, "waitlist");
+    const closed = await roster();
+    assert.equal(closed.availability.registration_closed, true);
+    assert.equal(closed.registrations.filter((row) => row.status === "waitlist")[0].id, second.body.registrationId);
+  });
+}
+
+test("cancellation does not reopen signup if the freed place is still reserved and two people remain waiting", async () => {
+  await seed(8);
+  await publicSignup();
+  await publicSignup({ firstName: "Bo", lastName: "Li" });
+  const id = (await query("SELECT id FROM registrations WHERE status = 'confirmed' ORDER BY id LIMIT 1")).rows[0].id;
+  assert.equal((await post(unregisterPost, {
+    registrationId: id, birthMonth: 2, birthDay: 29, turnstileToken: "test",
+  })).status, 200);
+  const state = await roster();
+  assert.equal(state.availability.reserved_count, 1);
+  assert.equal(state.availability.waitlist_count, 2);
+  assert.equal(state.availability.registration_closed, true);
+  assert.equal((await teamSignup()).status, 409);
+});
+
+test("reservation release reopens a closed session before accepting a new booking", async () => {
+  await seed(3);
+  await publicSignup();
+  await publicSignup({ firstName: "Bo", lastName: "Li" });
+  assert.equal((await roster()).availability.registration_closed, true);
+  now = "2026-09-20T22:00:00Z";
+  const next = await publicSignup({ firstName: "Cam", lastName: "Jones" });
+  assert.equal(next.status, 200);
+  assert.equal(next.body.registrationStatus, "confirmed");
+  assert.equal((await roster()).availability.waitlist_count, 0);
+  assert.equal((await roster()).availability.registration_closed, false);
+});
+
+test("existing oversized waiting lists are preserved, and a rejected signup still commits promotions", async () => {
+  await query("UPDATE sessions SET reserve_tournament_spots = FALSE");
+  await seed(7);
+  await seed(4, "waitlist");
+  assert.equal((await publicSignup()).status, 409);
+  // No roster read here: the rejected signup must commit its own promotion.
+  const rows = (await query("SELECT status FROM registrations")).rows;
+  assert.equal(rows.length, 11);
+  assert.equal(rows.filter((row) => row.status === "confirmed").length, 8);
+  assert.equal(rows.filter((row) => row.status === "waitlist").length, 3);
+  assert.equal((await roster()).availability.registration_closed, true);
+});
+
+test("closing one session does not close signup for another", async () => {
+  await seed(8);
+  await seed(2, "waitlist");
+  await query(`INSERT INTO sessions (starts_at, ends_at, location, capacity, members_only)
+    VALUES ('2026-09-24T16:00:00Z', '2026-09-24T18:00:00Z', 'Dragvoll B217', 8, FALSE)`);
+  assert.equal((await publicSignup()).status, 409);
+  assert.equal((await publicSignup({ sessionId: 2 })).body.registrationStatus, "confirmed");
+});
+
+test("an existing public team player can still claim their reservation when signup is closed", async () => {
+  await seed(3);
+  const first = await publicSignup({ firstName: "Lionel", lastName: "Kehl" });
+  await publicSignup();
+  assert.equal((await roster()).availability.registration_closed, true);
+  const upgraded = await teamSignup();
+  assert.equal(upgraded.status, 200);
+  assert.equal(upgraded.body.alreadyRegistered, true);
+  assert.equal(upgraded.body.registrationStatus, "confirmed");
+  const state = await roster();
+  assert.equal(state.registrations.length, 5);
+  assert.equal(state.registrations.find((row) => row.id === first.body.registrationId).is_tournament, true);
+  assert.equal(state.availability.registration_closed, false);
+});
+
 test("team signup upgrades an existing public waitlist entry without duplication", async () => {
   await seed(3);
   assert.equal((await publicSignup({ firstName: "Lionel", lastName: "Kehl" })).body.registrationStatus, "waitlist");

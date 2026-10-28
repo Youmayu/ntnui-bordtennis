@@ -228,6 +228,7 @@ type Messages = {
   };
   announcements: {
     heading: string;
+    urgent: string;
     until: (date: string) => string;
   };
   home: {
@@ -351,6 +352,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     },
     announcements: {
       heading: "Viktige beskjeder",
+      urgent: "Haster",
       until: (date) => `Til ${date}`,
     },
     home: {
@@ -477,6 +479,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     },
     announcements: {
       heading: "Important notices",
+      urgent: "Urgent",
       until: (date) => `Until ${date}`,
     },
     home: {
@@ -603,6 +606,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     },
     announcements: {
       heading: "Vigtige beskeder",
+      urgent: "Haster",
       until: (date) => `Indtil ${date}`,
     },
     home: {
@@ -729,6 +733,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     },
     announcements: {
       heading: "Viktiga meddelanden",
+      urgent: "Brådskande",
       until: (date) => `Till ${date}`,
     },
     home: {
@@ -855,6 +860,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     },
     announcements: {
       heading: "重要通知",
+      urgent: "紧急",
       until: (date) => `截止至 ${date}`,
     },
     home: {
@@ -980,6 +986,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     },
     announcements: {
       heading: "Messages importants",
+      urgent: "Urgent",
       until: (date) => `Jusqu’au ${date}`,
     },
     home: {
@@ -1106,6 +1113,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     },
     announcements: {
       heading: "Avisos importantes",
+      urgent: "Urgente",
       until: (date) => `Hasta ${date}`,
     },
     home: {
@@ -1232,6 +1240,7 @@ export const SITE_MESSAGES: Record<Locale, Messages> = {
     },
     announcements: {
       heading: "Wichtige Hinweise",
+      urgent: "Dringend",
       until: (date) => `Bis ${date}`,
     },
     home: {

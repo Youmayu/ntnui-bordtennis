@@ -132,6 +132,9 @@
   --header-bg: rgba(247, 239, 232, 0.78);
   --footer-bg: rgba(251, 246, 240, 0.72);
   --announcement-shell: rgba(224, 106, 52, 0.08);
+  --announcement-urgent-bg: #fff1f2;
+  --announcement-urgent-ink: #991b1b;
+  --announcement-urgent-border: #dc2626;
   --page-grid: rgba(255, 255, 255, 0.16);
   --hero-background:
     radial-gradient(circle at 0% 0%, rgba(255, 164, 99, 0.4), transparent 30%),
@@ -192,6 +195,9 @@
   --header-bg: rgba(18, 16, 20, 0.72);
   --footer-bg: rgba(18, 16, 20, 0.62);
   --announcement-shell: rgba(255, 131, 88, 0.08);
+  --announcement-urgent-bg: #3b1720;
+  --announcement-urgent-ink: #fecaca;
+  --announcement-urgent-border: #f87171;
   --page-grid: rgba(255, 255, 255, 0.06);
   --hero-background:
     radial-gradient(circle at 0% 0%, rgba(255, 131, 88, 0.28), transparent 26%),
@@ -830,6 +836,35 @@ a {
     linear-gradient(135deg, rgba(255, 255, 255, 0.44), transparent 55%),
     var(--surface);
   padding: 1rem 1.1rem;
+  overflow-wrap: anywhere;
+}
+
+.app-announcement-card-urgent {
+  grid-column: 1 / -1;
+  border: 2px solid var(--announcement-urgent-border);
+  border-inline-start-width: 6px;
+  background: var(--announcement-urgent-bg);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+  /* Draw attention briefly, then leave a steady, readable red notice. */
+  animation: app-announcement-pulse 2.4s ease-in-out 2;
+}
+
+.app-announcement-card-urgent::after {
+  background: none;
+}
+
+.app-announcement-urgent-label,
+.app-announcement-card-urgent .app-announcement-title {
+  color: var(--announcement-urgent-ink);
+}
+
+@keyframes app-announcement-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.24), 0 0 24px rgba(220, 38, 38, 0.18);
+  }
 }
 
 .app-hero {
@@ -859,7 +894,7 @@ a {
 }
 
 .app-announcement-grid {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
 }
 
 .app-stage-shell {
@@ -1825,7 +1860,7 @@ a {
 [data-theme="dark"] .app-footer-shell,
 [data-theme="dark"] .app-control-select,
 [data-theme="dark"] .app-theme-toggle,
-[data-theme="dark"] .app-announcement-card,
+[data-theme="dark"] .app-announcement-card:not(.app-announcement-card-urgent),
 [data-theme="dark"] .app-surface {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 58%),
@@ -2368,6 +2403,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .app-announcement-card-urgent {
+    animation: none;
+  }
+
   html {
     scroll-behavior: auto;
   }

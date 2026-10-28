@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/site-content";
+import { WAITLIST_LIMIT } from "@/lib/registration-limits";
 
 type RegistrationCopy = {
   title: string;
@@ -28,6 +29,9 @@ type RegistrationCopy = {
   submitting: string;
   registerAnother: string;
   submissionError: string;
+  closedTitle: string;
+  closedHelp: string;
+  waitlistLimitHelp: string;
 };
 
 const COPY: Record<Locale, RegistrationCopy> = {
@@ -59,6 +63,9 @@ const COPY: Record<Locale, RegistrationCopy> = {
     submitting: "Sender påmelding …",
     registerAnother: "Meld på en annen person",
     submissionError: "Kunne ikke bekrefte påmeldingen. Sjekk deltakerlisten eller prøv igjen.",
+    closedTitle: "Påmeldingen er stengt",
+    closedHelp: `Ventelisten har nådd grensen på ${WAITLIST_LIMIT} spillere. Påmeldingen åpner igjen hvis en plass blir ledig.`,
+    waitlistLimitHelp: `Maks ${WAITLIST_LIMIT} spillere på ventelisten. Deretter stenges påmeldingen til økten.`,
   },
   en: {
     title: "Registrations",
@@ -88,6 +95,9 @@ const COPY: Record<Locale, RegistrationCopy> = {
     submitting: "Registering …",
     registerAnother: "Register another person",
     submissionError: "Could not confirm your registration. Check the participant list or try again.",
+    closedTitle: "Registration closed",
+    closedHelp: `The waiting list has reached its limit of ${WAITLIST_LIMIT} players. Registration will reopen if a place becomes available.`,
+    waitlistLimitHelp: `The waiting list is limited to ${WAITLIST_LIMIT} players. Registration for the session then closes.`,
   },
   da: {
     title: "Tilmeldinger",
@@ -117,6 +127,9 @@ const COPY: Record<Locale, RegistrationCopy> = {
     submitting: "Sender tilmelding …",
     registerAnother: "Tilmeld en anden person",
     submissionError: "Tilmeldingen kunne ikke bekræftes. Tjek deltagerlisten, eller prøv igen.",
+    closedTitle: "Tilmeldingen er lukket",
+    closedHelp: `Ventelisten har nået grænsen på ${WAITLIST_LIMIT} spillere. Tilmeldingen åbner igen, hvis en plads bliver ledig.`,
+    waitlistLimitHelp: `Højst ${WAITLIST_LIMIT} spillere på ventelisten. Derefter lukkes tilmeldingen til træningen.`,
   },
   sv: {
     title: "Anmälningar",
@@ -146,6 +159,9 @@ const COPY: Record<Locale, RegistrationCopy> = {
     submitting: "Skickar anmälan …",
     registerAnother: "Anmäl en annan person",
     submissionError: "Kunde inte bekräfta anmälan. Kontrollera deltagarlistan eller försök igen.",
+    closedTitle: "Anmälan är stängd",
+    closedHelp: `Väntelistan har nått gränsen på ${WAITLIST_LIMIT} spelare. Anmälan öppnar igen om en plats blir ledig.`,
+    waitlistLimitHelp: `Högst ${WAITLIST_LIMIT} spelare på väntelistan. Därefter stängs anmälan till passet.`,
   },
   de: {
     title: "Anmeldungen",
@@ -175,6 +191,9 @@ const COPY: Record<Locale, RegistrationCopy> = {
     submitting: "Anmeldung wird gesendet …",
     registerAnother: "Eine andere Person anmelden",
     submissionError: "Die Anmeldung konnte nicht bestätigt werden. Prüfe die Teilnehmerliste oder versuche es erneut.",
+    closedTitle: "Anmeldung geschlossen",
+    closedHelp: `Die Warteliste hat ihr Limit von ${WAITLIST_LIMIT} Spielern erreicht. Die Anmeldung öffnet wieder, wenn ein Platz frei wird.`,
+    waitlistLimitHelp: `Die Warteliste ist auf ${WAITLIST_LIMIT} Spieler begrenzt. Danach wird die Anmeldung für dieses Training geschlossen.`,
   },
   zh: {
     title: "报名名单",
@@ -204,6 +223,9 @@ const COPY: Record<Locale, RegistrationCopy> = {
     submitting: "正在提交报名……",
     registerAnother: "为其他人报名",
     submissionError: "无法确认报名。请查看参与者名单或重试。",
+    closedTitle: "报名已关闭",
+    closedHelp: `候补名单已达到${WAITLIST_LIMIT}人的上限。如有空位，报名将重新开放。`,
+    waitlistLimitHelp: `候补名单最多${WAITLIST_LIMIT}人，达到上限后本次训练将关闭报名。`,
   },
   fr: {
     title: "Inscriptions",
@@ -233,6 +255,9 @@ const COPY: Record<Locale, RegistrationCopy> = {
     submitting: "Inscription en cours…",
     registerAnother: "Inscrire une autre personne",
     submissionError: "Impossible de confirmer votre inscription. Consultez la liste des participants ou réessayez.",
+    closedTitle: "Inscriptions closes",
+    closedHelp: `La liste d’attente a atteint sa limite de ${WAITLIST_LIMIT} joueurs. Les inscriptions rouvriront si une place se libère.`,
+    waitlistLimitHelp: `La liste d’attente est limitée à ${WAITLIST_LIMIT} joueurs. Les inscriptions à la séance sont ensuite closes.`,
   },
   es: {
     title: "Inscripciones",
@@ -262,6 +287,9 @@ const COPY: Record<Locale, RegistrationCopy> = {
     submitting: "Enviando inscripción…",
     registerAnother: "Inscribir a otra persona",
     submissionError: "No se pudo confirmar tu inscripción. Consulta la lista de participantes o inténtalo de nuevo.",
+    closedTitle: "Inscripciones cerradas",
+    closedHelp: `La lista de espera ha alcanzado su límite de ${WAITLIST_LIMIT} jugadores. Las inscripciones se reabrirán si queda una plaza libre.`,
+    waitlistLimitHelp: `La lista de espera admite un máximo de ${WAITLIST_LIMIT} jugadores. Después se cierran las inscripciones para el entrenamiento.`,
   },
 };
 

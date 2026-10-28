@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { requireAdminAccess } from "@/lib/admin-auth";
 import { syncBoardRegistrations } from "@/lib/board-registrations";
 import { getTournamentReservationsSelectSql, TOURNAMENT_RESERVED_SPOTS } from "@/lib/tournament-reservations";
 import {
@@ -63,6 +64,7 @@ type AnnouncementRow = {
   id: number;
   title: string;
   body: string;
+  is_urgent: boolean;
   expires_at: string | null;
   created_at: string;
   is_active: boolean;
@@ -103,6 +105,7 @@ type AutoScheduleSchemaStatusRow = {
   has_template_tournament_reservations: boolean;
   has_attending_board_member_ids: boolean;
   has_board_registrations: boolean;
+  has_announcement_urgency: boolean;
 };
 
 const WEEKDAY_OPTIONS = [
@@ -339,7 +342,13 @@ export default async function AdminPage() {
          SELECT 1 FROM information_schema.columns
          WHERE table_schema = 'public' AND table_name = 'registrations'
            AND column_name = 'board_member_id'
-       ) AS has_board_registrations`
+       ) AS has_board_registrations,
+       EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'announcements'
+           AND column_name = 'is_urgent'
+       ) AS has_announcement_urgency`
   );
 
   const autoScheduleSchema =
@@ -355,6 +364,7 @@ export default async function AdminPage() {
       has_template_tournament_reservations: false,
       has_attending_board_member_ids: false,
       has_board_registrations: false,
+      has_announcement_urgency: false,
     } satisfies AutoScheduleSchemaStatusRow);
 
   const autoScheduleAvailable =
@@ -368,6 +378,7 @@ export default async function AdminPage() {
   const templateReservationsAvailable = autoScheduleSchema.has_template_tournament_reservations;
   const boardAttendanceAvailable = autoScheduleSchema.has_attending_board_member_ids;
   const boardRegistrationsAvailable = autoScheduleSchema.has_board_registrations;
+  const announcementUrgencyAvailable = autoScheduleSchema.has_announcement_urgency;
 
   let autoScheduleError: string | null = null;
   let autoScheduleSettings: ScheduleSettingsRow = { auto_enabled: true };
@@ -519,6 +530,7 @@ export default async function AdminPage() {
   const announcementsRes = await pool
     .query(
       `SELECT id, title, body, expires_at, created_at,
+              ${announcementUrgencyAvailable ? "is_urgent" : "FALSE AS is_urgent"},
               (expires_at IS NULL OR expires_at > NOW()) AS is_active
        FROM announcements
        ORDER BY created_at DESC
@@ -619,31 +631,52 @@ export default async function AdminPage() {
 
   async function addAnnouncement(formData: FormData) {
     "use server";
+    await requireAdminAccess();
     const title = sanitizeAnnouncementTitle(String(formData.get("title") ?? ""));
     const body = sanitizeAnnouncementBody(String(formData.get("body") ?? ""));
     const expiresAtLocal = String(formData.get("expires_at") ?? "").trim();
+    const isUrgent = formData.get("is_urgent") === "on";
 
     if (!title || !body) return;
+    if (isUrgent && !announcementUrgencyAvailable) {
+      throw new Error("Hastebeskjeder er ikke tilgjengelig ennå.");
+    }
 
     await pool.query(
-      `INSERT INTO announcements (title, body, expires_at)
+      `INSERT INTO announcements (title, body, expires_at${announcementUrgencyAvailable ? ", is_urgent" : ""})
        VALUES (
          $1,
          $2,
          CASE
            WHEN $3 = '' THEN NULL
            ELSE ($3::timestamp AT TIME ZONE 'Europe/Oslo')
-         END
+         END${announcementUrgencyAvailable ? ", $4" : ""}
        )`,
-      [title, body, expiresAtLocal]
+      announcementUrgencyAvailable ? [title, body, expiresAtLocal, isUrgent] : [title, body, expiresAtLocal]
     );
+    revalidatePath("/", "layout");
+  }
+
+  async function updateAnnouncementUrgency(formData: FormData) {
+    "use server";
+    await requireAdminAccess();
+    const id = Number(formData.get("id"));
+    const isUrgent = formData.get("is_urgent");
+    if (!Number.isSafeInteger(id) || id <= 0 || !["true", "false"].includes(String(isUrgent))) return;
+    if (!announcementUrgencyAvailable) {
+      throw new Error("Hastebeskjeder er ikke tilgjengelig ennå.");
+    }
+    await pool.query(`UPDATE announcements SET is_urgent = $2 WHERE id = $1`, [id, isUrgent === "true"]);
+    revalidatePath("/", "layout");
   }
 
   async function deleteAnnouncement(formData: FormData) {
     "use server";
+    await requireAdminAccess();
     const id = Number(formData.get("id"));
     if (!Number.isFinite(id)) return;
     await pool.query(`DELETE FROM announcements WHERE id = $1`, [id]);
+    revalidatePath("/", "layout");
   }
 
   async function updateAutoScheduleSettings(formData: FormData) {
@@ -1316,7 +1349,7 @@ export default async function AdminPage() {
           <div>
             <h2 className="text-2xl font-semibold text-[color:var(--text-strong)]">Beskjeder</h2>
             <p className="mt-2 max-w-3xl text-[color:var(--text-muted)]">
-              Publiser og slett beskjeder.
+              Publiser beskjeder og marker viktige endringer som haster.
             </p>
           </div>
 
@@ -1361,6 +1394,18 @@ export default async function AdminPage() {
           </div>
 
           <div>
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input type="checkbox" name="is_urgent" disabled={!announcementUrgencyAvailable} aria-describedby="announcement-urgency-help" />
+              Haster
+            </label>
+            <p id="announcement-urgency-help" className="mt-1 text-sm text-[color:var(--text-muted)]">
+              {announcementUrgencyAvailable
+                ? "Vises øverst med rød markering og en kort, rolig puls. Brukes for eksempel ved avlyst trening."
+                : "Hastebeskjeder blir tilgjengelige når nettstedet er ferdig oppdatert."}
+            </p>
+          </div>
+
+          <div>
             <button className="app-button-primary inline-flex">Publiser beskjed</button>
           </div>
         </form>
@@ -1379,9 +1424,12 @@ export default async function AdminPage() {
                   </h3>
                 </div>
 
-                <span className={getStatusBadgeClass(announcement.is_active)}>
-                  {announcement.is_active ? "Aktiv" : "Utløpt"}
-                </span>
+                <div className="flex flex-wrap gap-2">
+                  {announcement.is_urgent && <span className="app-badge app-badge-danger">Haster</span>}
+                  <span className={getStatusBadgeClass(announcement.is_active)}>
+                    {announcement.is_active ? "Aktiv" : "Utløpt"}
+                  </span>
+                </div>
               </div>
 
               <div className="mt-4 whitespace-pre-line text-sm leading-7 text-[color:var(--text-muted)]">
@@ -1395,7 +1443,14 @@ export default async function AdminPage() {
                 </span>
               </div>
 
-              <div className="mt-5">
+              <div className="mt-5 flex flex-wrap gap-3">
+                <form action={updateAnnouncementUrgency}>
+                  <input type="hidden" name="id" value={announcement.id} />
+                  <input type="hidden" name="is_urgent" value={String(!announcement.is_urgent)} />
+                  <button className="app-button-secondary inline-flex" disabled={!announcementUrgencyAvailable}>
+                    {announcement.is_urgent ? "Fjern hastemarkering" : "Merk som haster"}
+                  </button>
+                </form>
                 <form action={deleteAnnouncement}>
                   <input type="hidden" name="id" value={announcement.id} />
                   <button className="app-button-secondary inline-flex">Slett beskjed</button>

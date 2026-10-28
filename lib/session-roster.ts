@@ -34,6 +34,8 @@ export async function getSessionRoster(sessionId: number) {
         reserve_tournament_spots: state.reserveTournamentSpots,
         reserved_count: state.reservedCount,
         available_spots: state.availableSpots,
+        waitlist_count: state.waitlistCount,
+        registration_closed: state.registrationClosed,
         tournament_release_at: state.tournamentReleaseAt,
       } satisfies SessionAvailability,
     };
