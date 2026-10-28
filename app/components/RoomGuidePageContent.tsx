@@ -61,7 +61,7 @@ export default function RoomGuidePageContent({ locale }: { locale: Locale }) {
                   {step.showLockerCode && (
                     <div className="app-room-guide-code">
                       <span>{guide.lockerCodeLabel}</span>
-                      <strong aria-label={`${guide.lockerCodeLabel}: 7 2 9`}>729</strong>
+                      <strong aria-label={`${guide.lockerCodeLabel}: 8 3 9`}>839</strong>
                     </div>
                   )}
                 </div>
